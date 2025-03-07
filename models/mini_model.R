@@ -51,6 +51,8 @@ age_vaccination_beta_modifier <- parameter()
 n_age <- parameter(1)
 #Number of vaccination compartments
 n_vacc <- parameter(1)
+#Contact matrix
+contact_matrix <- parameter()
 
 # Calculated parameters ---------------------------------------------------
 
@@ -58,10 +60,12 @@ n_vacc <- parameter(1)
 infectious_period[, ] <- (1 - prop_severe[i, j]) / (recovery_rate + alpha + b) + prop_severe[i, j] / (severe_recovery_rate + severe_death_rate + b)
 #Calculate beta from the R0 and infectious period
 beta[, ] <- R0 / infectious_period[i, j]
+
 #Update with vaccination and age mediation
 beta_updated[, ] <- age_vaccination_beta_modifier[i, j] * beta[i, j]
-#Calculate the force of infection
-lambda[, ] <- beta_updated[i, j] * (sum(I) + sum(Is)) / N
+
+#Calculate the force of infection - using a contact matrix
+lambda[, ] <- sum(contact_matrix[i, ]) * sum(beta_updated[, j]) * (sum(I[, j]) + sum(Is[, j])) / N
 
 #Calculate Reff in two parts due to Odin
 S_eff[, ] <- S[i, j] * age_vaccination_beta_modifier[i, j]
@@ -88,8 +92,12 @@ dim(age_vaccination_beta_modifier) <- c(n_age, n_vacc)
 dim(prop_severe) <- c(n_age, n_vacc)
 dim(beta) <- c(n_age, n_vacc)
 dim(infectious_period) <- c(n_age, n_vacc)
+
 dim(lambda) <- c(n_age, n_vacc)
+
 dim(S_eff) <- c(n_age, n_vacc)
+dim(contact_matrix) <- c(n_age, n_age)
+
 
 # Output ------------------------------------------------------------------
 #Output R-effective
