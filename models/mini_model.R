@@ -27,21 +27,21 @@ N0 <- parameter()
 #Initial infected population
 I0 <- parameter()
 #Incubation rate
-incubation_rate <- parameter(1)
+incubation_rate <- parameter()
 #Recovery rate
-recovery_rate <- parameter(1) 
+recovery_rate <- parameter() 
 #Disease specific mortality
 alpha <- parameter(0)
 #Waning antibody rate
 delta <- parameter(0)
 #Background death rate
-b <- parameter(2.6e-4)
+b <- parameter()
 #R0
-R0 <- parameter(5)
+R0 <- parameter()
 #Proportion of cases that are severe
 prop_severe <- parameter()
 #Severe case recovery rate
-severe_recovery_rate <- parameter(1)
+severe_recovery_rate <- parameter()
 #Severe death rate
 severe_death_rate <- parameter(0)
 #Proportion of cases that have complications
@@ -53,7 +53,15 @@ age_vaccination_beta_modifier <- parameter()
 
 #Beta
 infectious_period[, ] <- (1 - prop_severe[i, j]) / (recovery_rate + alpha + b) + prop_severe[i, j] / (severe_recovery_rate + severe_death_rate + b)
+
+beta[, ] <- R0 / infectious_period[i, j]
+
+
+
 beta <- R0 / sum(infectious_period)
+
+
+
 
 #Beta but with vaccination and age mediation
 beta_updated[, ] <- age_vaccination_beta_modifier[i, j] * beta
@@ -86,6 +94,7 @@ dim(beta_updated) <- c(n_age, n_vacc)
 dim(S_age_vacc_modified) <- c(n_age, n_vacc)
 dim(age_vaccination_beta_modifier) <- c(n_age, n_vacc)
 dim(prop_severe) <- c(n_age, n_vacc)
+dim(beta) <- c(n_age, n_vacc)
 dim(infectious_period) <- c(n_age, n_vacc)
 
 # Output ------------------------------------------------------------------

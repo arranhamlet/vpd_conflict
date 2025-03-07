@@ -10,8 +10,6 @@ unpack_dust2 <- function(model_system, model_object, dimension_names){
   #Unpack all the compartments
   unpacked_compartments <- data.table::rbindlist(sapply(as.numeric(which(these_are_compartments)), function(x){
     
-    print(x)
-    
     #Unpack this object
     this_obj <- dust_state[[x]]
     
@@ -25,8 +23,15 @@ unpack_dust2 <- function(model_system, model_object, dimension_names){
       mutate(state = names(dust_state)[x]) %>%
       select(time, state, names(dimension_names), value)
     
-    melted_array
+    aggregate_array <- melted_array %>%
+      group_by(state, time) %>%
+      summarise(value = sum(value))
     
+    combo_df <- plyr::rbind.fill(melted_array, aggregate_array) %>%
+      mutate(across(names(melted_array)[-which(names(melted_array) %in% names(aggregate_array))], fct_na_value_to_level, level = "All"))
+    
+    combo_df
+
   }, simplify = FALSE))
   
   #Add in the non-compartment outputs

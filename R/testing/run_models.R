@@ -29,10 +29,10 @@ pars <- list(
   prop_complications = 0.1,
   
   #Multi dimension parameters
-  N0 = matrix(c(750, 250), nrow = 2, ncol = 1),
+  N0 = matrix(c(1000, 0), nrow = 2, ncol = 1),
   I0 = matrix(c(1, 0), nrow = 2, ncol = 1),
-  prop_severe = matrix(c(0.1, 0.1), nrow = 2, ncol = 1),
-  age_vaccination_beta_modifier = matrix(c(1, 1), nrow = 2, ncol = 1)
+  prop_severe = matrix(c(0.1, 0), nrow = 2, ncol = 1),
+  age_vaccination_beta_modifier = matrix(c(1, 0), nrow = 2, ncol = 1)
   
 )
 
@@ -93,7 +93,7 @@ clean_df <- unpack_dust2(
 
 #Plot
 ggplot(
-  data = clean_df,
+  data = subset(clean_df, !age %in% c("Child", "Adult")),
   mapping = aes(
     x = time,
     y = value,
