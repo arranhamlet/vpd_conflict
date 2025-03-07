@@ -2,9 +2,9 @@
 # Compartments ------------------------------------------------------------
 
 deriv(S) <- Births - b * S - beta * S * (I + Is) / N + delta * R + delta * Rc
-deriv(E) <- beta * S * (I + Is) / N - (b + incubation_rate * (1 - prop_severe)) * E
-deriv(I) <- incubation_rate * E - (b + recovery_rate + alpha) * I
-deriv(R) <- recovery_rate * I - (b + delta) * R + Is * (1 - prop_complications)
+deriv(E) <- beta * S * (I + Is) / N - (b + incubation_rate) * E
+deriv(I) <- E * incubation_rate * (1 - prop_severe) - (b + recovery_rate + alpha) * I
+deriv(R) <- recovery_rate * I - (b + delta) * R + Is * severe_recovery_rate * (1 - prop_complications)
 
 deriv(Is) <- E * incubation_rate * prop_severe - Is * (severe_recovery_rate + b + severe_death_rate)
 deriv(Rc) <- Is * severe_recovery_rate * prop_complications - Rc * (b + delta)
@@ -48,13 +48,13 @@ prop_complications <- parameter(0)
 # Calculated parameters ---------------------------------------------------
 
 #Beta
-beta <- R0 * ((b + incubation_rate) / incubation_rate) * (b + alpha + recovery_rate)
+beta <- R0 * ((severe_death_rate + b + incubation_rate) / incubation_rate) * (severe_death_rate + b + alpha + recovery_rate + severe_recovery_rate)
 #Number of births
-Births <- b * N0
+Births <- b * N
 #R-effective (Re)
 R_effective <- R0 * S/N
 #Total population
-N <- S + E + I + R
+N <- S + E + I + R + Is + Rc
 
 
 # Output ------------------------------------------------------------------
