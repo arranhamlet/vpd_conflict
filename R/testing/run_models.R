@@ -12,12 +12,7 @@ model <- odin2::odin("models/mini_model.R")
 
 #Set up parameters
 pars <- list(
-  initial_population = matrix(100, nrow = 1, ncol = 1),
-  init_inf = matrix(1, nrow = 1, ncol = 1),
-  # birth_rate = 0,
-  R0 = 0.9,
-  birth_rate = 0,
-  death_rate = 0
+  R0 = 1.01
 )
 
 #Define dust system and initialise
@@ -25,14 +20,21 @@ sys <- dust2::dust_system_create(model(), pars)
 dust2::dust_system_set_state_initial(sys)
 
 #Set time
-time <- 0:500
+time <- 0:1000
 #Run model
 y <- dust2::dust_system_simulate(sys, time)
 
-row.names(y) <- c("S", "E", "I", "R", "N", "foi")
+plot(y[3, ])
+
+
+y[5, ]
+
+
+
+row.names(y) <- c("S", "E", "I", "R", "N")
 ygg <- gather(as.data.frame(t(y))) %>%
   mutate(time = rep(time, length(row.names(y))),
-         key = factor(key, levels = c("S", "E", "I", "R", "N", "foi")))
+         key = factor(key, levels = c("S", "E", "I", "R", "N")))
 
 #Outputs
 ggplot(

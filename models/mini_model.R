@@ -1,45 +1,36 @@
-# Define the derivatives for the SEIR model
-deriv(S[, ]) <- N * birth_rate - foi[i, j] - death_rate * S[i, j]
-deriv(E[, ]) <- foi[i, j] - E[i, j] / incubation_time - death_rate * E[i, j]
-deriv(I[, ]) <- E[i, j] / incubation_time - I[i, j] / recovery_time - death_rate * I[i, j]
-deriv(R[, ]) <- I[i, j] / recovery_time - death_rate * R[i, j]
+# variables
+deriv(S) <- Births - b * S - beta * S * I / N + delta * R
+deriv(E) <- beta * S * I / N - (b + gamma) * E
+deriv(I) <- gamma * E - (b + sigma + alpha) * I
+deriv(R) <- sigma * I - (b + delta) * R
 
-# Initial conditions for the compartments
-initial(S[, ]) <- initial_population[i, j] - init_inf[i, j]
-initial(E[, ]) <- 0
-initial(I[, ]) <- init_inf[i, j]
-initial(R[, ]) <- 0
+# initial conditions of the variables
+initial(S) <- N0 - I0
+initial(E) <- 0
+initial(I) <- I0
+initial(R) <- 0
 
-# Parameters
-initial_population <- parameter()
-N <- sum(S) + sum(E) + sum(I) + sum(R)
-output(total_pop) <- N
+N <- S + E + I + R
+output(pop) <- N
 
-birth_rate <- parameter(1 / (80 * 365))
-death_rate <- parameter(1 / (80 * 365))
-n_age <- parameter(1)
-n_vacc <- parameter(1)
+# parameter values
+N0 <- parameter(1e7)           # total population size
+I0 <- parameter(1)             # num infectious cases at start of epidemic
+sigma <- parameter(1)         # recovery rate (1/mean duration infectiousness)
+gamma <- parameter(1)
+alpha <- parameter(0)
+delta <- parameter(0)          # waning antibody rate
+b <- parameter(2.6e-4)         # death rate (average life expectancy of 1 year or 52 weeks)
+R0 <- parameter(5)
 
-# Calculation of beta
-R0 <- parameter()
-recovery_time <- parameter(14)
-incubation_time <- parameter(5)
-beta <- R0 * (1 / recovery_time) * ((1 / incubation_time + 1 / recovery_time) / (1 / incubation_time))
+Births <- b * N0          # number of births (for a constant population size)
+beta <- R0 * ((b + gamma) / gamma) * (b + alpha + sigma)
 
-foi[, ] <- beta * S[i, j] * sum(I) / N
 
-foi_output <- sum(foi)
 
-output(foi_output) <- TRUE
 
-init_inf <- parameter()
 
-# Dimensions of the compartments
-dim(S) <- c(n_age, n_vacc)
-dim(E) <- c(n_age, n_vacc)
-dim(I) <- c(n_age, n_vacc)
-dim(R) <- c(n_age, n_vacc)
-dim(initial_population) <- c(n_age, n_vacc)
-dim(init_inf) <- c(n_age, n_vacc)
-dim(foi) <- c(n_age, n_vacc)
+
+
+
 
