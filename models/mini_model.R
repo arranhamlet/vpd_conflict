@@ -1,8 +1,8 @@
 
 # Compartments ------------------------------------------------------------
 
-deriv(S[, ]) <- Births - b * S[i, j] - beta * S[i, j] * (sum(I) + sum(Is)) / N + delta * R[i, j] + delta * Rc[i, j]
-deriv(E[, ]) <- beta * S[i, j] * (sum(I) + sum(Is)) / N - (b + incubation_rate) * E[i, j]
+deriv(S[, ]) <- Births - b * S[i, j] - beta_updated[i, j] * S[i, j] * (sum(I) + sum(Is)) / N + delta * R[i, j] + delta * Rc[i, j]
+deriv(E[, ]) <- beta_updated[i, j] * S[i, j] * (sum(I) + sum(Is)) / N - (b + incubation_rate) * E[i, j]
 deriv(I[, ]) <- E[i, j] * incubation_rate * (1 - prop_severe) - (b + recovery_rate + alpha) * I[i, j]
 deriv(R[, ]) <- recovery_rate * I[i, j] - (b + delta) * R[i, j] + Is[i, j] * severe_recovery_rate * (1 - prop_complications)
 
@@ -46,16 +46,22 @@ severe_recovery_rate <- parameter(1)
 severe_death_rate <- parameter(0)
 #Proportion of cases that have complications
 prop_complications <- parameter(0)
-
+#Beta modifier for age and vaccination
+age_vaccination_beta_modifier <- parameter()
 
 # Calculated parameters ---------------------------------------------------
 
 #Beta
 beta <- R0 * ((severe_death_rate + b + incubation_rate) / incubation_rate) * (severe_death_rate + b + alpha + recovery_rate + severe_recovery_rate)
+#Beta but with vaccination and age mediation
+beta_updated[, ] <- age_vaccination_beta_modifier[i, j] * beta
+
 #Number of births
 Births <- b * N
-#R-effective (Re)
-R_effective <- R0 * sum(S)/N
+#R-effective (Re) - Need to do in two parts because of the age_vaccination modifier
+S_age_vacc_modified[,] <- S[i, j] * age_vaccination_beta_modifier[i, j]
+R_effective <- R0 * sum(S_age_vacc_modified)/N
+
 #Total population
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
 #Number of age compartments
@@ -74,6 +80,9 @@ dim(Is) <- c(n_age, n_vacc)
 dim(Rc) <- c(n_age, n_vacc)
 dim(N0) <- c(n_age, n_vacc)
 dim(I0) <- c(n_age, n_vacc)
+dim(beta_updated) <- c(n_age, n_vacc)
+dim(S_age_vacc_modified) <- c(n_age, n_vacc)
+dim(age_vaccination_beta_modifier) <- c(n_age, n_vacc)
 
 
 # Output ------------------------------------------------------------------
