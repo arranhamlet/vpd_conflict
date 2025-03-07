@@ -28,9 +28,9 @@ time <- 0:100
 #Run model
 y <- dust2::dust_system_simulate(sys, time)
 
-plot(y[2, ] + y[3, ])
+plot(y[2, ] + y[3, ] + y[5, ])
 
-plot(y[6, ], ylim = c(0.5, 2), type = "l", col = "red")
+plot(y[7, ], ylim = c(0.5, 2), type = "l", col = "red")
 abline(h = 1, lty = 3)
 
 y[5, ]
