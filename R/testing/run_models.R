@@ -12,7 +12,11 @@ model <- odin2::odin("models/mini_model.R")
 
 #Set up parameters
 pars <- list(
-  R0 = 1.01
+  R0 = 1.5,
+  N0 = 1000,
+  sigma = 1/14,
+  gamma = 1/5,
+  b = 1/(8 * 365)
 )
 
 #Define dust system and initialise
@@ -20,12 +24,14 @@ sys <- dust2::dust_system_create(model(), pars)
 dust2::dust_system_set_state_initial(sys)
 
 #Set time
-time <- 0:1000
+time <- 0:100
 #Run model
 y <- dust2::dust_system_simulate(sys, time)
 
-plot(y[3, ])
+plot(y[2, ] + y[3, ])
 
+plot(y[6, ], ylim = c(0.5, 2), type = "l", col = "red")
+abline(h = 1, lty = 3)
 
 y[5, ]
 
