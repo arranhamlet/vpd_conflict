@@ -1,29 +1,31 @@
 
 # Compartments ------------------------------------------------------------
 
-deriv(S) <- Births - b * S - beta * S * (I + Is) / N + delta * R + delta * Rc
-deriv(E) <- beta * S * (I + Is) / N - (b + incubation_rate) * E
-deriv(I) <- E * incubation_rate * (1 - prop_severe) - (b + recovery_rate + alpha) * I
-deriv(R) <- recovery_rate * I - (b + delta) * R + Is * severe_recovery_rate * (1 - prop_complications)
+deriv(S[, ]) <- Births - b * S[i, j] - beta * S[i, j] * (sum(I) + sum(Is)) / N + delta * R[i, j] + delta * Rc[i, j]
+deriv(E[, ]) <- beta * S[i, j] * (sum(I) + sum(Is)) / N - (b + incubation_rate) * E[i, j]
+deriv(I[, ]) <- E[i, j] * incubation_rate * (1 - prop_severe) - (b + recovery_rate + alpha) * I[i, j]
+deriv(R[, ]) <- recovery_rate * I[i, j] - (b + delta) * R[i, j] + Is[i, j] * severe_recovery_rate * (1 - prop_complications)
 
-deriv(Is) <- E * incubation_rate * prop_severe - Is * (severe_recovery_rate + b + severe_death_rate)
-deriv(Rc) <- Is * severe_recovery_rate * prop_complications - Rc * (b + delta)
+deriv(Is[, ]) <- E[i, j] * incubation_rate * prop_severe - Is[i, j] * (severe_recovery_rate + b + severe_death_rate)
+deriv(Rc[, ]) <- Is[i, j] * severe_recovery_rate * prop_complications - Rc[i, j] * (b + delta)
+
 
 # Initial compartment values ----------------------------------------------
 
-initial(S) <- N0 - I0
-initial(E) <- 0
-initial(I) <- I0
-initial(R) <- 0
-initial(Is) <- 0
-initial(Rc) <- 0
+initial(S[, ]) <- N0[i, j] - I0[i, j]
+initial(E[, ]) <- 0
+initial(I[, ]) <- I0[i, j]
+initial(R[, ]) <- 0
+initial(Is[, ]) <- 0
+initial(Rc[, ]) <- 0
+
 
 # User parameter values --------------------------------------------------------
 
 #Initial total population
-N0 <- parameter(100)
+N0 <- parameter()
 #Initial infected population
-I0 <- parameter(1)
+I0 <- parameter()
 #Incubation rate
 incubation_rate <- parameter(1)
 #Recovery rate
@@ -45,6 +47,7 @@ severe_death_rate <- parameter(0)
 #Proportion of cases that have complications
 prop_complications <- parameter(0)
 
+
 # Calculated parameters ---------------------------------------------------
 
 #Beta
@@ -52,9 +55,25 @@ beta <- R0 * ((severe_death_rate + b + incubation_rate) / incubation_rate) * (se
 #Number of births
 Births <- b * N
 #R-effective (Re)
-R_effective <- R0 * S/N
+R_effective <- R0 * sum(S)/N
 #Total population
-N <- S + E + I + R + Is + Rc
+N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
+#Number of age compartments
+n_age <- parameter(1)
+#Number of vaccination compartments
+n_vacc <- parameter(1)
+
+
+# Dimensions --------------------------------------------------------------
+
+dim(S) <- c(n_age, n_vacc)
+dim(E) <- c(n_age, n_vacc)
+dim(I) <- c(n_age, n_vacc)
+dim(R) <- c(n_age, n_vacc)
+dim(Is) <- c(n_age, n_vacc)
+dim(Rc) <- c(n_age, n_vacc)
+dim(N0) <- c(n_age, n_vacc)
+dim(I0) <- c(n_age, n_vacc)
 
 
 # Output ------------------------------------------------------------------
@@ -62,10 +81,4 @@ N <- S + E + I + R + Is + Rc
 output(reff) <- R_effective
 #Output total population
 output(pop) <- N
-
-
-
-
-
-
 

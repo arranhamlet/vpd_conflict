@@ -13,7 +13,8 @@ model <- odin2::odin("models/mini_model.R")
 #Set up parameters
 pars <- list(
   R0 = 1.01,
-  N0 = 1000,
+  N0 = matrix(1000, nrow = 1, ncol = 1),
+  I0 = matrix(1, nrow = 1, ncol = 1),
   recovery_rate = 1/14,
   incubation_rate = 1/5,
   b = 0,#1/(8 * 365),
