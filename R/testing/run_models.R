@@ -19,7 +19,7 @@ pars <- list(
   incubation_rate = 1/5,
   b = 0,#1/(8 * 365),
   severe_recovery_rate = 1/14,
-  prop_severe = .25,
+  prop_severe = matrix(.25, nrow = 1, ncol = 1),
   prop_complications = 0.1,
   age_vaccination_beta_modifier = matrix(1, nrow = 1, ncol = 1)
 )

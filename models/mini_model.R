@@ -3,10 +3,10 @@
 
 deriv(S[, ]) <- Births - b * S[i, j] - beta_updated[i, j] * S[i, j] * (sum(I) + sum(Is)) / N + delta * R[i, j] + delta * Rc[i, j]
 deriv(E[, ]) <- beta_updated[i, j] * S[i, j] * (sum(I) + sum(Is)) / N - (b + incubation_rate) * E[i, j]
-deriv(I[, ]) <- E[i, j] * incubation_rate * (1 - prop_severe) - (b + recovery_rate + alpha) * I[i, j]
+deriv(I[, ]) <- E[i, j] * incubation_rate * (1 - prop_severe[i, j]) - (b + recovery_rate + alpha) * I[i, j]
 deriv(R[, ]) <- recovery_rate * I[i, j] - (b + delta) * R[i, j] + Is[i, j] * severe_recovery_rate * (1 - prop_complications)
 
-deriv(Is[, ]) <- E[i, j] * incubation_rate * prop_severe - Is[i, j] * (severe_recovery_rate + b + severe_death_rate)
+deriv(Is[, ]) <- E[i, j] * incubation_rate * prop_severe[i, j] - Is[i, j] * (severe_recovery_rate + b + severe_death_rate)
 deriv(Rc[, ]) <- Is[i, j] * severe_recovery_rate * prop_complications - Rc[i, j] * (b + delta)
 
 
@@ -39,7 +39,7 @@ b <- parameter(2.6e-4)
 #R0
 R0 <- parameter(5)
 #Proportion of cases that are severe
-prop_severe <- parameter(0)
+prop_severe <- parameter()
 #Severe case recovery rate
 severe_recovery_rate <- parameter(1)
 #Severe death rate
@@ -83,7 +83,7 @@ dim(I0) <- c(n_age, n_vacc)
 dim(beta_updated) <- c(n_age, n_vacc)
 dim(S_age_vacc_modified) <- c(n_age, n_vacc)
 dim(age_vaccination_beta_modifier) <- c(n_age, n_vacc)
-
+dim(prop_severe) <- c(n_age, n_vacc)
 
 # Output ------------------------------------------------------------------
 #Output R-effective
