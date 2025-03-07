@@ -23,9 +23,6 @@ pars <- list(
   #Contact matrix
   contact_matrix = matrix(1, nrow = 2, ncol = 2)/4,
   
-  #Aging rate
-  aging_rate <- c(1/(18 * 365), 1)
-  
   #Single dimension parameters
   R0 = 1.5,
   recovery_rate = 1/14,
