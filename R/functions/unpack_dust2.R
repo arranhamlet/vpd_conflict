@@ -16,7 +16,7 @@ unpack_dust2 <- function(model_system, model_object, dimension_names){
     this_obj <- dust_state[[x]]
     
     #Loop through dimnames
-    for(i in length(dimension_names)){
+    for(i in 1:length(dimension_names)){
       dimnames(this_obj)[[i]] <- unlist(dimension_names[[i]])
     }
     

@@ -52,12 +52,9 @@ age_vaccination_beta_modifier <- parameter()
 # Calculated parameters ---------------------------------------------------
 
 #Beta
-
 infectious_period[, ] <- (1 - prop_severe[i, j]) / (recovery_rate + alpha + b) + prop_severe[i, j] / (severe_recovery_rate + severe_death_rate + b)
-
 beta <- R0 / sum(infectious_period)
 
-# beta <- R0 * ((severe_death_rate + b + incubation_rate) / incubation_rate) * (severe_death_rate + b + alpha + recovery_rate + severe_recovery_rate)
 #Beta but with vaccination and age mediation
 beta_updated[, ] <- age_vaccination_beta_modifier[i, j] * beta
 
