@@ -47,6 +47,10 @@ severe_death_rate <- parameter(0)
 prop_complications <- parameter(0)
 #Beta modifier for age and vaccination
 age_vaccination_beta_modifier <- parameter()
+#Number of age compartments
+n_age <- parameter(1)
+#Number of vaccination compartments
+n_vacc <- parameter(1)
 
 # Calculated parameters ---------------------------------------------------
 
@@ -59,19 +63,14 @@ beta_updated[, ] <- age_vaccination_beta_modifier[i, j] * beta[i, j]
 #Calculate the force of infection
 lambda[, ] <- beta_updated[i, j] * (sum(I) + sum(Is)) / N
 
-#Number of births
-Births <- b * N
-
+#Calculate Reff in two parts due to Odin
 S_eff[, ] <- S[i, j] * age_vaccination_beta_modifier[i, j]
 R_effective <- R0 * sum(S_eff) / N
 
 #Total population
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
-#Number of age compartments
-n_age <- parameter(1)
-#Number of vaccination compartments
-n_vacc <- parameter(1)
-
+#Number of births
+Births <- b * N
 
 # Dimensions --------------------------------------------------------------
 

@@ -18,7 +18,7 @@ pars <- list(
   
   #Dimensions
   n_age = 2,
-  n_vacc = 1,
+  n_vacc = 2,
   
   #Single dimension parameters
   R0 = 1.5,
@@ -29,11 +29,10 @@ pars <- list(
   prop_complications = 0.1,
   
   #Multi dimension parameters
-  N0 = matrix(c(750, 250), nrow = 2, ncol = 1),
-  I0 = matrix(c(1, 0), nrow = 2, ncol = 1),
-  prop_severe = matrix(c(0.1, .1), nrow = 2, ncol = 1),
-  age_vaccination_beta_modifier = matrix(c(1, 1), nrow = 2, ncol = 1)
-  
+  N0 = matrix(c(375, 375, 125, 125), nrow = 2, ncol = 2),
+  I0 = matrix(c(1, 0, 0, 0), nrow = 2, ncol = 2),
+  prop_severe = matrix(c(0.25, 0.1, 0.125, 0.05), nrow = 2, ncol = 2),
+  age_vaccination_beta_modifier = matrix(c(1, 1, .5, .5), nrow = 2, ncol = 2)
 )
 
 #Define dust system and initialise
@@ -50,7 +49,7 @@ clean_df <- unpack_dust2(
   model_object = y, 
   dimension_names = list(
     age = list("Child", "Adult"), 
-    vaccination_status = "Unvaccinated", 
+    vaccination_status = c("Unvaccinated", "Vaccinated"), 
     time = list(0:700)
   )
 )
@@ -71,7 +70,7 @@ ggplot(
   )
 
 
-
+#
 
 
 
