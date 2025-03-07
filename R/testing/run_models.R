@@ -19,8 +19,8 @@ pars <- list(
   incubation_rate = 1/5,
   b = 0,#1/(8 * 365),
   severe_recovery_rate = 1/14,
-  prop_severe = 0,
-  prop_complications = 0
+  prop_severe = .25,
+  prop_complications = 0.1
 )
 
 #Define dust system and initialise
