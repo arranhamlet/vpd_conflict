@@ -29,37 +29,12 @@ pars <- list(
   prop_complications = 0.1,
   
   #Multi dimension parameters
-  N0 = matrix(c(1000, 0), nrow = 2, ncol = 1),
+  N0 = matrix(c(750, 250), nrow = 2, ncol = 1),
   I0 = matrix(c(1, 0), nrow = 2, ncol = 1),
-  prop_severe = matrix(c(0.1, 0), nrow = 2, ncol = 1),
-  age_vaccination_beta_modifier = matrix(c(1, 0), nrow = 2, ncol = 1)
+  prop_severe = matrix(c(0.1, .1), nrow = 2, ncol = 1),
+  age_vaccination_beta_modifier = matrix(c(1, 1), nrow = 2, ncol = 1)
   
 )
-
-pars <- list(
-  
-  #Dimensions
-  n_age = 1,
-  n_vacc = 1,
-  
-  #Single dimension parameters
-  R0 = 1.5,
-  recovery_rate = 1/14,
-  incubation_rate = 1/5,
-  b = 0,
-  severe_recovery_rate = 1/14,
-  prop_complications = 0.1,
-  
-  #Multi dimension parameters
-  N0 = matrix(c(1000), nrow = 1, ncol = 1),
-  I0 = matrix(c(1), nrow = 1, ncol = 1),
-  prop_severe = matrix(c(0.1), nrow = 1, ncol = 1),
-  age_vaccination_beta_modifier = matrix(c(1), nrow = 1, ncol = 1)
-  
-)
-
-
-
 
 #Define dust system and initialise
 sys <- dust2::dust_system_create(model(), pars)
@@ -68,17 +43,6 @@ dust2::dust_system_set_state_initial(sys)
 #Set time and run model
 time <- 0:700
 y <- dust2::dust_system_simulate(sys, time)
-
-#Unpack columns
-clean_df <- unpack_dust2(
-  model_system = sys, 
-  model_object = y, 
-  dimension_names = list(
-    age = list("All"), 
-    vaccination_status = "Unvaccinated", 
-    time = list(0:700)
-  )
-)
 
 #Unpack columns
 clean_df <- unpack_dust2(
@@ -110,6 +74,50 @@ ggplot(
 
 
 
+
+
+
+
+
+
+# 
+# #Unpack columns
+# clean_df <- unpack_dust2(
+#   model_system = sys, 
+#   model_object = y, 
+#   dimension_names = list(
+#     age = list("All"), 
+#     vaccination_status = "Unvaccinated", 
+#     time = list(0:700)
+#   )
+# )
+# 
+# 
+# 
+# 
+# 
+# pars <- list(
+#   
+#   #Dimensions
+#   n_age = 1,
+#   n_vacc = 1,
+#   
+#   #Single dimension parameters
+#   R0 = 1.5,
+#   recovery_rate = 1/14,
+#   incubation_rate = 1/5,
+#   b = 0,
+#   severe_recovery_rate = 1/14,
+#   prop_complications = 0.1,
+#   
+#   #Multi dimension parameters
+#   N0 = matrix(c(1000), nrow = 1, ncol = 1),
+#   I0 = matrix(c(1), nrow = 1, ncol = 1),
+#   prop_severe = matrix(c(0.1), nrow = 1, ncol = 1),
+#   age_vaccination_beta_modifier = matrix(c(1), nrow = 1, ncol = 1)
+#   
+# )
+# 
 
 
 

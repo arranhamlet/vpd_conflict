@@ -1,11 +1,10 @@
 
 # Compartments ------------------------------------------------------------
 
-deriv(S[, ]) <- Births - b * S[i, j] - beta_updated[i, j] * S[i, j] * (sum(I) + sum(Is)) / N + delta * R[i, j] + delta * Rc[i, j]
-deriv(E[, ]) <- beta_updated[i, j] * S[i, j] * (sum(I) + sum(Is)) / N - (b + incubation_rate) * E[i, j]
+deriv(S[, ]) <- Births - b * S[i, j] - lambda[i, j] * S[i, j] + delta * R[i, j] + delta * Rc[i, j]
+deriv(E[, ]) <- lambda[i, j] * S[i, j] - (b + incubation_rate) * E[i, j]
 deriv(I[, ]) <- E[i, j] * incubation_rate * (1 - prop_severe[i, j]) - (b + recovery_rate + alpha) * I[i, j]
 deriv(R[, ]) <- recovery_rate * I[i, j] - (b + delta) * R[i, j] + Is[i, j] * severe_recovery_rate * (1 - prop_complications)
-
 deriv(Is[, ]) <- E[i, j] * incubation_rate * prop_severe[i, j] - Is[i, j] * (severe_recovery_rate + b + severe_death_rate)
 deriv(Rc[, ]) <- Is[i, j] * severe_recovery_rate * prop_complications - Rc[i, j] * (b + delta)
 
@@ -51,26 +50,20 @@ age_vaccination_beta_modifier <- parameter()
 
 # Calculated parameters ---------------------------------------------------
 
-#Beta
+#Calculate infectious period
 infectious_period[, ] <- (1 - prop_severe[i, j]) / (recovery_rate + alpha + b) + prop_severe[i, j] / (severe_recovery_rate + severe_death_rate + b)
-
+#Calculate beta from the R0 and infectious period
 beta[, ] <- R0 / infectious_period[i, j]
-
-
-
-beta <- R0 / sum(infectious_period)
-
-
-
-
-#Beta but with vaccination and age mediation
-beta_updated[, ] <- age_vaccination_beta_modifier[i, j] * beta
+#Update with vaccination and age mediation
+beta_updated[, ] <- age_vaccination_beta_modifier[i, j] * beta[i, j]
+#Calculate the force of infection
+lambda[, ] <- beta_updated[i, j] * (sum(I) + sum(Is)) / N
 
 #Number of births
 Births <- b * N
-#R-effective (Re) - Need to do in two parts because of the age_vaccination modifier
-S_age_vacc_modified[,] <- S[i, j] * age_vaccination_beta_modifier[i, j]
-R_effective <- R0 * sum(S_age_vacc_modified)/N
+
+S_eff[, ] <- S[i, j] * age_vaccination_beta_modifier[i, j]
+R_effective <- R0 * sum(S_eff) / N
 
 #Total population
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
@@ -91,11 +84,13 @@ dim(Rc) <- c(n_age, n_vacc)
 dim(N0) <- c(n_age, n_vacc)
 dim(I0) <- c(n_age, n_vacc)
 dim(beta_updated) <- c(n_age, n_vacc)
-dim(S_age_vacc_modified) <- c(n_age, n_vacc)
+# dim(S_age_vacc_modified) <- c(n_age, n_vacc)
 dim(age_vaccination_beta_modifier) <- c(n_age, n_vacc)
 dim(prop_severe) <- c(n_age, n_vacc)
 dim(beta) <- c(n_age, n_vacc)
 dim(infectious_period) <- c(n_age, n_vacc)
+dim(lambda) <- c(n_age, n_vacc)
+dim(S_eff) <- c(n_age, n_vacc)
 
 # Output ------------------------------------------------------------------
 #Output R-effective
