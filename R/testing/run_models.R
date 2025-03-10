@@ -28,12 +28,11 @@ pars <- list(
   R0 = 1.5,
   recovery_rate = 1/14,
   incubation_rate = 1/5,
-  birth_rate = 0,
   severe_recovery_rate = 1/14,
   prop_complications = 0.1,
   
   #Multi dimension parameters
-  N0 = array(c(0, 1000, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
+  N0 = array(c(0, 500, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
   I0 = array(c(0, 0, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
   prop_severe = array(c(0, 0, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
   age_vaccination_beta_modifier = array(c(1, 1, 1, 1, 1, 1, 1, 1), dim = c(2, 2, 2)),
@@ -43,11 +42,11 @@ pars <- list(
   # prop_severe = array(c(0, 0, 0, 0), dim = c(2, 2, 1)),
   # age_vaccination_beta_modifier = array(c(1, 1, 1, 1), dim = c(2, 2, 1)),
   
-  simple_birth_death = 1,
-  background_death = 0.01,
+  # birth_rate = 0.1,
+  background_death = .1,
   
   #Aging
-  aging_rate = c(0, 0),
+  aging_rate = c(0.05, 0),
   
   #Reproductive ages
   repro_low = 2,
