@@ -27,15 +27,23 @@ pars <- list(
   R0 = 1.5,
   recovery_rate = 1/14,
   incubation_rate = 1/5,
-  b = 0,
+  b = 0.125,
   severe_recovery_rate = 1/14,
   prop_complications = 0.1,
   
   #Multi dimension parameters
-  N0 = matrix(c(1000, 0, 0, 0), nrow = 2, ncol = 2),
-  I0 = matrix(c(1, 0, 0, 0), nrow = 2, ncol = 2),
+  N0 = matrix(c(0, 1000, 0, 0), nrow = 2, ncol = 2),
+  I0 = matrix(c(0, 0, 0, 0), nrow = 2, ncol = 2),
   prop_severe = matrix(0, nrow = 2, ncol = 2),
-  age_vaccination_beta_modifier = matrix(1, nrow = 2, ncol = 2)
+  age_vaccination_beta_modifier = matrix(1, nrow = 2, ncol = 2),
+  
+  #Aging
+  aging_rate = c(.125, 0),
+  
+  #Reproductive ages
+  repro_low = 2,
+  repro_high = 2
+  
 )
 
 #Define dust system and initialise
@@ -59,7 +67,7 @@ clean_df <- unpack_dust2(
 
 #Plot
 ggplot(
-  data = subset(clean_df, !age %in% c("Child", "Adult")),
+  data = subset(clean_df, age %in% c("Child", "Adult") ),
   mapping = aes(
     x = time,
     y = value,
@@ -80,4 +88,27 @@ ggplot(
   )
 
 
+#Specific plot
+#Plot
+ggplot(
+  data = subset(clean_df, (vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state == "pop" ),
+  mapping = aes(
+    x = time,
+    y = value,
+    color = age
+  )
+) +
+  geom_line() +
+  facet_wrap(
+    ~state,
+    scales = "free_y"
+  ) +
+  theme(
+    legend.position = c(0.5, 0.125)
+  ) +
+  labs(
+    x = "",
+    y = "",
+    color = ""
+  )
 
