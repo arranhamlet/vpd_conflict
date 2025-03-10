@@ -1,7 +1,7 @@
 
 # Compartments ------------------------------------------------------------
 
-deriv(S[, ]) <- - b * S[i, j] - lambda[i, j] * S[i, j] + delta * R[i, j] + delta * Rc[i, j]
+deriv(S[, ]) <- b * N - b * S[i, j] - lambda[i, j] * S[i, j] + delta * R[i, j] + delta * Rc[i, j]
 deriv(E[, ]) <- lambda[i, j] * S[i, j] - (b + incubation_rate) * E[i, j]
 deriv(I[, ]) <- E[i, j] * incubation_rate * (1 - prop_severe[i, j]) - (b + recovery_rate + alpha) * I[i, j]
 deriv(R[, ]) <- recovery_rate * I[i, j] - (b + delta) * R[i, j] + Is[i, j] * severe_recovery_rate * (1 - prop_complications)
@@ -75,7 +75,7 @@ R_effective <- R0 * sum(S_eff) / N
 #Total population
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
 #Number of births
-Births <- b * N
+# Births <- b * N
 
 # Dimensions --------------------------------------------------------------
 
