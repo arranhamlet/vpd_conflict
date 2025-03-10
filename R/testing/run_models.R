@@ -27,7 +27,7 @@ pars <- list(
   R0 = 1.5,
   recovery_rate = 1/14,
   incubation_rate = 1/5,
-  b = 0.125,
+  birth_rate = 0.001,
   severe_recovery_rate = 1/14,
   prop_complications = 0.1,
   
@@ -36,9 +36,10 @@ pars <- list(
   I0 = matrix(c(0, 0, 0, 0), nrow = 2, ncol = 2),
   prop_severe = matrix(0, nrow = 2, ncol = 2),
   age_vaccination_beta_modifier = matrix(1, nrow = 2, ncol = 2),
+  background_death = c(.002, .002),
   
   #Aging
-  aging_rate = c(.125, 0),
+  aging_rate = c(.001, 0),
   
   #Reproductive ages
   repro_low = 2,

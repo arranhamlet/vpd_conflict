@@ -1,12 +1,12 @@
 
 # Compartments ------------------------------------------------------------
 
-deriv(S[, ]) <- - b * S[i, j] - lambda[i, j] * S[i, j] + delta * R[i, j] + delta * Rc[i, j] + aging_into_S[i, j] - aging_out_of_S[i, j]
-deriv(E[, ]) <- lambda[i, j] * S[i, j] - (b + incubation_rate) * E[i, j] + aging_into_E[i, j] - aging_out_of_E[i, j]
-deriv(I[, ]) <- E[i, j] * incubation_rate * (1 - prop_severe[i, j]) - (b + recovery_rate + alpha) * I[i, j] + aging_into_I[i, j] - aging_out_of_I[i, j]
-deriv(R[, ]) <- recovery_rate * I[i, j] - (b + delta) * R[i, j] + Is[i, j] * severe_recovery_rate * (1 - prop_complications) + aging_into_R[i, j] - aging_out_of_R[i, j]
-deriv(Is[, ]) <- E[i, j] * incubation_rate * prop_severe[i, j] - Is[i, j] * (severe_recovery_rate + b + severe_death_rate) + aging_into_Is[i, j] - aging_out_of_Is[i, j]
-deriv(Rc[, ]) <- Is[i, j] * severe_recovery_rate * prop_complications - Rc[i, j] * (b + delta) + aging_into_Rc[i, j] - aging_out_of_Rc[i, j]
+deriv(S[, ]) <- - background_death[i] * S[i, j] - lambda[i, j] * S[i, j] + delta * R[i, j] + delta * Rc[i, j] + aging_into_S[i, j] - aging_out_of_S[i, j]
+deriv(E[, ]) <- lambda[i, j] * S[i, j] - (background_death[i] + incubation_rate) * E[i, j] + aging_into_E[i, j] - aging_out_of_E[i, j]
+deriv(I[, ]) <- E[i, j] * incubation_rate * (1 - prop_severe[i, j]) - (background_death[i] + recovery_rate + alpha) * I[i, j] + aging_into_I[i, j] - aging_out_of_I[i, j]
+deriv(R[, ]) <- recovery_rate * I[i, j] - (background_death[i] + delta) * R[i, j] + Is[i, j] * severe_recovery_rate * (1 - prop_complications) + aging_into_R[i, j] - aging_out_of_R[i, j]
+deriv(Is[, ]) <- E[i, j] * incubation_rate * prop_severe[i, j] - Is[i, j] * (severe_recovery_rate + background_death[i] + severe_death_rate) + aging_into_Is[i, j] - aging_out_of_Is[i, j]
+deriv(Rc[, ]) <- Is[i, j] * severe_recovery_rate * prop_complications - Rc[i, j] * (background_death[i] + delta) + aging_into_Rc[i, j] - aging_out_of_Rc[i, j]
 
 
 # Add in births and aging
@@ -85,7 +85,7 @@ repro_high <- parameter()
 # Calculated parameters ---------------------------------------------------
 
 #Calculate infectious period
-infectious_period[, ] <- (1 - prop_severe[i, j]) / (recovery_rate + alpha + b) + prop_severe[i, j] / (severe_recovery_rate + severe_death_rate + b)
+infectious_period[, ] <- (1 - prop_severe[i, j]) / (recovery_rate + alpha + background_death[i]) + prop_severe[i, j] / (severe_recovery_rate + severe_death_rate + background_death[i])
 #Calculate beta from the R0 and infectious period
 beta[, ] <- R0 / infectious_period[i, j]
 
@@ -106,7 +106,7 @@ reproductive_population <- sum(N_with_age[repro_low:repro_high])
 
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
 #Number of births
-Births <- b * reproductive_population
+Births <- birth_rate * reproductive_population
 
 # Dimensions --------------------------------------------------------------
 
@@ -142,6 +142,7 @@ dim(aging_out_of_Is) <- c(n_age, n_vacc)
 dim(aging_into_Rc) <- c(n_age, n_vacc)
 dim(aging_out_of_Rc) <- c(n_age, n_vacc)
 dim(N_with_age) <- n_age
+dim(background_death) <- n_age
 
 # Output ------------------------------------------------------------------
 #Output R-effective
