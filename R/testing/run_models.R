@@ -19,6 +19,7 @@ pars <- list(
   #Dimensions
   n_age = 2,
   n_vacc = 2,
+  n_vulnerable = 2,
   
   #Contact matrix
   contact_matrix = matrix(1, nrow = 2, ncol = 2)/4,
@@ -27,19 +28,26 @@ pars <- list(
   R0 = 1.5,
   recovery_rate = 1/14,
   incubation_rate = 1/5,
-  birth_rate = 0.001,
+  birth_rate = 0,
   severe_recovery_rate = 1/14,
   prop_complications = 0.1,
   
   #Multi dimension parameters
-  N0 = matrix(c(0, 1000, 0, 0), nrow = 2, ncol = 2),
-  I0 = matrix(c(0, 0, 0, 0), nrow = 2, ncol = 2),
-  prop_severe = matrix(0, nrow = 2, ncol = 2),
-  age_vaccination_beta_modifier = matrix(1, nrow = 2, ncol = 2),
-  background_death = c(.002, .002),
+  N0 = array(c(0, 1000, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
+  I0 = array(c(0, 0, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
+  prop_severe = array(c(0, 0, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
+  age_vaccination_beta_modifier = array(c(1, 1, 1, 1, 1, 1, 1, 1), dim = c(2, 2, 2)),
+  
+  # N0 = array(c(0, 1000, 0, 0), dim = c(2, 2, 1)),
+  # I0 = array(c(0, 0, 0, 0), dim = c(2, 2, 1)),
+  # prop_severe = array(c(0, 0, 0, 0), dim = c(2, 2, 1)),
+  # age_vaccination_beta_modifier = array(c(1, 1, 1, 1), dim = c(2, 2, 1)),
+  
+  simple_birth_death = 1,
+  background_death = 0.01,
   
   #Aging
-  aging_rate = c(.001, 0),
+  aging_rate = c(0, 0),
   
   #Reproductive ages
   repro_low = 2,
@@ -61,38 +69,16 @@ clean_df <- unpack_dust2(
   model_object = y, 
   dimension_names = list(
     age = list("Child", "Adult"), 
-    vaccination_status = c("Unvaccinated", "Vaccinated"), 
+    vaccination_status = c("Unvaccinated", "Vaccinated"),
+    vulnerable_population = c("Standard risk", "E"),
     time = list(0:700)
   )
 )
 
-#Plot
-ggplot(
-  data = subset(clean_df, age %in% c("Child", "Adult") ),
-  mapping = aes(
-    x = time,
-    y = value,
-    color = age
-  )
-) +
-  geom_point() +
-  facet_wrap(
-    ~state,
-    scales = "free_y"
-  ) +
-  theme(
-    legend.position = "none"
-  ) +
-  labs(
-    x = "",
-    y = ""
-  )
-
-
 #Specific plot
 #Plot
 ggplot(
-  data = subset(clean_df, (vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state == "pop" ),
+  data = subset(clean_df, (vulnerable_population == "Standard risk" & vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state == "pop" ),
   mapping = aes(
     x = time,
     y = value,
@@ -112,4 +98,6 @@ ggplot(
     y = "",
     color = ""
   )
+
+# 
 
