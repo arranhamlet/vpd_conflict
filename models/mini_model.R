@@ -12,7 +12,7 @@ deriv(Rc[, , ]) <- Is[i, j, k] * severe_recovery_rate * prop_complications - Rc[
 deriv(infant_maternal_protected[]) <- Births[i] * prop_vaccinated[i] - infant_maternal_protected[i] * maternal_waning
 
 # Add in births and aging
-aging_into_S[1, 1, ] <- Births[i] * (1 - prop_vaccinated[i])
+aging_into_S[1, 1, ] <- Births[k] * (1 - prop_vaccinated[k])
 # Add in those who have wanted to the 2nd age group
 aging_into_S[2, 1, ] <- infant_maternal_protected[k] * maternal_waning
 
