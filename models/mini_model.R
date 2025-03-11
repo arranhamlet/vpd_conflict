@@ -8,6 +8,10 @@ deriv(R[, , ]) <- recovery_rate * I[i, j, k] - (background_death + delta) * R[i,
 deriv(Is[, , ]) <- E[i, j, k] * incubation_rate * prop_severe[i, j, k] - Is[i, j, k] * (severe_recovery_rate + background_death + severe_death_rate) + aging_into_Is[i, j, k] - aging_out_of_Is[i, j, k]
 deriv(Rc[, , ]) <- Is[i, j, k] * severe_recovery_rate * prop_complications - Rc[i, j, k] * (background_death + delta) + aging_into_Rc[i, j, k] - aging_out_of_Rc[i, j, k]
 
+# Add in infants protected by maternal antibodies
+deriv(infant_maternal_one) <- X
+deriv(infant_maternal_two) <- X
+
 
 # Add in births and aging
 aging_into_S[1, 1, ] <- Births[k]
