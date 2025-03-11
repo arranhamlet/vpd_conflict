@@ -11,6 +11,7 @@ deriv(Rc[, , ]) <- Is[i, j, k] * severe_recovery_rate * prop_complications - Rc[
 
 # Add in births and aging
 aging_into_S[1, 1, ] <- Births[k]
+
 aging_into_S[2:n_age, , ] <- S[i - 1, j, k] * aging_rate[i-1]
 aging_out_of_S[1:(n_age - 1), , ] <- S[i, j, k] * aging_rate[i]
 
@@ -104,13 +105,20 @@ R_effective <- R0 * sum(S_eff) / N
 
 #Total population
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
+Npop_vulnerable[] <- sum(S[, , i]) + sum(E[, , i]) + sum(I[, , i]) + sum(R[, , i]) + sum(Is[, , i]) + sum(Rc[, , i])
 N_with_age_vulnerable[, ] <- sum(S[i, , j]) + sum(E[i, , j]) + sum(I[i, , j]) + sum(R[i, , j]) + sum(Is[i, , j]) + sum(Rc[i, , j])
 
 #Number of births
 reproductive_population[] <- sum(N_with_age_vulnerable[repro_low:repro_high, i])
 
-birth_rate[] <- (N * background_death)/reproductive_population[i]
-Births[] <- birth_rate[i] * reproductive_population[i]
+birth_rate[] <- if(reproductive_population[i] == 0) 0 else (Npop_vulnerable[i] * background_death)/reproductive_population[i]
+Births[] <-  birth_rate[i] * reproductive_population[i]
+
+bth1 <- Births[1]
+bth2 <- Births[2]
+
+output(birth_rate_one) <- bth1
+output(birth_rate_two) <- bth2
 
 # Dimensions --------------------------------------------------------------
 
@@ -149,6 +157,7 @@ dim(N_with_age_vulnerable) <- c(n_age, n_vulnerable)
 dim(Births) <- n_vulnerable
 dim(reproductive_population) <- n_vulnerable
 dim(birth_rate) <- n_vulnerable
+dim(Npop_vulnerable) <- n_vulnerable
 
 # Output ------------------------------------------------------------------
 #Output R-effective

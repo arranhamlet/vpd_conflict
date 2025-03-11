@@ -43,7 +43,7 @@ pars <- list(
   # age_vaccination_beta_modifier = array(c(1, 1, 1, 1), dim = c(2, 2, 1)),
   
   # birth_rate = 0.1,
-  background_death = .1,
+  background_death = .01,
   
   #Aging
   aging_rate = c(0.05, 0),
@@ -100,3 +100,24 @@ ggplot(
 
 # 
 
+ggplot(
+  data = subset(clean_df, !age %in% c("Child", "Adult")),
+  mapping = aes(
+    x = time,
+    y = value,
+    color = age
+  )
+) +
+  geom_line() +
+  facet_wrap(
+    ~state,
+    scales = "free_y"
+  ) +
+  theme(
+    legend.position = c(0.5, 0.125)
+  ) +
+  labs(
+    x = "",
+    y = "",
+    color = ""
+  )
