@@ -9,12 +9,13 @@ deriv(Is[, , ]) <- E[i, j, k] * incubation_rate * prop_severe[i, j, k] - Is[i, j
 deriv(Rc[, , ]) <- Is[i, j, k] * severe_recovery_rate * prop_complications - Rc[i, j, k] * (background_death + delta) + aging_into_Rc[i, j, k] - aging_out_of_Rc[i, j, k]
 
 # Add in infants protected by maternal antibodies
-deriv(infant_maternal_one) <- X
-deriv(infant_maternal_two) <- X
-
+deriv(infant_maternal_protected[]) <- Births[i] * prop_vaccinated[i] - infant_maternal_protected[i] * maternal_waning
 
 # Add in births and aging
-aging_into_S[1, 1, ] <- Births[k]
+aging_into_S[1, 1, ] <- Births[i] * (1 - prop_vaccinated[i])
+# Add in those who have wanted to the 2nd age group
+aging_into_S[2, 1, ] <- infant_maternal_protected[k] * maternal_waning
+
 
 aging_into_S[2:n_age, , ] <- S[i - 1, j, k] * aging_rate[i-1]
 aging_out_of_S[1:(n_age - 1), , ] <- S[i, j, k] * aging_rate[i]
@@ -42,7 +43,7 @@ initial(I[, , ]) <- I0[i, j, k]
 initial(R[, , ]) <- 0
 initial(Is[, , ]) <- 0
 initial(Rc[, , ]) <- 0
-
+initial(infant_maternal_protected[]) <- 0
 
 # User parameter values --------------------------------------------------------
 
@@ -88,6 +89,8 @@ aging_rate <- parameter()
 repro_low <- parameter()
 #Reproductive upper limit
 repro_high <- parameter()
+#Maternal antibody waning
+maternal_waning <- parameter()
 
 
 # Calculated parameters ---------------------------------------------------
@@ -118,11 +121,12 @@ reproductive_population[] <- sum(N_with_age_vulnerable[repro_low:repro_high, i])
 birth_rate[] <- if(reproductive_population[i] == 0) 0 else (Npop_vulnerable[i] * background_death)/reproductive_population[i]
 Births[] <-  birth_rate[i] * reproductive_population[i]
 
-bth1 <- Births[1]
-bth2 <- Births[2]
+# Proportion of mothers who confer maternal antibodies
+prop_vaccinated[] <- (sum(S[repro_low:repro_high, 2:n_vacc, i]) + sum(E[repro_low:repro_high, 2:n_vacc, i]) + sum(I[repro_low:repro_high, 2:n_vacc, i]) + sum(R[repro_low:repro_high, 2:n_vacc, i]) + sum(Is[repro_low:repro_high, 2:n_vacc, i]) + sum(Rc[repro_low:repro_high, 2:n_vacc, i]))/  (sum(S[repro_low:repro_high, , i]) + sum(E[repro_low:repro_high, , i]) + sum(I[repro_low:repro_high, , i]) + sum(R[repro_low:repro_high, , i]) + sum(Is[repro_low:repro_high, , i]) + sum(Rc[repro_low:repro_high, , i]))
+  
+  
 
-output(birth_rate_one) <- bth1
-output(birth_rate_two) <- bth2
+
 
 # Dimensions --------------------------------------------------------------
 
@@ -162,6 +166,8 @@ dim(Births) <- n_vulnerable
 dim(reproductive_population) <- n_vulnerable
 dim(birth_rate) <- n_vulnerable
 dim(Npop_vulnerable) <- n_vulnerable
+dim(prop_vaccinated) <- n_vulnerable
+dim(infant_maternal_protected) <- n_vulnerable
 
 # Output ------------------------------------------------------------------
 #Output R-effective

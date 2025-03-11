@@ -48,6 +48,9 @@ pars <- list(
   #Aging
   aging_rate = c(0.05, 0),
   
+  #Maternal immunity waning
+  maternal_waning = 0,
+  
   #Reproductive ages
   repro_low = 2,
   repro_high = 2
