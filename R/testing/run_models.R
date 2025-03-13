@@ -32,7 +32,7 @@ pars <- list(
   prop_complications = 0.1,
   
   #Multi dimension parameters
-  N0 = array(c(0, 500, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
+  N0 = array(c(0, 500, 0, 500, 0, 0, 0, 0), dim = c(2, 2, 2)),
   I0 = array(c(0, 0, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
   prop_severe = array(c(0, 0, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
   age_vaccination_beta_modifier = array(c(1, 1, 1, 1, 1, 1, 1, 1), dim = c(2, 2, 2)),
@@ -49,7 +49,8 @@ pars <- list(
   aging_rate = c(0.05, 0),
   
   #Maternal immunity waning
-  maternal_waning = 0,
+  maternal_waning = 0.05,
+  age_after_maternal_protection = 2,
   
   #Reproductive ages
   repro_low = 2,
@@ -73,14 +74,23 @@ clean_df <- unpack_dust2(
     age = list("Child", "Adult"), 
     vaccination_status = c("Unvaccinated", "Vaccinated"),
     vulnerable_population = c("Standard risk", "E"),
-    time = list(0:700)
+    time = list(time)
+  ),
+  which_state_dimensions = list(
+    S = c("age", "vaccination_status", "vulnerable_population", "time"),
+    E = c("age", "vaccination_status", "vulnerable_population", "time"),
+    I = c("age", "vaccination_status", "vulnerable_population", "time"),
+    R = c("age", "vaccination_status", "vulnerable_population", "time"),
+    Is = c("age", "vaccination_status", "vulnerable_population", "time"),
+    Rc = c("age", "vaccination_status", "vulnerable_population", "time"),
+    M_protected = c("vulnerable_population", "time")
   )
 )
 
 #Specific plot
 #Plot
 ggplot(
-  data = subset(clean_df, (vulnerable_population == "Standard risk" & vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state == "pop" ),
+  data = subset(clean_df, (vulnerable_population == "Standard risk" & vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state %in% c("pop", "M_protected")),
   mapping = aes(
     x = time,
     y = value,
@@ -93,7 +103,7 @@ ggplot(
     scales = "free_y"
   ) +
   theme(
-    legend.position = c(0.5, 0.125)
+    legend.position = c(0.75, 0.125)
   ) +
   labs(
     x = "",
@@ -104,7 +114,7 @@ ggplot(
 # 
 
 ggplot(
-  data = subset(clean_df, !age %in% c("Child", "Adult")),
+  data = subset(clean_df, age == "All" | state %in% c("pop", "M_protected")),
   mapping = aes(
     x = time,
     y = value,
@@ -117,7 +127,7 @@ ggplot(
     scales = "free_y"
   ) +
   theme(
-    legend.position = c(0.5, 0.125)
+    legend.position = c(0.75, 0.125)
   ) +
   labs(
     x = "",

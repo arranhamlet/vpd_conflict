@@ -1,5 +1,5 @@
 
-unpack_dust2 <- function(model_system, model_object, dimension_names){
+unpack_dust2 <- function(model_system, model_object, dimension_names, which_state_dimensions){
   
   #Unpack state to lists
   dust_state <- dust_unpack_state(model_system, model_object)
@@ -8,24 +8,25 @@ unpack_dust2 <- function(model_system, model_object, dimension_names){
   these_are_compartments <- sapply(model_system$packing_state, function(x) length(x) != 0)
   
   #Unpack all the compartments
-  unpacked_compartments <- data.table::rbindlist(sapply(as.numeric(which(these_are_compartments)), function(x){
+  unpacked_compartments <- do.call(plyr::rbind.fill, sapply(as.numeric(which(these_are_compartments)), function(x){
     
     #Unpack this object
     this_obj <- dust_state[[x]]
     
     #Loop through dimnames
-    for(i in 1:length(dimension_names)){
-      dimnames(this_obj)[[i]] <- unlist(dimension_names[[i]])
+    for(i in 1:length(which_state_dimensions[[x]])){
+      dimnames(this_obj)[[i]] <- unlist(dimension_names[[which_state_dimensions[[x]][i]]])
     }
     
     melted_array <- reshape2::melt(this_obj) %>%
-      set_names(c(names(dimension_names), "value")) %>%
+      set_names(c(which_state_dimensions[[x]], "value")) %>%
       mutate(state = names(dust_state)[x]) %>%
-      select(time, state, names(dimension_names), value)
+      select(time, state, which_state_dimensions[[x]], value)
     
     aggregate_array <- melted_array %>%
       group_by(state, time) %>%
-      summarise(value = sum(value))
+      summarise(value = sum(value)) %>%
+      as.data.frame()
     
     combo_df <- plyr::rbind.fill(melted_array, aggregate_array) %>%
       mutate(across(names(melted_array)[-which(names(melted_array) %in% names(aggregate_array))], fct_na_value_to_level, level = "All"))
