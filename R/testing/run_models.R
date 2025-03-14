@@ -32,7 +32,7 @@ pars <- list(
   prop_complications = 0.1,
   
   #Multi dimension parameters
-  N0 = array(c(0, 500, 0, 500, 0, 0, 0, 0), dim = c(2, 2, 2)),
+  N0 = array(c(500, 0, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
   I0 = array(c(0, 0, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
   prop_severe = array(c(0, 0, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
   age_vaccination_beta_modifier = array(c(1, 1, 1, 1, 1, 1, 1, 1), dim = c(2, 2, 2)),
@@ -43,20 +43,21 @@ pars <- list(
   # age_vaccination_beta_modifier = array(c(1, 1, 1, 1), dim = c(2, 2, 1)),
   
   # birth_rate = 0.1,
-  background_death = .01,
+  background_death = 0.5,
   
   #Aging
-  aging_rate = c(0.05, 0),
+  aging_rate = c(1, 0),
   
   #Maternal immunity waning
-  maternal_waning = 0.05,
-  age_after_maternal_protection = 2,
+  protection_weight = c(0, 0),
+  age_maternal_protection_ends = 2,
   
   #Reproductive ages
   repro_low = 2,
   repro_high = 2
   
 )
+
 
 #Define dust system and initialise
 sys <- dust2::dust_system_create(model(), pars)
@@ -90,7 +91,7 @@ clean_df <- unpack_dust2(
 #Specific plot
 #Plot
 ggplot(
-  data = subset(clean_df, (vulnerable_population == "Standard risk" & vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state %in% c("pop", "M_protected")),
+  data = subset(clean_df, (vulnerable_population == "Standard risk" & vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state %in% c("pop", "M_protected", "aging_into_two")),
   mapping = aes(
     x = time,
     y = value,
@@ -114,7 +115,7 @@ ggplot(
 # 
 
 ggplot(
-  data = subset(clean_df, age == "All" | state %in% c("pop", "M_protected")),
+  data = subset(clean_df, age == "All" | state %in% c("pop", "reff", "born", "died")),
   mapping = aes(
     x = time,
     y = value,
