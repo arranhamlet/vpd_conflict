@@ -161,7 +161,11 @@ R_effective <- t_R0 * sum(S_eff) / N
 
 #Total population
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
-Npop_vulnerable[] <- sum(S[, , i]) + sum(E[, , i]) + sum(I[, , i]) + sum(R[, , i]) + sum(Is[, , i]) + sum(Rc[, , i])
+# Npop_vulnerable[] <- sum(S[, , i]) + sum(E[, , i]) + sum(I[, , i]) + sum(R[, , i]) + sum(Is[, , i]) + sum(Rc[, , i])
+
+Npop_age_vulnerable[, ] <- sum(S[i, , j]) + sum(E[i, , j]) + sum(I[i, , j]) + sum(R[i, , j]) + sum(Is[i, , j]) + sum(Rc[i, , j])
+
+dim(Npop_age_vulnerable) <- c(n_age, n_vulnerable)
 
 #Number of births
 reproductive_population[] <- sum(S[repro_low:repro_high, , i]) + 
@@ -169,13 +173,16 @@ reproductive_population[] <- sum(S[repro_low:repro_high, , i]) +
   sum(I[repro_low:repro_high, , i]) + 
   sum(R[repro_low:repro_high, , i])
 
-Npop_background_death[, ] <- Npop_vulnerable[j] * background_death[i, j]
+Npop_background_death[, ] <- Npop_age_vulnerable[i, j] * background_death[i, j]
 dim(Npop_background_death) <- c(n_age, n_vulnerable)
 
 birth_rate[] <- if(reproductive_population[i] == 0) 0 else sum(Npop_background_death[, i])/reproductive_population[i]
 
 output(baby_rate) <- birth_rate[1]
 output(death_rate) <- sum(Npop_background_death[, 1])/reproductive_population[1]
+
+output(repo_pop) <- sum(reproductive_population)
+output(dying_pop) <- sum(Npop_background_death)
 
 # birth_rate[] <- if(reproductive_population[i] == 0) 0 else (Npop_vulnerable[i] * background_death[i, ])/reproductive_population[i]
 
@@ -249,7 +256,7 @@ dim(aging_out_of_Rc) <- c(n_age, n_vacc, n_vulnerable)
 dim(Births) <- n_vulnerable
 dim(reproductive_population) <- n_vulnerable
 dim(birth_rate) <- n_vulnerable
-dim(Npop_vulnerable) <- n_vulnerable
+# dim(Npop_vulnerable) <- n_vulnerable
 dim(prop_vaccinated) <- n_vulnerable
 dim(vaccinated_mums) <- n_vulnerable
 dim(protection_weight) <- age_maternal_protection_ends
