@@ -46,7 +46,7 @@ pars <- list(
   background_death = 0.01,#0.01,
   
   #Aging
-  aging_rate = c(0.1, 0),
+  aging_rate = c(0.02, 0),
   
   #Maternal immunity waning
   protection_weight = 0,
