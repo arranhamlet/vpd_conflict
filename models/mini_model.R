@@ -169,7 +169,15 @@ reproductive_population[] <- sum(S[repro_low:repro_high, , i]) +
   sum(I[repro_low:repro_high, , i]) + 
   sum(R[repro_low:repro_high, , i])
 
-birth_rate[] <- if(reproductive_population[i] == 0) 0 else (Npop_vulnerable[i] * background_death[i, ])/reproductive_population[i]
+Npop_background_death[, ] <- Npop_vulnerable[j] * background_death[i, j]
+dim(Npop_background_death) <- c(n_age, n_vulnerable)
+
+birth_rate[] <- if(reproductive_population[i] == 0) 0 else sum(Npop_background_death[, i])/reproductive_population[i]
+
+output(baby_rate) <- birth_rate[1]
+output(death_rate) <- sum(Npop_background_death[, 1])/reproductive_population[1]
+
+# birth_rate[] <- if(reproductive_population[i] == 0) 0 else (Npop_vulnerable[i] * background_death[i, ])/reproductive_population[i]
 
 #Add in switch to decouple births and deaths when wanted
 crude_birth <- parameter()
@@ -193,12 +201,12 @@ death_int <- interpolate(tt_death_changes, crude_death, "constant")
 dim(birth_int) <- n_vulnerable
 dim(death_int) <- c(n_age, n_vulnerable)
 
-simp_death <- parameter(0)
-simp_birth <- parameter(0)
+simp_death <- parameter(1)
+simp_birth <- parameter(1)
 
-Births[] <-  if(simp_birth == 1) birth_int[i] * reproductive_population[i] else birth_rate[i] * reproductive_population[i]
+Births[] <-  if(simp_birth == 1) birth_rate[i] * reproductive_population[i] else birth_int[i] * reproductive_population[i]
 
-background_death[, ]<- if(simp_death == 1) initial_background_death[i, ] else death_int[i, j]
+background_death[, ]<- if(simp_death == 1) initial_background_death[i, j] else death_int[i, j]
 
 # Proportion of mothers who confer maternal antibodies
 vaccinated_mums[] <- sum(S[repro_low:repro_high, 2:n_vacc, i]) + sum(E[repro_low:repro_high, 2:n_vacc, i]) + sum(I[repro_low:repro_high, 2:n_vacc, i]) + sum(R[repro_low:repro_high, 2:n_vacc, i]) + sum(Is[repro_low:repro_high, 2:n_vacc, i]) + sum(Rc[repro_low:repro_high, 2:n_vacc, i])
@@ -260,8 +268,8 @@ dim(vaccinating_into_Rc) <- c(n_age, n_vacc, n_vulnerable)
 dim(vaccinating_out_of_Rc) <- c(n_age, n_vacc, n_vulnerable)
 dim(vaccination_prop) <- c(n_age, n_vacc, n_vulnerable)
 
-dim(background_death) <- n_vulnerable
-dim(initial_background_death) <- n_vulnerable
+dim(background_death) <- c(n_age, n_vulnerable)
+dim(initial_background_death) <- c(n_age, n_vulnerable)
 
 # Output ------------------------------------------------------------------
 #Output R-effective
