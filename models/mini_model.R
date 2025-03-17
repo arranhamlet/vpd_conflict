@@ -1,36 +1,17 @@
 
 # Compartments ------------------------------------------------------------
 
-deriv(S[, , ]) <- - background_death * S[i, j, k] - lambda[i, j, k] * S[i, j, k] + delta * R[i, j, k] + delta * Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k] + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k]
+deriv(S[, , ]) <- - background_death[i, k]* S[i, j, k] - lambda[i, j, k] * S[i, j, k] + delta * R[i, j, k] + delta * Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k] + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k]
 
-deriv(E[, , ]) <- lambda[i, j, k] * S[i, j, k] - (background_death + incubation_rate) * E[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k] + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k]
+deriv(E[, , ]) <- lambda[i, j, k] * S[i, j, k] - (background_death[i, k]+ incubation_rate) * E[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k] + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k]
 
-deriv(I[, , ]) <- E[i, j, k] * incubation_rate * (1 - prop_severe[i, j, k]) - (background_death + recovery_rate + alpha) * I[i, j, k] + aging_into_I[i, j, k] - aging_out_of_I[i, j, k] + vaccinating_into_I[i, j, k] - vaccinating_out_of_I[i, j, k]
+deriv(I[, , ]) <- E[i, j, k] * incubation_rate * (1 - prop_severe[i, j, k]) - (background_death[i, k]+ recovery_rate + alpha) * I[i, j, k] + aging_into_I[i, j, k] - aging_out_of_I[i, j, k] + vaccinating_into_I[i, j, k] - vaccinating_out_of_I[i, j, k]
 
-deriv(R[, , ]) <- recovery_rate * I[i, j, k] - (background_death + delta) * R[i, j, k] + Is[i, j, k] * severe_recovery_rate * (1 - prop_complications) + aging_into_R[i, j, k] - aging_out_of_R[i, j, k] + vaccinating_into_R[i, j, k] - vaccinating_out_of_R[i, j, k]
+deriv(R[, , ]) <- recovery_rate * I[i, j, k] - (background_death[i, k]+ delta) * R[i, j, k] + Is[i, j, k] * severe_recovery_rate * (1 - prop_complications) + aging_into_R[i, j, k] - aging_out_of_R[i, j, k] + vaccinating_into_R[i, j, k] - vaccinating_out_of_R[i, j, k]
 
-deriv(Is[, , ]) <- E[i, j, k] * incubation_rate * prop_severe[i, j, k] - Is[i, j, k] * (severe_recovery_rate + background_death + severe_death_rate) + aging_into_Is[i, j, k] - aging_out_of_Is[i, j, k] + vaccinating_into_Is[i, j, k] - vaccinating_out_of_Is[i, j, k]
+deriv(Is[, , ]) <- E[i, j, k] * incubation_rate * prop_severe[i, j, k] - Is[i, j, k] * (severe_recovery_rate + background_death[i, k]+ severe_death_rate) + aging_into_Is[i, j, k] - aging_out_of_Is[i, j, k] + vaccinating_into_Is[i, j, k] - vaccinating_out_of_Is[i, j, k]
 
-deriv(Rc[, , ]) <- Is[i, j, k] * severe_recovery_rate * prop_complications - Rc[i, j, k] * (background_death + delta) + aging_into_Rc[i, j, k] - aging_out_of_Rc[i, j, k] + vaccinating_into_Rc[i, j, k] - vaccinating_out_of_Rc[i, j, k]
-
-# deriv(S[, , ]) <- - background_death * S[i, j, k] - lambda[i, j, k] * S[i, j, k] + delta * R[i, j, k] + delta * Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k]
-# 
-# deriv(E[, , ]) <- lambda[i, j, k] * S[i, j, k] - (background_death + incubation_rate) * E[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k]
-# 
-# deriv(I[, , ]) <- E[i, j, k] * incubation_rate * (1 - prop_severe[i, j, k]) - (background_death + recovery_rate + alpha) * I[i, j, k] + aging_into_I[i, j, k] - aging_out_of_I[i, j, k]
-# 
-# deriv(R[, , ]) <- recovery_rate * I[i, j, k] - (background_death + delta) * R[i, j, k] + Is[i, j, k] * severe_recovery_rate * (1 - prop_complications) + aging_into_R[i, j, k] - aging_out_of_R[i, j, k]
-# 
-# deriv(Is[, , ]) <- E[i, j, k] * incubation_rate * prop_severe[i, j, k] - Is[i, j, k] * (severe_recovery_rate + background_death + severe_death_rate) + aging_into_Is[i, j, k] - aging_out_of_Is[i, j, k]
-# 
-# deriv(Rc[, , ]) <- Is[i, j, k] * severe_recovery_rate * prop_complications - Rc[i, j, k] * (background_death + delta) + aging_into_Rc[i, j, k] - aging_out_of_Rc[i, j, k]
-
-
-
-
-
-
-
+deriv(Rc[, , ]) <- Is[i, j, k] * severe_recovery_rate * prop_complications - Rc[i, j, k] * (background_death[i, k]+ delta) + aging_into_Rc[i, j, k] - aging_out_of_Rc[i, j, k] + vaccinating_into_Rc[i, j, k] - vaccinating_out_of_Rc[i, j, k]
 
 # Add in births and aging
 aging_into_S[1, 1, ] <- Births[k]
@@ -116,7 +97,7 @@ alpha <- parameter(0)
 #Waning antibody rate
 delta <- parameter(0)
 #Background death rate
-background_death <- parameter()
+initial_background_death <- parameter()
 #Birth rate
 # birth_rate <- parameter()
 #R0
@@ -159,7 +140,7 @@ protection_weight <- parameter()
 # Calculated parameters ---------------------------------------------------
 
 #Calculate infectious period
-infectious_period[, , ] <- if((severe_recovery_rate + severe_death_rate + background_death) == 0 || (recovery_rate + alpha + background_death) == 0) 0 else (1 - prop_severe[i, j, k]) / (recovery_rate + alpha + background_death) + prop_severe[i, j, k] / (severe_recovery_rate + severe_death_rate + background_death)
+infectious_period[, , ] <- if((severe_recovery_rate + severe_death_rate + background_death[i, k]) == 0 || (recovery_rate + alpha + background_death[i, k]) == 0) 0 else (1 - prop_severe[i, j, k]) / (recovery_rate + alpha + background_death[i, k]) + prop_severe[i, j, k] / (severe_recovery_rate + severe_death_rate + background_death[i, k])
 #Calculate beta from the R0 and infectious period
 beta[, , ] <- if(infectious_period[i, j, k] == 0) 0 else t_R0 / infectious_period[i, j, k]
 
@@ -188,10 +169,36 @@ reproductive_population[] <- sum(S[repro_low:repro_high, , i]) +
   sum(I[repro_low:repro_high, , i]) + 
   sum(R[repro_low:repro_high, , i])
 
+birth_rate[] <- if(reproductive_population[i] == 0) 0 else (Npop_vulnerable[i] * background_death[i, ])/reproductive_population[i]
 
-birth_rate[] <- if(reproductive_population[i] == 0) 0 else (Npop_vulnerable[i] * background_death)/reproductive_population[i]
+#Add in switch to decouple births and deaths when wanted
+crude_birth <- parameter()
+crude_death <- parameter()
 
-Births[] <-  birth_rate[i] * reproductive_population[i]
+no_birth_changes <- parameter()
+no_death_changes <- parameter()
+
+tt_birth_changes <- parameter()
+tt_death_changes <- parameter()
+
+dim(crude_birth) <- c(no_birth_changes, n_vulnerable)
+dim(crude_death) <- c(no_birth_changes, n_age, n_vulnerable)
+
+dim(tt_birth_changes) <- no_birth_changes
+dim(tt_death_changes) <- no_death_changes
+
+birth_int <- interpolate(tt_birth_changes, crude_birth, "constant")
+death_int <- interpolate(tt_death_changes, crude_death, "constant")
+
+dim(birth_int) <- n_vulnerable
+dim(death_int) <- c(n_age, n_vulnerable)
+
+simp_death <- parameter(0)
+simp_birth <- parameter(0)
+
+Births[] <-  if(simp_birth == 1) birth_int[i] * reproductive_population[i] else birth_rate[i] * reproductive_population[i]
+
+background_death[, ]<- if(simp_death == 1) initial_background_death[i, ] else death_int[i, j]
 
 # Proportion of mothers who confer maternal antibodies
 vaccinated_mums[] <- sum(S[repro_low:repro_high, 2:n_vacc, i]) + sum(E[repro_low:repro_high, 2:n_vacc, i]) + sum(I[repro_low:repro_high, 2:n_vacc, i]) + sum(R[repro_low:repro_high, 2:n_vacc, i]) + sum(Is[repro_low:repro_high, 2:n_vacc, i]) + sum(Rc[repro_low:repro_high, 2:n_vacc, i])
@@ -253,13 +260,16 @@ dim(vaccinating_into_Rc) <- c(n_age, n_vacc, n_vulnerable)
 dim(vaccinating_out_of_Rc) <- c(n_age, n_vacc, n_vulnerable)
 dim(vaccination_prop) <- c(n_age, n_vacc, n_vulnerable)
 
+dim(background_death) <- n_vulnerable
+dim(initial_background_death) <- n_vulnerable
+
 # Output ------------------------------------------------------------------
 #Output R-effective
 output(reff) <- R_effective
 #Output total population
 output(pop) <- N
 output(born) <- Births[1]
-output(died) <- sum(S) * background_death + sum(E) * background_death + sum(I) * background_death + sum(R) * background_death + sum(Is) * background_death + sum(Rc) * background_death 
+
 
 output(lamb) <- sum(lambda)
 output(infy) <- sum(infectious_period)

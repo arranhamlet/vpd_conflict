@@ -50,7 +50,17 @@ pars <- list(
   prop_severe = array(c(0, 0, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
   age_vaccination_beta_modifier = array(c(1, 1, 1, 1, 1, 1, 1, 1), dim = c(2, 2, 2)),
   
-  background_death = 1/(365 * 80),
+  initial_background_death = c(1/(365 * 80), 1/(365 * 80)),
+  
+  #Changes to birth stuff
+  no_birth_changes = 2,
+  no_death_changes = 2,
+  
+  tt_birth_changes = c(0, 300),
+  tt_death_changes = c(0, 500),
+  
+  crude_birth = array(c(0.1, 0.2, 0.1, 0.2), c(2, 2)),
+  crude_death = array(c(0.1, 0.2, 0.1, 0.2), c(2, 2)),
   
   #Aging
   aging_rate = c(1/(365 * 16), 0),
@@ -64,12 +74,6 @@ pars <- list(
   repro_high = 2
   
 )
-
-#Something happening in E and I that is making people disappear
-#it appears to be in the background death rate
-#Happening in S->E
-#Some shennanigans are causing the population to be reduced
-
 
 #Define dust system and initialise
 sys <- dust2::dust_system_create(model(), pars)
