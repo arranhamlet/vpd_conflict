@@ -31,8 +31,16 @@ pars <- list(
   severe_recovery_rate = 1/14,
   prop_complications = 0,
   
+  #Vaccination activities
+  no_vacc_changes = 3,
+  tt_vaccination_coverage = c(0, 300, 301),
+  vaccination_coverage = array(c(rep(0, 2*2*2),
+                                 rep(0, 2*2*2),
+                                 rep(0, 2*2*2)), 
+                               dim = c(3, 2, 2, 2)),
+  
   #R0
-  R0 = c(1.5, 3, 0.5),
+  R0 = c(1.5, 1.5, 1.5),
   tt_R0 = c(0, 100, 500),
   no_R0_changes = 3,
   
@@ -42,16 +50,10 @@ pars <- list(
   prop_severe = array(c(0, 0, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
   age_vaccination_beta_modifier = array(c(1, 1, 1, 1, 1, 1, 1, 1), dim = c(2, 2, 2)),
   
-  # N0 = array(c(0, 1000, 0, 0), dim = c(2, 2, 1)),
-  # I0 = array(c(0, 0, 0, 0), dim = c(2, 2, 1)),
-  # prop_severe = array(c(0, 0, 0, 0), dim = c(2, 2, 1)),
-  # age_vaccination_beta_modifier = array(c(1, 1, 1, 1), dim = c(2, 2, 1)),
-  
-  # birth_rate = 0.1,
-  background_death = 0.01,#0.01,
+  background_death = 1/(365 * 80),
   
   #Aging
-  aging_rate = c(0.02, 0),
+  aging_rate = c(1/(365 * 16), 0),
   
   #Maternal immunity waning
   protection_weight = 0,
@@ -101,7 +103,7 @@ clean_df <- unpack_dust2(
 #Specific plot
 #Plot
 ggplot(
-  data = subset(clean_df, (vulnerable_population == "Standard risk" & vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state %in% c("pop", "M_protected", "aging_into_two", "lamb", "infy", "beta1", "beta2")),
+  data = subset(clean_df, (vulnerable_population == "Standard risk" & vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state %in% c("pop", "M_protected", "aging_into_two", "lamb", "infy", "beta1", "beta2", "vaccination_prop_sum")),
   mapping = aes(
     x = time,
     y = value,
@@ -125,7 +127,31 @@ ggplot(
 # 
 
 ggplot(
-  data = subset(clean_df, age == "All" | state %in% c("pop", "reff", "born", "died")),
+  data = subset(clean_df, age == "Adult" & state == "S"),
+  mapping = aes(
+    x = time,
+    y = value,
+    color = age
+  )
+) +
+  geom_line() +
+  facet_wrap(
+    vulnerable_population~vaccination_status,
+    scales = "free_y"
+  ) +
+  theme(
+    legend.position = c(0.75, 0.125)
+  ) +
+  labs(
+    x = "",
+    y = "",
+    color = ""
+  )
+
+
+#ALl
+ggplot(
+  data = subset(clean_df, age == "All"),
   mapping = aes(
     x = time,
     y = value,
@@ -145,3 +171,4 @@ ggplot(
     y = "",
     color = ""
   )
+

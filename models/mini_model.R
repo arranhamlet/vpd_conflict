@@ -1,17 +1,36 @@
 
 # Compartments ------------------------------------------------------------
 
-deriv(S[, , ]) <- - background_death * S[i, j, k] - lambda[i, j, k] * S[i, j, k] + delta * R[i, j, k] + delta * Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k]
+deriv(S[, , ]) <- - background_death * S[i, j, k] - lambda[i, j, k] * S[i, j, k] + delta * R[i, j, k] + delta * Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k] + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k]
 
-deriv(E[, , ]) <- lambda[i, j, k] * S[i, j, k] - (background_death + incubation_rate) * E[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k]
+deriv(E[, , ]) <- lambda[i, j, k] * S[i, j, k] - (background_death + incubation_rate) * E[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k] + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k]
 
-deriv(I[, , ]) <- E[i, j, k] * incubation_rate * (1 - prop_severe[i, j, k]) - (background_death + recovery_rate + alpha) * I[i, j, k] + aging_into_I[i, j, k] - aging_out_of_I[i, j, k]
+deriv(I[, , ]) <- E[i, j, k] * incubation_rate * (1 - prop_severe[i, j, k]) - (background_death + recovery_rate + alpha) * I[i, j, k] + aging_into_I[i, j, k] - aging_out_of_I[i, j, k] + vaccinating_into_I[i, j, k] - vaccinating_out_of_I[i, j, k]
 
-deriv(R[, , ]) <- recovery_rate * I[i, j, k] - (background_death + delta) * R[i, j, k] + Is[i, j, k] * severe_recovery_rate * (1 - prop_complications) + aging_into_R[i, j, k] - aging_out_of_R[i, j, k]
+deriv(R[, , ]) <- recovery_rate * I[i, j, k] - (background_death + delta) * R[i, j, k] + Is[i, j, k] * severe_recovery_rate * (1 - prop_complications) + aging_into_R[i, j, k] - aging_out_of_R[i, j, k] + vaccinating_into_R[i, j, k] - vaccinating_out_of_R[i, j, k]
 
-deriv(Is[, , ]) <- E[i, j, k] * incubation_rate * prop_severe[i, j, k] - Is[i, j, k] * (severe_recovery_rate + background_death + severe_death_rate) + aging_into_Is[i, j, k] - aging_out_of_Is[i, j, k]
+deriv(Is[, , ]) <- E[i, j, k] * incubation_rate * prop_severe[i, j, k] - Is[i, j, k] * (severe_recovery_rate + background_death + severe_death_rate) + aging_into_Is[i, j, k] - aging_out_of_Is[i, j, k] + vaccinating_into_Is[i, j, k] - vaccinating_out_of_Is[i, j, k]
 
-deriv(Rc[, , ]) <- Is[i, j, k] * severe_recovery_rate * prop_complications - Rc[i, j, k] * (background_death + delta) + aging_into_Rc[i, j, k] - aging_out_of_Rc[i, j, k]
+deriv(Rc[, , ]) <- Is[i, j, k] * severe_recovery_rate * prop_complications - Rc[i, j, k] * (background_death + delta) + aging_into_Rc[i, j, k] - aging_out_of_Rc[i, j, k] + vaccinating_into_Rc[i, j, k] - vaccinating_out_of_Rc[i, j, k]
+
+# deriv(S[, , ]) <- - background_death * S[i, j, k] - lambda[i, j, k] * S[i, j, k] + delta * R[i, j, k] + delta * Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k]
+# 
+# deriv(E[, , ]) <- lambda[i, j, k] * S[i, j, k] - (background_death + incubation_rate) * E[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k]
+# 
+# deriv(I[, , ]) <- E[i, j, k] * incubation_rate * (1 - prop_severe[i, j, k]) - (background_death + recovery_rate + alpha) * I[i, j, k] + aging_into_I[i, j, k] - aging_out_of_I[i, j, k]
+# 
+# deriv(R[, , ]) <- recovery_rate * I[i, j, k] - (background_death + delta) * R[i, j, k] + Is[i, j, k] * severe_recovery_rate * (1 - prop_complications) + aging_into_R[i, j, k] - aging_out_of_R[i, j, k]
+# 
+# deriv(Is[, , ]) <- E[i, j, k] * incubation_rate * prop_severe[i, j, k] - Is[i, j, k] * (severe_recovery_rate + background_death + severe_death_rate) + aging_into_Is[i, j, k] - aging_out_of_Is[i, j, k]
+# 
+# deriv(Rc[, , ]) <- Is[i, j, k] * severe_recovery_rate * prop_complications - Rc[i, j, k] * (background_death + delta) + aging_into_Rc[i, j, k] - aging_out_of_Rc[i, j, k]
+
+
+
+
+
+
+
 
 # Add in births and aging
 aging_into_S[1, 1, ] <- Births[k]
@@ -33,6 +52,45 @@ aging_out_of_Is[1:(n_age - 1), , ] <- Is[i, j, k] * aging_rate[i]
 
 aging_into_Rc[2:n_age, , ] <- Rc[i - 1, j, k] * aging_rate[i-1]
 aging_out_of_Rc[1:(n_age - 1), , ] <- Rc[i, j, k] * aging_rate[i]
+
+
+#Set up times for changing vaccination coverage
+tt_vaccination_coverage <- parameter()
+no_vacc_changes <- parameter()
+dim(tt_vaccination_coverage) <- no_vacc_changes
+
+#Set up vaccination coverage changing over time
+vaccination_coverage <- parameter()
+dim(vaccination_coverage) <- c(no_vacc_changes, n_age, n_vacc, n_vulnerable)
+
+#Interpolate
+vaccination_prop <- interpolate(tt_vaccination_coverage, vaccination_coverage, "constant")
+output(vaccination_prop_sum) <- sum(vaccination_prop)
+
+#Susceptible vaccination
+vaccinating_into_S[, 1, ] <- S[i, j, k] * 0
+vaccinating_into_S[, 2:n_vacc, ] <- S[i, j - 1, k] * vaccination_prop[i, j - 1, k]
+vaccinating_out_of_S[, 1:(n_vacc - 1), ] <- S[i, j, k] * vaccination_prop[i, j, k]
+#Exposed vaccination
+vaccinating_into_E[, 1, ] <- E[i, j, k] * 0
+vaccinating_into_E[, 2:n_vacc , ] <- E[i, j - 1, k] * vaccination_prop[i, j - 1, k]
+vaccinating_out_of_E[, 1:(n_vacc - 1), ] <- E[i, j , k] * vaccination_prop[i, j, k]
+#Infectious vaccination
+vaccinating_into_I[, 1, ] <- I[i, j, k] * 0
+vaccinating_into_I[, 2:n_vacc , ] <- I[i, j - 1, k] * vaccination_prop[i, j - 1, k]
+vaccinating_out_of_I[,1:(n_vacc - 1) , ] <- I[i, j, k] * vaccination_prop[i, j, k]
+#Recovered vaccination
+vaccinating_into_R[, 1, ] <- R[i, j, k] * 0
+vaccinating_into_R[, 2:n_vacc , ] <- R[i, j - 1, k] * vaccination_prop[i, j - 1, k]
+vaccinating_out_of_R[, 1:(n_vacc - 1) , ] <- R[i, j, k] * vaccination_prop[i, j, k]
+#Infectious severe vaccination
+vaccinating_into_Is[, 1, ] <- Is[i, j, k] * 0
+vaccinating_into_Is[, 2:n_vacc , ] <- Is[i, j - 1, k] * vaccination_prop[i, j - 1, k]
+vaccinating_out_of_Is[, 1:(n_vacc - 1) , ] <- Is[i, j, k] * vaccination_prop[i, j, k]
+#Recovered complications vaccination
+vaccinating_into_Rc[, 1, ] <- Rc[i, j, k] * 0
+vaccinating_into_Rc[, 2:n_vacc , ] <- Rc[i, j - 1, k] * vaccination_prop[i, j - 1, k]
+vaccinating_out_of_Rc[, 1:(n_vacc - 1) , ] <- Rc[i, j, k] * vaccination_prop[i, j, k]
 
 # Initial compartment values ----------------------------------------------
 
@@ -181,6 +239,19 @@ dim(prop_vaccinated) <- n_vulnerable
 dim(vaccinated_mums) <- n_vulnerable
 dim(protection_weight) <- age_maternal_protection_ends
 
+dim(vaccinating_into_S) <- c(n_age, n_vacc, n_vulnerable)
+dim(vaccinating_out_of_S) <- c(n_age, n_vacc, n_vulnerable)
+dim(vaccinating_into_E) <- c(n_age, n_vacc, n_vulnerable)
+dim(vaccinating_out_of_E) <- c(n_age, n_vacc, n_vulnerable)
+dim(vaccinating_into_I) <- c(n_age, n_vacc, n_vulnerable)
+dim(vaccinating_out_of_I) <- c(n_age, n_vacc, n_vulnerable)
+dim(vaccinating_into_R) <- c(n_age, n_vacc, n_vulnerable)
+dim(vaccinating_out_of_R) <- c(n_age, n_vacc, n_vulnerable)
+dim(vaccinating_into_Is) <- c(n_age, n_vacc, n_vulnerable)
+dim(vaccinating_out_of_Is) <- c(n_age, n_vacc, n_vulnerable)
+dim(vaccinating_into_Rc) <- c(n_age, n_vacc, n_vulnerable)
+dim(vaccinating_out_of_Rc) <- c(n_age, n_vacc, n_vulnerable)
+dim(vaccination_prop) <- c(n_age, n_vacc, n_vulnerable)
 
 # Output ------------------------------------------------------------------
 #Output R-effective
