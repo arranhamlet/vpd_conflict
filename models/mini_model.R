@@ -218,7 +218,8 @@ background_death[, ]<- if(simp_death == 1) initial_background_death[i, j] else d
 # Proportion of mothers who confer maternal antibodies
 vaccinated_mums[] <- sum(S[repro_low:repro_high, 2:n_vacc, i]) + sum(E[repro_low:repro_high, 2:n_vacc, i]) + sum(I[repro_low:repro_high, 2:n_vacc, i]) + sum(R[repro_low:repro_high, 2:n_vacc, i]) + sum(Is[repro_low:repro_high, 2:n_vacc, i]) + sum(Rc[repro_low:repro_high, 2:n_vacc, i])
 
-prop_vaccinated[] <- if(reproductive_population[i] == 0) 0 else vaccinated_mums[i]/reproductive_population[i]
+#Adding in R and Rc mums too
+prop_vaccinated[] <- if(reproductive_population[i] == 0) 0 else (vaccinated_mums[i] + sum(R[repro_low:repro_high, 1, i]) + sum(Rc[repro_low:repro_high, 1, i]))/reproductive_population[i]
 
 # Dimensions --------------------------------------------------------------
 

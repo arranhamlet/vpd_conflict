@@ -51,8 +51,7 @@ pars <- list(
   age_vaccination_beta_modifier = array(c(1, 1, 1, 1, 1, 1, 1, 1), dim = c(2, 2, 2)),
   
   initial_background_death = array(
-    0.01,
-    # c(1/(365 * 80), 1/(365 * 80), 1/(365 * 80), 1/(365 * 80))
+    c(1/(365 * 8), 1/(365 * 8), 1/(365 * 8), 1/(365 * 8))
   , dim = c(2, 2)),
   
   #Changes to birth stuff
@@ -66,7 +65,7 @@ pars <- list(
   crude_death = array(0, c(2, 2, 2)), #array(c(0.1, 0.2, 0.1, 0.2), c(2, 2, 2)),
   
   #Aging
-  aging_rate = c(1/(365 * 16), 0),
+  aging_rate = c(1/(365 * 1.6), 0),
   
   #Maternal immunity waning
   protection_weight = 0,
