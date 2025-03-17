@@ -25,11 +25,16 @@ pars <- list(
   contact_matrix = matrix(1, nrow = 2, ncol = 2)/4,
   
   #Single dimension parameters
-  R0 = 1.5,
+  # R0 = 1.5,
   recovery_rate = 1/14,
   incubation_rate = 1/5,
   severe_recovery_rate = 1/14,
   prop_complications = 0,
+  
+  #R0
+  R0 = c(1.5, 3, 0.5),
+  tt_R0 = c(0, 100, 500),
+  no_R0_changes = 3,
   
   #Multi dimension parameters
   N0 = array(c(0, 999, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),

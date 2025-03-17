@@ -63,6 +63,12 @@ background_death <- parameter()
 # birth_rate <- parameter()
 #R0
 R0 <- parameter()
+#Set the number of times R0 changes
+no_R0_changes <- parameter()
+#Define the times when R0 changes
+tt_R0 <- parameter()
+#Interpolate R0
+t_R0 <- interpolate(tt_R0, R0, "constant")
 #Proportion of cases that are severe
 prop_severe <- parameter()
 #Severe case recovery rate
@@ -97,7 +103,7 @@ protection_weight <- parameter()
 #Calculate infectious period
 infectious_period[, , ] <- if((severe_recovery_rate + severe_death_rate + background_death) == 0 || (recovery_rate + alpha + background_death) == 0) 0 else (1 - prop_severe[i, j, k]) / (recovery_rate + alpha + background_death) + prop_severe[i, j, k] / (severe_recovery_rate + severe_death_rate + background_death)
 #Calculate beta from the R0 and infectious period
-beta[, , ] <- if(infectious_period[i, j, k] == 0) 0 else R0 / infectious_period[i, j, k]
+beta[, , ] <- if(infectious_period[i, j, k] == 0) 0 else t_R0 / infectious_period[i, j, k]
 
 #Update with vaccination and age mediation
 beta_updated[, , ] <- age_vaccination_beta_modifier[i, j, k] * beta[i, j, k]
@@ -112,18 +118,13 @@ lambda[, , ] <- sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, 
 
 #Calculate Reff in two parts due to Odin
 S_eff[, , ] <- S[i, j, k] * age_vaccination_beta_modifier[i, j, k]
-R_effective <- R0 * sum(S_eff) / N
+R_effective <- t_R0 * sum(S_eff) / N
 
 #Total population
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
-
 Npop_vulnerable[] <- sum(S[, , i]) + sum(E[, , i]) + sum(I[, , i]) + sum(R[, , i]) + sum(Is[, , i]) + sum(Rc[, , i])
 
-# N_with_age_vulnerable[, ] <- sum(S[i, , j]) + sum(E[i, , j]) + sum(I[i, , j]) + sum(R[i, , j]) + sum(Is[i, , j]) + sum(Rc[i, , j])
-
 #Number of births
-# reproductive_population[] <- sum(N_with_age_vulnerable[repro_low:repro_high, i])
-
 reproductive_population[] <- sum(S[repro_low:repro_high, , i]) + 
   sum(E[repro_low:repro_high, , i]) + 
   sum(I[repro_low:repro_high, , i]) + 
@@ -150,16 +151,16 @@ dim(Rc) <- c(n_age, n_vacc, n_vulnerable)
 dim(N0) <- c(n_age, n_vacc, n_vulnerable)
 dim(I0) <- c(n_age, n_vacc, n_vulnerable)
 dim(beta_updated) <- c(n_age, n_vacc, n_vulnerable)
-# dim(S_age_vacc_modified) <- c(n_age, n_vacc, n_vulnerable)
 dim(age_vaccination_beta_modifier) <- c(n_age, n_vacc, n_vulnerable)
 dim(prop_severe) <- c(n_age, n_vacc, n_vulnerable)
 dim(beta) <- c(n_age, n_vacc, n_vulnerable)
 dim(infectious_period) <- c(n_age, n_vacc, n_vulnerable)
 dim(lambda) <- c(n_age, n_vacc, n_vulnerable)
+dim(tt_R0) <- no_R0_changes
+dim(R0) <- no_R0_changes
 dim(S_eff) <- c(n_age, n_vacc, n_vulnerable)
 dim(contact_matrix) <- c(n_age, n_age)
 dim(aging_rate) <- n_age
-
 dim(aging_into_S) <- c(n_age, n_vacc, n_vulnerable)
 dim(aging_out_of_S) <- c(n_age, n_vacc, n_vulnerable)
 dim(aging_into_E) <- c(n_age, n_vacc, n_vulnerable)
@@ -172,7 +173,6 @@ dim(aging_into_Is) <- c(n_age, n_vacc, n_vulnerable)
 dim(aging_out_of_Is) <- c(n_age, n_vacc, n_vulnerable)
 dim(aging_into_Rc) <- c(n_age, n_vacc, n_vulnerable)
 dim(aging_out_of_Rc) <- c(n_age, n_vacc, n_vulnerable)
-# dim(N_with_age_vulnerable) <- c(n_age, n_vulnerable)
 dim(Births) <- n_vulnerable
 dim(reproductive_population) <- n_vulnerable
 dim(birth_rate) <- n_vulnerable
@@ -180,6 +180,7 @@ dim(Npop_vulnerable) <- n_vulnerable
 dim(prop_vaccinated) <- n_vulnerable
 dim(vaccinated_mums) <- n_vulnerable
 dim(protection_weight) <- age_maternal_protection_ends
+
 
 # Output ------------------------------------------------------------------
 #Output R-effective
@@ -193,6 +194,5 @@ output(lamb) <- sum(lambda)
 output(infy) <- sum(infectious_period)
 output(beta1) <- sum(beta)
 output(beta2) <- sum(beta_updated)
-  
-  
+
   
