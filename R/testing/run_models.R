@@ -29,11 +29,11 @@ pars <- list(
   recovery_rate = 1/14,
   incubation_rate = 1/5,
   severe_recovery_rate = 1/14,
-  prop_complications = 0.1,
+  prop_complications = 0,
   
   #Multi dimension parameters
-  N0 = array(c(500, 0, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
-  I0 = array(c(0, 0, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
+  N0 = array(c(0, 999, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
+  I0 = array(c(0, 1, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
   prop_severe = array(c(0, 0, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
   age_vaccination_beta_modifier = array(c(1, 1, 1, 1, 1, 1, 1, 1), dim = c(2, 2, 2)),
   
@@ -43,20 +43,25 @@ pars <- list(
   # age_vaccination_beta_modifier = array(c(1, 1, 1, 1), dim = c(2, 2, 1)),
   
   # birth_rate = 0.1,
-  background_death = 0.5,
+  background_death = 0.01,#0.01,
   
   #Aging
-  aging_rate = c(1, 0),
+  aging_rate = c(0.1, 0),
   
   #Maternal immunity waning
-  protection_weight = c(0, 0),
-  age_maternal_protection_ends = 2,
+  protection_weight = 0,
+  age_maternal_protection_ends = 1,
   
   #Reproductive ages
   repro_low = 2,
   repro_high = 2
   
 )
+
+#Something happening in E and I that is making people disappear
+#it appears to be in the background death rate
+#Happening in S->E
+#Some shennanigans are causing the population to be reduced
 
 
 #Define dust system and initialise
@@ -91,7 +96,7 @@ clean_df <- unpack_dust2(
 #Specific plot
 #Plot
 ggplot(
-  data = subset(clean_df, (vulnerable_population == "Standard risk" & vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state %in% c("pop", "M_protected", "aging_into_two")),
+  data = subset(clean_df, (vulnerable_population == "Standard risk" & vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state %in% c("pop", "M_protected", "aging_into_two", "lamb", "infy", "beta1", "beta2")),
   mapping = aes(
     x = time,
     y = value,
@@ -104,7 +109,7 @@ ggplot(
     scales = "free_y"
   ) +
   theme(
-    legend.position = c(0.75, 0.125)
+    legend.position = "bottom"
   ) +
   labs(
     x = "",

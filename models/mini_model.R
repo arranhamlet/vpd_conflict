@@ -2,10 +2,15 @@
 # Compartments ------------------------------------------------------------
 
 deriv(S[, , ]) <- - background_death * S[i, j, k] - lambda[i, j, k] * S[i, j, k] + delta * R[i, j, k] + delta * Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k]
+
 deriv(E[, , ]) <- lambda[i, j, k] * S[i, j, k] - (background_death + incubation_rate) * E[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k]
+
 deriv(I[, , ]) <- E[i, j, k] * incubation_rate * (1 - prop_severe[i, j, k]) - (background_death + recovery_rate + alpha) * I[i, j, k] + aging_into_I[i, j, k] - aging_out_of_I[i, j, k]
+
 deriv(R[, , ]) <- recovery_rate * I[i, j, k] - (background_death + delta) * R[i, j, k] + Is[i, j, k] * severe_recovery_rate * (1 - prop_complications) + aging_into_R[i, j, k] - aging_out_of_R[i, j, k]
+
 deriv(Is[, , ]) <- E[i, j, k] * incubation_rate * prop_severe[i, j, k] - Is[i, j, k] * (severe_recovery_rate + background_death + severe_death_rate) + aging_into_Is[i, j, k] - aging_out_of_Is[i, j, k]
+
 deriv(Rc[, , ]) <- Is[i, j, k] * severe_recovery_rate * prop_complications - Rc[i, j, k] * (background_death + delta) + aging_into_Rc[i, j, k] - aging_out_of_Rc[i, j, k]
 
 # Add in births and aging
@@ -14,19 +19,19 @@ aging_into_S[1, 1, ] <- Births[k]
 aging_into_S[2:n_age, , ] <- S[i - 1, j, k] * aging_rate[i-1]
 aging_out_of_S[1:(n_age - 1), , ] <- S[i, j, k] * aging_rate[i]
 
-aging_into_E[2:n_age, , ] <- E[i - 1, j, k] * aging_rate[i]
+aging_into_E[2:n_age, , ] <- E[i - 1, j, k] * aging_rate[i-1]
 aging_out_of_E[1:(n_age - 1), , ] <- E[i, j, k] * aging_rate[i]
 
-aging_into_I[2:n_age, , ] <- I[i - 1, j, k] * aging_rate[i]
+aging_into_I[2:n_age, , ] <- I[i - 1, j, k] * aging_rate[i-1]
 aging_out_of_I[1:(n_age - 1), , ] <- I[i, j, k] * aging_rate[i]
 
-aging_into_R[2:n_age, , ] <- R[i - 1, j, k] * aging_rate[i]
+aging_into_R[2:n_age, , ] <- R[i - 1, j, k] * aging_rate[i-1]
 aging_out_of_R[1:(n_age - 1), , ] <- R[i, j, k] * aging_rate[i]
 
-aging_into_Is[2:n_age, , ] <- Is[i - 1, j, k] * aging_rate[i]
+aging_into_Is[2:n_age, , ] <- Is[i - 1, j, k] * aging_rate[i-1]
 aging_out_of_Is[1:(n_age - 1), , ] <- Is[i, j, k] * aging_rate[i]
 
-aging_into_Rc[2:n_age, , ] <- Rc[i - 1, j, k] * aging_rate[i]
+aging_into_Rc[2:n_age, , ] <- Rc[i - 1, j, k] * aging_rate[i-1]
 aging_out_of_Rc[1:(n_age - 1), , ] <- Rc[i, j, k] * aging_rate[i]
 
 # Initial compartment values ----------------------------------------------
@@ -90,9 +95,9 @@ protection_weight <- parameter()
 # Calculated parameters ---------------------------------------------------
 
 #Calculate infectious period
-infectious_period[, , ] <- (1 - prop_severe[i, j, k]) / (recovery_rate + alpha + background_death) + prop_severe[i, j, k] / (severe_recovery_rate + severe_death_rate + background_death)
+infectious_period[, , ] <- if((severe_recovery_rate + severe_death_rate + background_death) == 0 || (recovery_rate + alpha + background_death) == 0) 0 else (1 - prop_severe[i, j, k]) / (recovery_rate + alpha + background_death) + prop_severe[i, j, k] / (severe_recovery_rate + severe_death_rate + background_death)
 #Calculate beta from the R0 and infectious period
-beta[, , ] <- R0 / infectious_period[i, j, k]
+beta[, , ] <- if(infectious_period[i, j, k] == 0) 0 else R0 / infectious_period[i, j, k]
 
 #Update with vaccination and age mediation
 beta_updated[, , ] <- age_vaccination_beta_modifier[i, j, k] * beta[i, j, k]
@@ -184,5 +189,10 @@ output(pop) <- N
 output(born) <- Births[1]
 output(died) <- sum(S) * background_death + sum(E) * background_death + sum(I) * background_death + sum(R) * background_death + sum(Is) * background_death + sum(Rc) * background_death 
 
-
-
+output(lamb) <- sum(lambda)
+output(infy) <- sum(infectious_period)
+output(beta1) <- sum(beta)
+output(beta2) <- sum(beta_updated)
+  
+  
+  
