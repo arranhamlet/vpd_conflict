@@ -41,9 +41,9 @@ pars <- list(
                                dim = c(3, 2, 2, 2)),
   
   #R0
-  R0 = c(2, 2, 2),
-  tt_R0 = c(0, 100, 500),
-  no_R0_changes = 3,
+  R0 = 5,
+  tt_R0 = 0,
+  no_R0_changes = 1,
   
   #Multi dimension parameters
   N0 = array(c(0, 1000, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
@@ -52,7 +52,7 @@ pars <- list(
   age_vaccination_beta_modifier = array(c(1, 1, 1, 1, 1, 1, 1, 1), dim = c(2, 2, 2)),
   
   initial_background_death = array(
-    0.001,#c(1/(365 * 8), 1/(365 * 8), 1/(365 * 8), 1/(365 * 8))
+    0.05,#c(1/(365 * 8), 1/(365 * 8), 1/(365 * 8), 1/(365 * 8))
     , dim = c(2, 2)),
   
   #Changes to birth stuff
