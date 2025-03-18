@@ -55,14 +55,17 @@ pars <- list(
   , dim = c(2, 2)),
   
   #Changes to birth stuff
+  simp_death = 1,
+  simp_birth = 1,
+  
   no_birth_changes = 2,
   no_death_changes = 2,
   
   tt_birth_changes = c(0, 300),
   tt_death_changes = c(0, 500),
   
-  crude_birth = array(0, c(2, 2)), #array(c(0.1, 0.2, 0.1, 0.2), c(2, 2)),
-  crude_death = array(0, c(2, 2, 2)), #array(c(0.1, 0.2, 0.1, 0.2), c(2, 2, 2)),
+  crude_birth = array(c(0.05, 0.05, 0.15, 0.15), c(2, 2)),
+  crude_death = array(c(0.01, 0.02, 0.01, 0.02), c(2, 2, 2)),
   
   #Aging
   aging_rate = c(1/(365 * 1.6), 0),
@@ -109,7 +112,7 @@ clean_df <- unpack_dust2(
 #Specific plot
 #Plot
 ggplot(
-  data = subset(clean_df, (vulnerable_population == "Standard risk" & vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state %in% c("pop", "M_protected", "aging_into_two", "lamb", "infy", "beta1", "beta2", "vaccination_prop_sum", "baby_rate", "death_rate", "repo_pop", "dying_pop")),
+  data = subset(clean_df, (vulnerable_population == "Standard risk" & vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state %in% c("pop", "M_protected", "aging_into_two", "lamb", "infy", "beta1", "beta2", "vaccination_prop_sum", "baby_rate", "death_rate", "repo_pop", "dying_pop", "born")),
   mapping = aes(
     x = time,
     y = value,
