@@ -7,26 +7,56 @@ unpack_dust2 <- function(model_system, model_object, dimension_names, which_stat
   #Work out which are compartments and which are not
   these_are_compartments <- sapply(model_system$packing_state, function(x) length(x) != 0)
   
+  #Time length
+  time_length <- dimension_names$time[[1]]
+  
   #Unpack all the compartments
   unpacked_compartments <- do.call(plyr::rbind.fill, sapply(as.numeric(which(these_are_compartments)), function(x){
     
     #Unpack this object
     this_obj <- dust_state[[x]]
     
-    #Loop through dimnames
-    for(i in 1:length(which_state_dimensions[[x]])){
-      dimnames(this_obj)[[i]] <- unlist(dimension_names[[which_state_dimensions[[x]][i]]])
+    #Name things correctly based on if there are multiple runs
+    these_names <- if(model_system$n_particles > 1){
+      this_is_particles <- last(which(dim(this_obj) == length(time_length))) - 1
+      (1:length(dim(this_obj)))[-this_is_time]
+    } else {
+      1:length(which_state_dimensions[[x]])
     }
     
-    melted_array <- reshape2::melt(this_obj) %>%
-      set_names(c(which_state_dimensions[[x]], "value")) %>%
-      mutate(state = names(dust_state)[x]) %>%
-      select(time, state, which_state_dimensions[[x]], value)
+    #Loop through dimnames
+    for(i in these_names){
+      dimnames(this_obj)[[i]] <- unlist(dimension_names[[which_state_dimensions[[x]][which(these_names == i)]]])
+    }
     
-    aggregate_array <- melted_array %>%
-      group_by(state, time) %>%
-      summarise(value = sum(value)) %>%
-      as.data.frame()
+    #Change names based on whats going on
+    if(model_system$n_particles > 1){
+      
+      dimnames(this_obj)[[this_is_particles]] <- paste0("run_", 1:model_system$n_particles)
+      
+      melted_array <- reshape2::melt(this_obj) %>%
+        set_names(c(c(which_state_dimensions[[x]][1:(length(which_state_dimensions[[x]])-1)], "run", which_state_dimensions[[x]][length(which_state_dimensions[[x]])]), "value")) %>%
+        mutate(state = names(dust_state)[x]) %>%
+        select(time, state, c(which_state_dimensions[[x]][1:(length(which_state_dimensions[[x]])-1)], "run", which_state_dimensions[[x]][length(which_state_dimensions[[x]])]), value)
+      
+      aggregate_array <- melted_array %>%
+        group_by(state, time, run) %>%
+        summarise(value = sum(value)) %>%
+        as.data.frame()
+      
+    } else {
+      
+      melted_array <- reshape2::melt(this_obj) %>%
+        set_names(c(which_state_dimensions[[x]], "value")) %>%
+        mutate(state = names(dust_state)[x]) %>%
+        select(time, state, which_state_dimensions[[x]], value)
+      
+      aggregate_array <- melted_array %>%
+        group_by(state, time) %>%
+        summarise(value = sum(value)) %>%
+        as.data.frame()
+      
+    }
     
     combo_df <- plyr::rbind.fill(melted_array, aggregate_array) %>%
       mutate(across(names(melted_array)[-which(names(melted_array) %in% names(aggregate_array))], fct_na_value_to_level, level = "All"))
