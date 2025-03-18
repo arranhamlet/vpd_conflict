@@ -11,7 +11,7 @@ pacman::p_load(
 invisible(sapply(list.files("R/functions", full.names = T, recursive = T), function(x) source(x)))
 
 #Import model
-model <- odin2::odin("models/mini_model.R")
+model <- odin2::odin("models/deterministic_model_v1.R")
 
 #Set up parameters
 pars <- list(
