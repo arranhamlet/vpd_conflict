@@ -183,8 +183,9 @@ beta_updated[1:age_maternal_protection_ends, , ] <- beta_updated[i, j, k] * (1 -
 lambda[, , ] <- max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
 
 #Calculate Reff in two parts due to Odin
-# S_eff[, , ] <- S[i, j, k] * age_vaccination_beta_modifier[i, j, k]
-# R_effective <- t_R0 * sum(S_eff) / N
+S_eff[, , ] <- S[i, j, k] * age_vaccination_beta_modifier[i, j, k]
+update(R_effective) <- t_R0 * sum(S_eff) / N
+initial(R_effective) <- 0
 
 #Total population
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
@@ -258,7 +259,7 @@ dim(infectious_period) <- c(n_age, n_vacc, n_vulnerable)
 dim(lambda) <- c(n_age, n_vacc, n_vulnerable)
 dim(tt_R0) <- no_R0_changes
 dim(R0) <- no_R0_changes
-# dim(S_eff) <- c(n_age, n_vacc, n_vulnerable)
+dim(S_eff) <- c(n_age, n_vacc, n_vulnerable)
 dim(contact_matrix) <- c(n_age, n_age)
 dim(aging_rate) <- n_age
 dim(aging_into_S) <- c(n_age, n_vacc, n_vulnerable)

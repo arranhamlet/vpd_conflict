@@ -69,7 +69,7 @@ pars <- list(
   crude_death = array(c(0.0001, 0.0002, 0.0001, 0.0002), c(2, 2, 2)),
   
   #Aging
-  aging_rate = c(0.01, 0),
+  aging_rate = c(0.05, 0),
   
   #Maternal immunity waning
   protection_weight = 0,
@@ -82,7 +82,7 @@ pars <- list(
 )
 
 #Define dust system and initialise
-sys <- dust2::dust_system_create(model(), pars, n_particles = 50)
+sys <- dust2::dust_system_create(model(), pars, n_particles = 10)
 dust2::dust_system_set_state_initial(sys)
 
 #Set time and run model
@@ -112,7 +112,7 @@ clean_df <- unpack_dust2(
 #Specific plot
 #Plot
 ggplot(
-  data = subset(clean_df, (vulnerable_population == "Standard risk" & vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state %in% c("pop", "M_protected", "aging_into_two", "lamb", "infy", "beta1", "beta2", "vaccination_prop_sum", "baby_rate", "death_rate", "repo_pop", "dying_pop", "born")),
+  data = subset(clean_df, (vulnerable_population == "Standard risk" & vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state %in% c("pop", "M_protected", "aging_into_two", "lamb", "infy", "beta1", "beta2", "vaccination_prop_sum", "baby_rate", "death_rate", "repo_pop", "dying_pop", "born", "R_effective")),
   mapping = aes(
     x = time,
     y = value,
@@ -136,7 +136,7 @@ ggplot(
 
 #All
 ggplot(
-  data = subset(clean_df, age == "All" & state %in% c("I")),
+  data = subset(clean_df, age == "All" & state %in% c("I", "R_effective")),
   mapping = aes(
     x = time,
     y = value,

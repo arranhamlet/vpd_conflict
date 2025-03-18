@@ -16,17 +16,20 @@ unpack_dust2 <- function(model_system, model_object, dimension_names, which_stat
     #Unpack this object
     this_obj <- dust_state[[x]]
     
+    #Identify time
+    this_is_time <- which(dim(this_obj) == length(dimension_names[[which(names(dimension_names) == "time")]][[1]]))
+    
     #Name things correctly based on if there are multiple runs
     these_names <- if(model_system$n_particles > 1){
       this_is_particles <- last(which(dim(this_obj) == length(time_length))) - 1
-      (1:length(dim(this_obj)))[-this_is_time]
+      (1:length(dim(this_obj)))[-this_is_particles]
     } else {
       1:length(which_state_dimensions[[x]])
     }
     
     #Loop through dimnames
     for(i in these_names){
-      dimnames(this_obj)[[i]] <- unlist(dimension_names[[which_state_dimensions[[x]][which(these_names == i)]]])
+      dimnames(this_obj)[[i]] <- unlist(dimension_names[[which_state_dimensions[[which(names(which_state_dimensions) == names(these_are_compartments[x]))]][which(i == these_names)]]])
     }
     
     #Change names based on whats going on
@@ -34,10 +37,13 @@ unpack_dust2 <- function(model_system, model_object, dimension_names, which_stat
       
       dimnames(this_obj)[[this_is_particles]] <- paste0("run_", 1:model_system$n_particles)
       
+      colnames <- which_state_dimensions[[which(names(which_state_dimensions) == names(these_are_compartments[x]))]]
+      
+      
       melted_array <- reshape2::melt(this_obj) %>%
-        set_names(c(c(which_state_dimensions[[x]][1:(length(which_state_dimensions[[x]])-1)], "run", which_state_dimensions[[x]][length(which_state_dimensions[[x]])]), "value")) %>%
+        setNames(c(colnames[1:(which(colnames == "time") - 1)], "run", "time", "value")) %>%
         mutate(state = names(dust_state)[x]) %>%
-        select(time, state, c(which_state_dimensions[[x]][1:(length(which_state_dimensions[[x]])-1)], "run", which_state_dimensions[[x]][length(which_state_dimensions[[x]])]), value)
+        select(time, state, colnames[1:(which(colnames == "time") - 1)], "run", "value")
       
       aggregate_array <- melted_array %>%
         group_by(state, time, run) %>%
@@ -71,12 +77,27 @@ unpack_dust2 <- function(model_system, model_object, dimension_names, which_stat
     #Unpack this object
     this_obj <- dust_state[[x]]
     
-    #Loop through dimnames
-    data.frame(this_obj) %>% 
-      set_names("value") %>%
-      mutate(time = dimension_names[[which(names(dimension_names) == "time")]][[1]]) %>%
-      mutate(state = names(dust_state)[x])
-    
+    if(model_system$n_particles > 1){
+      
+      this_obj %>%
+        t %>%
+        as.data.frame %>%
+        gather(key = run,
+               value = value) %>%
+        mutate(time = rep(dimension_names[[which(names(dimension_names) == "time")]][[1]], model_system$n_particles),
+               state = names(dust_state)[x],
+               run = gsub("V", "run_", run))
+      
+    } else {
+      
+      #Loop through dimnames
+      data.frame(this_obj) %>% 
+        set_names("value") %>%
+        mutate(time = dimension_names[[which(names(dimension_names) == "time")]][[1]]) %>%
+        mutate(state = names(dust_state)[x])
+      
+    }
+
   }, simplify = FALSE))
   
   #Combine and spit out
@@ -84,6 +105,6 @@ unpack_dust2 <- function(model_system, model_object, dimension_names, which_stat
     unpacked_compartments, 
     unpacked_noncompartments
     ) %>%
-    mutate(state = factor(state, levels = names(dust_state)))
-  
+    mutate(across(unique(unlist(which_state_dimensions)), replace_na, "All"))
+
 }
