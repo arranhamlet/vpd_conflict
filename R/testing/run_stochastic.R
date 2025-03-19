@@ -13,6 +13,79 @@ invisible(sapply(list.files("R/functions", full.names = T, recursive = T), funct
 #Import model
 model <- odin2::odin("models/stochastic_model_v1.R")
 
+#Get parameters
+params <- param_packager(
+ 
+  incubation_rate = 0.2,
+  recovery_rate = 1/14,
+  R0 = 2,
+  initial_background_death = 0.1
+  
+)
+
+#Define dust system and initialise
+sys <- dust2::dust_system_create(model(), params, n_particles = 10)
+dust2::dust_system_set_state_initial(sys)
+
+#Set time and run model
+time <- 0:500
+y <- dust2::dust_system_simulate(sys, time)
+
+#Clean output
+#Unpack columns
+clean_df <- unpack_dust2(
+  model_system = sys, 
+  model_object = y, 
+  dimension_names = list(
+    age = list(as.character(params$n_age)), 
+    vaccination_status = list(as.character(params$n_vacc)),
+    vulnerable_population = list(as.character(params$n_vulnerable)),
+    time = list(time)
+  ),
+  which_state_dimensions = list(
+    S = c("age", "vaccination_status", "vulnerable_population", "time"),
+    E = c("age", "vaccination_status", "vulnerable_population", "time"),
+    I = c("age", "vaccination_status", "vulnerable_population", "time"),
+    R = c("age", "vaccination_status", "vulnerable_population", "time"),
+    Is = c("age", "vaccination_status", "vulnerable_population", "time"),
+    Rc = c("age", "vaccination_status", "vulnerable_population", "time")
+  )
+)
+
+#Simple test plot
+ggplot(data = subset(clean_df, !state %in% c("Is", "Rc")),
+       mapping = aes(
+         x = time,
+         y = value,
+         color = state,
+         group_by = run
+       )) +
+  geom_line() +
+  facet_wrap(~state, scales = "free_y") +
+  theme_bw() +
+  theme(legend.position = "none") +
+  labs(
+    x = "",
+    y = ""
+  )
+
+
+##############
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #Set up parameters
 pars <- list(
   
@@ -25,7 +98,6 @@ pars <- list(
   contact_matrix = matrix(1, nrow = 2, ncol = 2)/4,
   
   #Single dimension parameters
-  # R0 = 1.5,
   recovery_rate = 1/14,
   incubation_rate = 1/5,
   severe_recovery_rate = 1/14,
@@ -46,19 +118,18 @@ pars <- list(
   no_R0_changes = 1,
   
   #Multi dimension parameters
-  N0 = array(c(0, 1000, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
+  N0 = array(c(0, 10000, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
   I0 = array(c(0, 1, 0, 0, 0, 0, 0, 0), dim = c(2, 2, 2)),
   prop_severe = array(0, dim = c(2, 2, 2)),
   age_vaccination_beta_modifier = array(c(1, 1, 1, 1, 1, 1, 1, 1), dim = c(2, 2, 2)),
   
   initial_background_death = array(
-    0.05,#c(1/(365 * 8), 1/(365 * 8), 1/(365 * 8), 1/(365 * 8))
+    0.01,#c(1/(365 * 8), 1/(365 * 8), 1/(365 * 8), 1/(365 * 8))
     , dim = c(2, 2)),
   
   #Changes to birth stuff
-  simp_death = 1,
-  simp_birth = 1,
-  
+  simp_birth_death = 1,
+
   no_birth_changes = 2,
   no_death_changes = 2,
   
@@ -86,7 +157,7 @@ sys <- dust2::dust_system_create(model(), pars, n_particles = 10)
 dust2::dust_system_set_state_initial(sys)
 
 #Set time and run model
-time <- 0:700
+time <- 0:2000
 y <- dust2::dust_system_simulate(sys, time)
 
 #Unpack columns
@@ -96,7 +167,7 @@ clean_df <- unpack_dust2(
   dimension_names = list(
     age = list("Child", "Adult"), 
     vaccination_status = c("Unvaccinated", "Vaccinated"),
-    vulnerable_population = c("Standard risk", "E"),
+    vulnerable_population = c("Standard risk", "Elevated"),
     time = list(time)
   ),
   which_state_dimensions = list(
@@ -112,7 +183,7 @@ clean_df <- unpack_dust2(
 #Specific plot
 #Plot
 ggplot(
-  data = subset(clean_df, (vulnerable_population == "Standard risk" & vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state %in% c("pop", "M_protected", "aging_into_two", "lamb", "infy", "beta1", "beta2", "vaccination_prop_sum", "baby_rate", "death_rate", "repo_pop", "dying_pop", "born", "R_effective")),
+  data = subset(clean_df, (vulnerable_population == "Standard risk" & vaccination_status == "Unvaccinated" & age %in% c("Child", "Adult")) | state %in% c("R_effective", "total_pop")),
   mapping = aes(
     x = time,
     y = value,
