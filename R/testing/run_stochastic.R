@@ -16,10 +16,14 @@ model <- odin2::odin("models/stochastic_model_v1.R")
 #Get parameters
 params <- param_packager(
  
+  n_age = 2,
+  
   incubation_rate = 0.2,
   recovery_rate = 1/14,
   R0 = 2,
-  initial_background_death = 0.1
+  initial_background_death = 0,
+  aging_rate = 1,
+  I0 = 1
   
 )
 
@@ -37,9 +41,9 @@ clean_df <- unpack_dust2(
   model_system = sys, 
   model_object = y, 
   dimension_names = list(
-    age = list(as.character(params$n_age)), 
-    vaccination_status = list(as.character(params$n_vacc)),
-    vulnerable_population = list(as.character(params$n_vulnerable)),
+    age = list(as.character(1:params$n_age)), 
+    vaccination_status = list(as.character(1:params$n_vacc)),
+    vulnerable_population = list(as.character(1:params$n_vulnerable)),
     time = list(time)
   ),
   which_state_dimensions = list(
@@ -57,7 +61,7 @@ ggplot(data = subset(clean_df, !state %in% c("Is", "Rc")),
        mapping = aes(
          x = time,
          y = value,
-         color = state,
+         color = age,
          group_by = run
        )) +
   geom_line() +

@@ -126,7 +126,7 @@ param_packager <- function(
   
   #Format initial population and infections
   N0 <- check_and_format_input(N0, n_age, n_vacc, n_vulnerable)
-  I0 <- check_and_format_input(N0, n_age, n_vacc, n_vulnerable)
+  I0 <- check_and_format_input(I0, n_age, n_vacc, n_vulnerable)
 
   #Prop severe
   prop_severe <- check_and_format_input(prop_severe, n_age, n_vacc, n_vulnerable)
@@ -141,9 +141,10 @@ param_packager <- function(
   crude_death <- check_and_format_input(crude_death, length(tt_birth_changes), n_age, n_vulnerable)
   no_birth_changes = length(tt_birth_changes)
   no_death_changes = length(tt_death_changes)
-  # if(is.null(tt_birth_changes)) tt_birth_changes <- 0
-  # if(is.null(tt_death_changes)) tt_death_changes <-0
-
+  aging_rate <- check_and_format_input(aging_rate, n_age)
+  #Final aging rate must be 0
+  aging_rate[length(aging_rate)] <- 0
+  
 # Export list -------------------------------------------------------------
 
   list(

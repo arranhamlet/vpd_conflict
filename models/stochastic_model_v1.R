@@ -1,7 +1,7 @@
 
 # Compartments ------------------------------------------------------------
 
-update(S[, , ]) <- S[i, j, k] + waning_R[i, j, k] + waning_Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k] + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k] - lambda_S[i, j,k ] - S_death[i, j, k]
+update(S[, , ]) <- S[i, j, k] + waning_R[i, j, k] + waning_Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k] + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k] - lambda_S[i, j, k] - S_death[i, j, k]
 
 update(E[, , ]) <- E[i, j, k] + lambda_S[i, j, k] - incubated[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k] + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k] - E_death[i, j, k]
 
@@ -31,13 +31,13 @@ incubated[, , ] <- if(E[i, j, k] <= 0) 0 else Binomial(E[i, j, k], max(min(incub
 
 #I sampling
 into_I[, , ] <- if(incubated[i, j, k] <= 0) 0 else Binomial(incubated[i, j, k], max(min(1 - prop_severe[i, j, k], 1), 0))
-into_Is[, , ] <- incubated[i, j, k] - into_I[i, j, k]
+into_Is[, , ] <- max(incubated[i, j, k] - into_I[i, j, k], 0)
 recovered_I_to_R[, , ] <- if(I[i, j, k] <= 0) 0 else Binomial(I[i, j, k], max(min(recovery_rate, 1), 0))
 
 #Is sampling
 recovered_from_Is[, , ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i, j, k], max(min(severe_recovery_rate, 1), 0))
 recovered_Is_to_R[, , ] <- if(recovered_from_Is[i, j, k] <= 0) 0 else Binomial(recovered_from_Is[i, j, k], max(min(prop_complications, 1), 0))
-recovered_Is_to_Rc[, , ] <- recovered_from_Is[i, j, k] - recovered_Is_to_R[i, j, k]
+recovered_Is_to_Rc[, , ] <- max(recovered_from_Is[i, j, k] - recovered_Is_to_R[i, j, k], 0)
 
 # Add in births and aging
 aging_into_S[1, 1, ] <- Births[k]
@@ -106,7 +106,7 @@ vaccinating_out_of_Rc[, 1:(n_vacc - 1) , ] <- if(Rc[i, j, k] <= 0) 0 else Binomi
 
 # Initial compartment values ----------------------------------------------
 
-initial(S[, , ]) <- N0[i, j, k] - I0[i, j, k]
+initial(S[, , ]) <- max(N0[i, j, k] - I0[i, j, k], 0)
 initial(E[, , ]) <- 0
 initial(I[, , ]) <- I0[i, j, k]
 initial(R[, , ]) <- 0
