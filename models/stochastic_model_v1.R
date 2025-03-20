@@ -12,7 +12,6 @@ initial(Rc[, , ]) <- 0
 initial(R_effective) <- R0[1]
 initial(total_pop) <- sum(N0)
 
-
 # Compartments ------------------------------------------------------------
 
 update(S[, , ]) <- max(S[i, j, k] + waning_R[i, j, k] + waning_Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k] + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k] - lambda_S[i, j, k] - S_death[i, j, k], 0)
@@ -195,9 +194,8 @@ no_vacc_changes <- parameter()
 vaccination_coverage <- parameter()
 #Beta modifier for age and vaccination
 age_vaccination_beta_modifier <- parameter()
-#Interpolate
-vaccination_prop <- interpolate(tt_vaccination_coverage, vaccination_coverage, "constant")
-
+#Index vaccination starts at
+# 2 <- parameter()
 
 # Calculated parameters ---------------------------------------------------
 
@@ -244,6 +242,8 @@ vaccinated_mums[] <- sum(S[repro_low:repro_high, 2:n_vacc, i]) + sum(E[repro_low
 #Adding in R and Rc mums too
 prop_vaccinated[] <- if(reproductive_population[i] <= 0) 0 else (vaccinated_mums[i] + sum(R[repro_low:repro_high, 1, i]) + sum(Rc[repro_low:repro_high, 1, i]))/reproductive_population[i]
 
+#Interpolate vaccination coverage
+vaccination_prop <- interpolate(tt_vaccination_coverage, vaccination_coverage, "constant")
 #Add in switch to decouple births and deaths when wanted
 simp_birth_death <- parameter(1)
 

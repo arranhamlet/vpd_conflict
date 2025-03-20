@@ -4,7 +4,9 @@ if(!require("pacman")) install.packages("pacman")
 pacman::p_load(
   odin2,
   dust2,
-  tidyverse
+  tidyverse,
+  reshape2,
+  data.table
 )
 
 #Import functions
@@ -13,11 +15,18 @@ invisible(sapply(list.files("R/functions", full.names = T, recursive = T), funct
 #Import model
 model <- odin2::odin("models/stochastic_model_v1.R")
 
+#Set up time
+# infection_seeding,
+# tt_infection,
+# no_seeding_changes
+
+
 #Get parameters
 params <- param_packager(
  
-  n_age = 1,
-  n_vulnerable = 1,
+  n_age = 2,
+  n_vacc = 2,
+  n_vulnerable = 2,
   
   incubation_rate = 0.2,
   recovery_rate = 1/14,
@@ -69,7 +78,7 @@ ggplot(data = subset(clean_df, !state %in% c("Is", "Rc") & age != "All"),
   geom_line() +
   facet_wrap(~state, scales = "free_y") +
   theme_bw() +
-  theme(legend.position = "bottom") +
+  theme(legend.position = "none") +
   labs(
     x = "",
     y = ""
@@ -79,7 +88,7 @@ ggplot(data = subset(clean_df, !state %in% c("Is", "Rc") & age != "All"),
 ##############
 
 
-ggplot(data = subset(clean_df, run == "run_7"),
+ggplot(data = subset(clean_df, age == "All" & run == "run_4"),
        mapping = aes(
          x = time,
          y = value,

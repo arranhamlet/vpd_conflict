@@ -1,6 +1,6 @@
 
 param_packager <- function(
-
+    
   #Dimensions
   n_age = 1,
   n_vacc = 1,
@@ -23,11 +23,12 @@ param_packager <- function(
   prop_severe = 0,
   #Proportion of severe infections that have complications
   prop_complications = 0,
-
+  
   #Vaccination
   vaccination_coverage = 0,
   tt_vaccination_coverage = 0,
   age_vaccination_beta_modifier = 1,
+  vacc_start_group = 1,
   
   #R0
   R0,
@@ -51,14 +52,13 @@ param_packager <- function(
   #Age group where maternal protection ends
   age_maternal_protection_ends = 1,
   #Reproductive ages
-  repro_low = 2,
-  repro_high = 2
+  repro_low = 1,
+  repro_high = 1
   
-  ){
+){
   
-
-# Calculate additional parameters from inputs -----------------------------
-
+  # Calculate additional parameters from inputs -----------------------------
+  
   #Set up contact matrix if now provided
   if(is.null(contact_matrix)){
     contact_matrix <- matrix(1, nrow = n_age, ncol = n_age)/(n_age * n_age)
@@ -73,7 +73,7 @@ param_packager <- function(
   #Format initial population and infections
   N0 <- check_and_format_input(N0, n_age, n_vacc, n_vulnerable)
   I0 <- check_and_format_input(I0, n_age, n_vacc, n_vulnerable)
-
+  
   #Prop severe
   prop_severe <- check_and_format_input(prop_severe, n_age, n_vacc, n_vulnerable)
   
@@ -91,14 +91,15 @@ param_packager <- function(
   #Final aging rate must be 0
   aging_rate[length(aging_rate)] <- 0
   
-# Export list -------------------------------------------------------------
-
-  list(
+  
+  # Export list -------------------------------------------------------------
+  
+  export_list <- list(
     
     #Dimensions
     n_age = n_age,
     n_vacc = n_vacc,
-    n_vulnerable = n_vulnerable,  
+    n_vulnerable = n_vulnerable,
     
     #Initial values
     N0 = N0,
@@ -119,12 +120,12 @@ param_packager <- function(
     #Proportion of severe infections that have complications
     prop_complications = prop_complications,
     
-    
     #Vaccination
     vaccination_coverage = vaccination_coverage,
     tt_vaccination_coverage = tt_vaccination_coverage,
     no_vacc_changes = no_vacc_changes,
     age_vaccination_beta_modifier = age_vaccination_beta_modifier,
+    vacc_start_group = vacc_start_group,
     
     #R0
     R0 = R0,
@@ -132,9 +133,9 @@ param_packager <- function(
     no_R0_changes = no_R0_changes,
     
     #Births, deaths and aging
-    #Aging rate by compartment
+    # Aging rate by compartment
     aging_rate = aging_rate,
-    #Set initial background death rate
+    # Set initial background death rate
     initial_background_death = initial_background_death,
     #Set simple births and deaths
     simp_birth_death = simp_birth_death,
@@ -155,6 +156,42 @@ param_packager <- function(
     repro_high = repro_high
     
   )
-
   
+  # Checks and balances -----------------------------------------------------
+  
+  #These must be above 0 and an integer
+  above_zero_and_an_integer <- export_list[c("n_age", "n_vacc", "n_vulnerable", "N0", "age_maternal_protection_ends", "repro_low", "repro_high")]
+  
+  #These must be integers
+  integer <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "vacc_start_group", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high")]
+  
+  #These must be probabilities
+  probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight", "aging_rate", "contact_matrix")]
+  
+  #Must be non-negative and an integer
+  non_neg_int <- export_list[c("I0")]
+  
+  #Non-negative
+  non_negative <- export_list[c("R0")]
+  
+  #Not above a reference value
+  above_value_age <- export_list[c("repro_low", "repro_high")]
+  above_value_vacc <- export_list[c("vacc_start_group")]
+  
+  #Run checks
+  a <- check_parameter(above_zero_and_an_integer, check_above_zero = T, check_integer = T)
+  b <- check_parameter(integer, check_integer = T)
+  c <- check_parameter(probability, check_probability = T)
+  d <- check_parameter(non_negative, check_non_negative = T)
+  e <- check_parameter(above_value_age, check_above_zero = T, check_not_above_reference_value = n_age)
+  f <- check_parameter(above_value_vacc, check_above_zero = T, check_not_above_reference_value = n_vacc)
+  g <- check_parameter(non_neg_int, check_non_negative = T, check_integer = T)
+  
+  #All tests
+  all_failures <- rbind(a, b, c, d, e, f, g)
+  
+  if(nrow(all_failures) > 0) {
+    warning("The following parameters failed checks:\n", paste(capture.output(print(all_failures, row.names = FALSE)), collapse = "\n"))
+  } else export_list
+    
 }
