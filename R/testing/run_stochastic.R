@@ -17,6 +17,7 @@ model <- odin2::odin("models/stochastic_model_v1.R")
 params <- param_packager(
  
   n_age = 2,
+  n_vulnerable = 2,
   
   incubation_rate = 0.2,
   recovery_rate = 1/14,
