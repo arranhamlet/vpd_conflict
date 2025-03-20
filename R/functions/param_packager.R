@@ -34,6 +34,11 @@ param_packager <- function(
   R0,
   tt_R0 = 0,
   
+  #Seeding parameters
+  seeded = 0,
+  #Define times when seeding occurs
+  tt_seeded = 0,
+
   #Births, deaths and aging
   #Aging rate by compartment
   aging_rate = 0,
@@ -69,6 +74,10 @@ param_packager <- function(
   
   #R0
   no_R0_changes <- length(tt_R0)
+  
+  #Seeding
+  no_seeded_changes <- length(tt_seeded)
+  seeded <- check_and_format_input(seeded, no_seeded_changes, n_age, n_vacc, n_vulnerable)
   
   #Format initial population and infections
   N0 <- check_and_format_input(N0, n_age, n_vacc, n_vulnerable)
@@ -131,6 +140,9 @@ param_packager <- function(
     R0 = R0,
     tt_R0 = tt_R0,
     no_R0_changes = no_R0_changes,
+    seeded = seeded,
+    tt_seeded = tt_seeded,
+    no_seeded_changes = no_seeded_changes, 
     
     #Births, deaths and aging
     # Aging rate by compartment
@@ -162,14 +174,11 @@ param_packager <- function(
   #These must be above 0 and an integer
   above_zero_and_an_integer <- export_list[c("n_age", "n_vacc", "n_vulnerable", "N0", "age_maternal_protection_ends", "repro_low", "repro_high")]
   
-  #These must be integers
-  integer <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "vacc_start_group", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high")]
+  #These must be non-negative and integers
+  non_neg_int <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "vacc_start_group", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high", "I0", "seeded", "tt_seeded")]
   
   #These must be probabilities
   probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight", "aging_rate", "contact_matrix")]
-  
-  #Must be non-negative and an integer
-  non_neg_int <- export_list[c("I0")]
   
   #Non-negative
   non_negative <- export_list[c("R0")]
@@ -180,15 +189,14 @@ param_packager <- function(
   
   #Run checks
   a <- check_parameter(above_zero_and_an_integer, check_above_zero = T, check_integer = T)
-  b <- check_parameter(integer, check_integer = T)
-  c <- check_parameter(probability, check_probability = T)
-  d <- check_parameter(non_negative, check_non_negative = T)
-  e <- check_parameter(above_value_age, check_above_zero = T, check_not_above_reference_value = n_age)
-  f <- check_parameter(above_value_vacc, check_above_zero = T, check_not_above_reference_value = n_vacc)
-  g <- check_parameter(non_neg_int, check_non_negative = T, check_integer = T)
+  b <- check_parameter(probability, check_probability = T)
+  c <- check_parameter(non_negative, check_non_negative = T)
+  d <- check_parameter(above_value_age, check_above_zero = T, check_not_above_reference_value = n_age)
+  e <- check_parameter(above_value_vacc, check_above_zero = T, check_not_above_reference_value = n_vacc)
+  f <- check_parameter(non_neg_int, check_non_negative = T, check_integer = T)
   
   #All tests
-  all_failures <- rbind(a, b, c, d, e, f, g)
+  all_failures <- rbind(a, b, c, d, e, f)
   
   if(nrow(all_failures) > 0) {
     warning("The following parameters failed checks:\n", paste(capture.output(print(all_failures, row.names = FALSE)), collapse = "\n"))

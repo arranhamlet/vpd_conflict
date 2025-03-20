@@ -24,9 +24,9 @@ model <- odin2::odin("models/stochastic_model_v1.R")
 #Get parameters
 params <- param_packager(
  
-  n_age = 2,
-  n_vacc = 2,
-  n_vulnerable = 2,
+  n_age = 1,
+  n_vacc = 1,
+  n_vulnerable = 1,
   
   incubation_rate = 0.2,
   recovery_rate = 1/14,
@@ -34,6 +34,8 @@ params <- param_packager(
   initial_background_death = 0.01,
   aging_rate = 0.05,
   I0 = 1,
+  seeded = c(0, 100, 0),
+  tt_seeded = c(0, 100, 0),
   N0 = 100
   
 )

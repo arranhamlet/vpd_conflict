@@ -18,7 +18,7 @@ update(S[, , ]) <- max(S[i, j, k] + waning_R[i, j, k] + waning_Rc[i, j, k] + agi
 
 update(E[, , ]) <- max(E[i, j, k] + lambda_S[i, j, k] - incubated[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k] + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k] - E_death[i, j, k], 0)
 
-update(I[, , ]) <- max(I[i, j, k] + into_I[i, j, k] + aging_into_I[i, j, k] - aging_out_of_I[i, j, k] + vaccinating_into_I[i, j, k] - vaccinating_out_of_I[i, j, k] - recovered_I_to_R[i, j, k] - I_death[i, j, k], 0)
+update(I[, , ]) <- max(I[i, j, k] + into_I[i, j, k] + aging_into_I[i, j, k] - aging_out_of_I[i, j, k] + vaccinating_into_I[i, j, k] - vaccinating_out_of_I[i, j, k] - recovered_I_to_R[i, j, k] - I_death[i, j, k] + t_seeded[i, j, k], 0)
 
 update(Is[, , ]) <- max(Is[i, j, k] + into_Is[i, j, k] - recovered_from_Is[i, j, k] + aging_into_Is[i, j, k] - aging_out_of_Is[i, j, k] + vaccinating_into_Is[i, j, k] - vaccinating_out_of_Is[i, j, k] - Is_death[i, j, k], 0)
 
@@ -156,6 +156,13 @@ tt_R0 <- parameter()
 no_R0_changes <- parameter()
 #Contact matrix
 contact_matrix <- parameter()
+#Seeding parameters
+seeded <- parameter()
+#Changing seeded
+#Define the times when seeded changes
+tt_seeded <- parameter()
+#Set the number of times seeded changes
+no_seeded_changes <- parameter()
 
 #Death parameters
 initial_background_death <- parameter()
@@ -213,6 +220,7 @@ beta_updated[1:age_maternal_protection_ends, , ] <- beta_updated[i, j, k] * (1 -
 lambda[, , ] <- max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
 #Calculate Reff in two parts due to Odin
 S_eff[, , ] <- S[i, j, k] * age_vaccination_beta_modifier[i, j, k]
+t_seeded <- interpolate(tt_seeded, seeded, "constant")
 
 #Calculate populations
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
@@ -273,6 +281,9 @@ dim(lambda_S) <- c(n_age, n_vacc, n_vulnerable)
 dim(waning_R) <- c(n_age, n_vacc, n_vulnerable)
 dim(waning_Rc) <- c(n_age, n_vacc, n_vulnerable)
 dim(incubated) <- c(n_age, n_vacc, n_vulnerable)
+dim(tt_seeded) <- no_seeded_changes
+dim(seeded) <- c(no_seeded_changes, n_age, n_vacc, n_vulnerable)
+dim(t_seeded) <- c(n_age, n_vacc, n_vulnerable)
 
 dim(into_I) <- c(n_age, n_vacc, n_vulnerable)
 dim(into_Is) <- c(n_age, n_vacc, n_vulnerable)
