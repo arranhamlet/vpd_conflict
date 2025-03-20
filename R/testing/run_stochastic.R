@@ -63,8 +63,8 @@ ggplot(data = subset(clean_df, !state %in% c("Is", "Rc") & age != "All"),
        mapping = aes(
          x = time,
          y = value,
-         color = age,
-         group_by = run
+         color = run,
+         group_by = age
        )) +
   geom_line() +
   facet_wrap(~state, scales = "free_y") +
@@ -79,4 +79,18 @@ ggplot(data = subset(clean_df, !state %in% c("Is", "Rc") & age != "All"),
 ##############
 
 
-
+ggplot(data = subset(clean_df, run == "run_7"),
+       mapping = aes(
+         x = time,
+         y = value,
+         color = run,
+         group_by = age
+       )) +
+  geom_line() +
+  facet_wrap(~state, scales = "free_y") +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  labs(
+    x = "",
+    y = ""
+  )
