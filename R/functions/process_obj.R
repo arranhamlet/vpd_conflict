@@ -9,7 +9,7 @@ process_obj <- function(this_obj, present_dimensions, colnames, time_length, x, 
     })
     
     dimnames(this_obj)[[this_is_particles]] <- paste0("run_", 1:model_system$n_particles)
-    melted_array <- melt(this_obj) %>%
+    melted_array <- reshape2::melt(this_obj) %>%
       setNames(c(colnames[1:(which(colnames == "time") - 1)], "run", "time", "value")) %>%
       mutate(state = names(dust_state)[x]) %>%
       select(time, state, all_of(colnames[1:(which(colnames == "time") - 1)]), "run", "value")

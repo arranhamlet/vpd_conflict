@@ -3,7 +3,8 @@ check_parameter <- function(parameter,
                             check_probability = FALSE, 
                             check_above_zero = FALSE,
                             check_non_negative = FALSE,
-                            check_not_above_reference_value = NULL) {
+                            check_not_above_reference_value = NULL,
+                            check_if_sum_above_zero = FALSE) {
   parameter_name <- deparse(substitute(parameter))
   
   if (is.list(parameter)) {
@@ -20,6 +21,10 @@ check_parameter <- function(parameter,
   
   failed_conditions <- vector("list", length(parameter))
   failure_table <- data.frame(Parameter = character(), Value = numeric(), Reason = character())
+  
+  if (check_if_sum_above_zero && sum(parameter) <= 0) {
+    failure_table <- rbind(failure_table, data.frame(Parameter = "Sum of values", Value = sum(parameter), Reason = "Sum must be above zero"))
+  }
   
   for (i in seq_along(parameter)) {
     errors <- c()

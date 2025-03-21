@@ -14,21 +14,28 @@ initial(total_pop) <- sum(N0)
 
 # Compartments ------------------------------------------------------------
 
-update(S[, , ]) <- max(S[i, j, k] + waning_R[i, j, k] + waning_Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k] + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k] - lambda_S[i, j, k] - S_death[i, j, k], 0)
+# Update compartments
+update(S[, , ]) <- max(S[i, j, k] + waning_R[i, j, k] + waning_Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k] + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k] - lambda_S[i, j, k] - S_death[i, j, k] - waning_from_S[i, j, k] + waning_to_S[i, j, k], 0)
 
-update(E[, , ]) <- max(E[i, j, k] + lambda_S[i, j, k] - incubated[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k] + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k] - E_death[i, j, k], 0)
+update(E[, , ]) <- max(E[i, j, k] + lambda_S[i, j, k] - incubated[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k] + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k] - E_death[i, j, k] - waning_from_E[i, j, k] + waning_to_E[i, j, k], 0)
 
-update(I[, , ]) <- max(I[i, j, k] + into_I[i, j, k] + aging_into_I[i, j, k] - aging_out_of_I[i, j, k] + vaccinating_into_I[i, j, k] - vaccinating_out_of_I[i, j, k] - recovered_I_to_R[i, j, k] - I_death[i, j, k] + t_seeded[i, j, k], 0)
+update(I[, , ]) <- max(I[i, j, k] + into_I[i, j, k] + aging_into_I[i, j, k] - aging_out_of_I[i, j, k] + vaccinating_into_I[i, j, k] - vaccinating_out_of_I[i, j, k] - recovered_I_to_R[i, j, k] - I_death[i, j, k] + t_seeded[i, j, k] - waning_from_I[i, j, k] + waning_to_I[i, j, k], 0)
 
-update(Is[, , ]) <- max(Is[i, j, k] + into_Is[i, j, k] - recovered_from_Is[i, j, k] + aging_into_Is[i, j, k] - aging_out_of_Is[i, j, k] + vaccinating_into_Is[i, j, k] - vaccinating_out_of_Is[i, j, k] - Is_death[i, j, k], 0)
+update(R[, , ]) <- max(R[i, j, k] + recovered_I_to_R[i, j, k] + recovered_Is_to_R[i, j, k] - waning_R[i, j, k] + aging_into_R[i, j, k] - aging_out_of_R[i, j, k] + vaccinating_into_R[i, j, k] - vaccinating_out_of_R[i, j, k] - R_death[i, j, k] - waning_from_R[i, j, k] + waning_to_R[i, j, k], 0)
 
-update(R[, , ]) <- max(R[i, j, k] + recovered_I_to_R[i, j, k] + recovered_Is_to_R[i, j, k] - waning_R[i, j, k] + aging_into_R[i, j, k] - aging_out_of_R[i, j, k] + vaccinating_into_R[i, j, k] - vaccinating_out_of_R[i, j, k] - R_death[i, j, k], 0)
+update(Is[, , ]) <- max(Is[i, j, k] + into_Is[i, j, k] - recovered_from_Is[i, j, k] + aging_into_Is[i, j, k] - aging_out_of_Is[i, j, k] + vaccinating_into_Is[i, j, k] - vaccinating_out_of_Is[i, j, k] - Is_death[i, j, k] - waning_from_Is[i, j, k] + waning_to_Is[i, j, k], 0)
 
-update(Rc[, , ]) <- max(Rc[i, j, k] + recovered_Is_to_Rc[i, j, k] - waning_Rc[i, j, k] + aging_into_Rc[i, j, k] - aging_out_of_Rc[i, j, k] + vaccinating_into_Rc[i, j, k] - vaccinating_out_of_Rc[i, j, k] - Rc_death[i, j, k], 0)
+update(Rc[, , ]) <- max(Rc[i, j, k] + recovered_Is_to_Rc[i, j, k] - waning_Rc[i, j, k] + aging_into_Rc[i, j, k] - aging_out_of_Rc[i, j, k] + vaccinating_into_Rc[i, j, k] - vaccinating_out_of_Rc[i, j, k] - Rc_death[i, j, k] - waning_from_Rc[i, j, k] + waning_to_Rc[i, j, k], 0)
 
 #Additional outputs
 update(R_effective) <- t_R0 * sum(S_eff) / N
 update(total_pop) <- N
+
+update(wantoS) <- sum(waning_to_S)
+update(wanfromS) <- sum(waning_from_S)
+
+initial(wantoS) <- 0
+initial(wanfromS) <- 0
 
 
 # Entering and exiting compartments ---------------------------------------
@@ -80,7 +87,7 @@ aging_out_of_Is[1:(n_age - 1), , ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i,
 aging_into_Rc[2:n_age, , ] <- if(Rc[i - 1, j, k] <= 0) 0 else Binomial(Rc[i - 1, j, k], max(min(aging_rate[i-1], 1), 0))
 aging_out_of_Rc[1:(n_age - 1), , ] <- if(Rc[i, j, k] <= 0) 0 else Binomial(Rc[i, j, k], max(min(aging_rate[i], 1), 0))
 
-# Vaccination
+# Moving between vaccination coverage amounts
 
 # Susceptible vaccination
 vaccinating_into_S[, 1, ] <- if(S[i, j, k] <= 0) 0 else Binomial(S[i, j, k] , 0)
@@ -111,6 +118,46 @@ vaccinating_out_of_Is[, 1:(n_vacc - 1) , ] <- if(Is[i, j, k] <= 0) 0 else Binomi
 vaccinating_into_Rc[, 1, ] <- if(Rc[i, j, k] <= 0) 0 else Binomial(Rc[i, j, k] , 0)
 vaccinating_into_Rc[, 2:n_vacc , ] <- if(Rc[i, j - 1, k] <= 0) 0 else Binomial(Rc[i, j - 1, k] , max(min(vaccination_prop[i, j - 1, k], 1), 0))
 vaccinating_out_of_Rc[, 1:(n_vacc - 1) , ] <- if(Rc[i, j, k] <= 0) 0 else Binomial(Rc[i, j, k] , max(min(vaccination_prop[i, j, k], 1), 0))
+
+# Moving down vaccination compartments (waning immunity)
+
+# Waning FROM each compartment
+waning_from_S[, 2:n_vacc, ] <- if(S[i, j, k] <= 0) 0 else Binomial(S[i, j, k], max(min(waning_rate[i, j], 1), 0))
+waning_from_S[, 1, ] <- 0  # No waning from the lowest vaccination group
+
+waning_from_E[, 2:n_vacc, ] <- if(E[i, j, k] <= 0) 0 else Binomial(E[i, j, k], max(min(waning_rate[i, j], 1), 0))
+waning_from_E[, 1, ] <- 0
+
+waning_from_I[, 2:n_vacc, ] <- if(I[i, j, k] <= 0) 0 else Binomial(I[i, j, k], max(min(waning_rate[i, j], 1), 0))
+waning_from_I[, 1, ] <- 0
+
+waning_from_R[, 2:n_vacc, ] <- if(R[i, j, k] <= 0) 0 else Binomial(R[i, j, k], max(min(waning_rate[i, j], 1), 0))
+waning_from_R[, 1, ] <- 0
+
+waning_from_Is[, 2:n_vacc, ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i, j, k], max(min(waning_rate[i, j], 1), 0))
+waning_from_Is[, 1, ] <- 0
+
+waning_from_Rc[, 2:n_vacc, ] <- if(Rc[i, j, k] <= 0) 0 else Binomial(Rc[i, j, k], max(min(waning_rate[i, j], 1), 0))
+waning_from_Rc[, 1, ] <- 0
+
+# Waning INTO each compartment
+waning_to_S[, 1:(n_vacc - 1), ] <- waning_from_S[i, j + 1, k]
+waning_to_S[, n_vacc, ] <- 0  # No one moves into the highest compartment
+
+waning_to_E[, 1:(n_vacc - 1), ] <- waning_from_E[i, j + 1, k]
+waning_to_E[, n_vacc, ] <- 0  
+
+waning_to_I[, 1:(n_vacc - 1), ] <- waning_from_I[i, j + 1, k]
+waning_to_I[, n_vacc, ] <- 0  
+
+waning_to_R[, 1:(n_vacc - 1), ] <- waning_from_R[i, j + 1, k]
+waning_to_R[, n_vacc, ] <- 0  
+
+waning_to_Is[, 1:(n_vacc - 1), ] <- waning_from_Is[i, j + 1, k]
+waning_to_Is[, n_vacc, ] <- 0  
+
+waning_to_Rc[, 1:(n_vacc - 1), ] <- waning_from_Rc[i, j + 1, k]
+waning_to_Rc[, n_vacc, ] <- 0  
 
 
 # User parameter values --------------------------------------------------------
@@ -267,6 +314,8 @@ dim(Rc) <- c(n_age, n_vacc, n_vulnerable)
 dim(N0) <- c(n_age, n_vacc, n_vulnerable)
 dim(I0) <- c(n_age, n_vacc, n_vulnerable)
 
+# Vaccination waning rate
+waning_rate <- parameter()
 dim(beta_updated) <- c(n_age, n_vacc, n_vulnerable)
 dim(age_vaccination_beta_modifier) <- c(n_age, n_vacc, n_vulnerable)
 dim(prop_severe) <- c(n_age, n_vacc, n_vulnerable)
@@ -280,6 +329,7 @@ dim(contact_matrix) <- c(n_age, n_age)
 dim(lambda_S) <- c(n_age, n_vacc, n_vulnerable)
 dim(waning_R) <- c(n_age, n_vacc, n_vulnerable)
 dim(waning_Rc) <- c(n_age, n_vacc, n_vulnerable)
+dim(waning_rate) <- c(n_age, n_vacc)
 dim(incubated) <- c(n_age, n_vacc, n_vulnerable)
 dim(tt_seeded) <- no_seeded_changes
 dim(seeded) <- c(no_seeded_changes, n_age, n_vacc, n_vulnerable)
@@ -326,6 +376,19 @@ dim(vaccinating_out_of_Is) <- c(n_age, n_vacc, n_vulnerable)
 dim(vaccinating_into_Rc) <- c(n_age, n_vacc, n_vulnerable)
 dim(vaccinating_out_of_Rc) <- c(n_age, n_vacc, n_vulnerable)
 dim(vaccination_prop) <- c(n_age, n_vacc, n_vulnerable)
+dim(waning_from_S) <- c(n_age, n_vacc, n_vulnerable)
+dim(waning_to_S) <- c(n_age, n_vacc, n_vulnerable)
+dim(waning_from_E) <- c(n_age, n_vacc, n_vulnerable)
+dim(waning_to_E) <- c(n_age, n_vacc, n_vulnerable)
+dim(waning_from_I) <- c(n_age, n_vacc, n_vulnerable)
+dim(waning_to_I) <- c(n_age, n_vacc, n_vulnerable)
+dim(waning_from_R) <- c(n_age, n_vacc, n_vulnerable)
+dim(waning_to_R) <- c(n_age, n_vacc, n_vulnerable)
+dim(waning_from_Is) <- c(n_age, n_vacc, n_vulnerable)
+dim(waning_to_Is) <- c(n_age, n_vacc, n_vulnerable)
+dim(waning_from_Rc) <- c(n_age, n_vacc, n_vulnerable)
+dim(waning_to_Rc) <- c(n_age, n_vacc, n_vulnerable)
+
 
 dim(Births) <- n_vulnerable
 dim(reproductive_population) <- n_vulnerable
