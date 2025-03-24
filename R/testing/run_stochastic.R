@@ -17,6 +17,8 @@ invisible(sapply(list.files("R/functions", full.names = T, recursive = T), funct
 model <- odin2::odin("models/stochastic_model_v1.R")
 
 #Get parameters
+time1 <- Sys.time()
+
 params <- param_packager(
  
   n_age = 2,
@@ -29,72 +31,43 @@ params <- param_packager(
   initial_background_death = 0.001,
   aging_rate = 0.005,
   I0 = 0,
-  N0 = 100,
+  
+  N0 = array(c(0, 1000, 0, 0), dim = c(2, 2, 1)),
+  
   severe_recovery_rate = 1/14,
   prop_severe = 0.1,
   prop_complications = 0.1,
   delta = 0.001,
   
   #Seeding parameters
-  seeded = array(c(0, 0, 0, 0, 
-                   0, 1, 0, 0, 
+  seeded = array(c(0, 0, 0, 0,
+                   0, 10, 0, 0,
                    0, 0, 0, 0,
-                   0, 5, 0, 0,
+                   0, 10, 0, 0,
                    0, 0, 0, 0), dim = c(5, 2, 2, 1)),
   tt_seeded = c(0, 200, 201, 800, 801),
   
-  #Check time varying vaccination
-  vaccination_coverage = array(c(0, 0, 0.5/40, 0.5/40, 0, 0), dim = c(3, 2, 2, 1)),
-  tt_vaccination_coverage = c(0, 220, 240),
+  #Time varying vaccination
+  vaccination_coverage = array(
+    c(0, 0, 0, 0,
+      .5/14, .5/14, .5/14, .5/14,
+      0, 0, 0, 0,
+      .5/7, .5/7, .5/7, .5/7,
+      0, 0, 0, 0), dim = c(5, 2, 2, 1)),
+  tt_vaccination_coverage = c(0, 200, 214, 800, 807),
+  
   waning_rate = 0.0001
 
 )
 
-#Define dust system and initialise
-sys <- dust2::dust_system_create(model(), params, n_particles = 100)
-dust2::dust_system_set_state_initial(sys)
-
-#Set time and run model
-time <- 0:1200
-y <- dust2::dust_system_simulate(sys, time)
-
-#Clean output
-#Unpack columns
-clean_df <- unpack_dust2(
-  model_system = sys, 
-  model_object = y, 
-  dimension_names = list(
-    age = list(as.character(1:params$n_age)), 
-    vaccination = list(as.character(1:params$n_vacc)),
-    risk = list(as.character(1:params$n_risk)),
-    time = list(time)
-  ),
-  which_state_dimensions = list(
-    S = c("age", "vaccination", "risk", "time"),
-    E = c("age", "vaccination", "risk", "time"),
-    I = c("age", "vaccination", "risk", "time"),
-    R = c("age", "vaccination", "risk", "time"),
-    Is = c("age", "vaccination", "risk", "time"),
-    Rc = c("age", "vaccination", "risk", "time")
+#Run model
+clean_df <- run_model(
+  params = params,
+  time = 365 * 5,
+  no_runs = 100
   )
-)
 
-# Simple test plot
-# ggplot(data = subset(clean_df, age == "All" & state == "S"),
-#        mapping = aes(
-#          x = time,
-#          y = value,
-#          color = age,
-#          linetype = vaccination
-#        )) +
-#   geom_line() +
-#   facet_wrap(~run, scales = "free_y") +
-#   theme_bw() +
-#   theme(legend.position = "bottom") +
-#   labs(
-#     x = "",
-#     y = ""
-#   )
+time2 <- Sys.time()
 
 ##############
 
@@ -124,5 +97,35 @@ ggplot(
        y = "") +
   facet_wrap(~state, scale = "free_y")
 
+#All vaccination coverage
+no_runs <- length(unique(clean_df$run))
+
+all_run_vacc <- fgroup_by(subset(clean_df, age != "All"), time, vaccination) %>%
+  fsummarise(
+    value = sum(value)/no_runs
+  ) %>%
+  spread(
+    key = vaccination,
+    value = value
+  ) %>%
+  set_names("time", "unvaccinated", "vaccinated") %>%
+  mutate(
+    vac_coverage = vaccinated/(unvaccinated + vaccinated)
+  )
+
+#Plot vaccination coverage
+ggplot(
+  data = all_run_vacc,
+  mapping = aes(
+    x = time,
+    y = vac_coverage
+  )
+) +
+  geom_line() +
+  labs(
+    x = "",
+    y = "Vaccination coverage"
+  ) +
+  theme_bw()
 
 

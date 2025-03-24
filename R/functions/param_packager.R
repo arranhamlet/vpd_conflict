@@ -62,7 +62,7 @@ param_packager <- function(
   age_maternal_protection_ends = 1,
   #Reproductive ages
   repro_low = 1,
-  repro_high = 1
+  repro_high = NULL
   
 ){
   
@@ -99,6 +99,7 @@ param_packager <- function(
   waning_rate <- check_and_format_input(waning_rate, n_age, n_vacc)
   
   #Births, deaths, aging
+  if(is.null(repro_high)) repro_high <- n_age
   initial_background_death <- check_and_format_input(initial_background_death, n_age, n_risk)
   crude_birth <- check_and_format_input(crude_birth, length(tt_birth_changes), n_risk)
   crude_death <- check_and_format_input(crude_death, length(tt_birth_changes), n_age, n_risk)
