@@ -19,7 +19,7 @@ model <- odin2::odin("models/stochastic_model_v1.R")
 #Get parameters
 params <- param_packager(
  
-  n_age = 1,
+  n_age = 2,
   n_vacc = 2,
   n_risk = 1,
   
@@ -35,13 +35,13 @@ params <- param_packager(
   prop_complications = 0.1,
   
   #Seeding parameters
-  seeded = array(c(0, 0, 1, 0, 0, 0), dim = c(3, 1, 2, 1)),
-  tt_seeded = c(0, 200, 201)
+  seeded = array(c(0, 0, 1, 0, 0, 0), dim = c(3, 2, 2, 1)),
+  tt_seeded = c(0, 200, 201),
   
   #Check time varying vaccination
-  # vaccination_coverage = array(c(0, 0, 0.25, 0.25, 0, 0), dim = c(3, 1, 2, 1)),
-  # tt_vaccination_coverage = c(0, 200, 201),
-  # waning_rate = 0.0001
+  vaccination_coverage = array(c(0, 0, 0.5/40, 0.5/40, 0, 0), dim = c(3, 2, 2, 1)),
+  tt_vaccination_coverage = c(0, 220, 240),
+  waning_rate = 0.0001
 
 )
 

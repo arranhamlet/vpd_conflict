@@ -259,7 +259,7 @@ beta[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else t_R0 / infectious_perio
 #Update with vaccination and age mediation
 beta_updated[, , ] <- age_vaccination_beta_modifier[i, j, k] * beta[i, j, k]
 #Update with maternal protection to first groups
-beta_updated[1:age_maternal_protection_ends, , ] <- beta_updated[i, j, k] * (1 - protection_weight[i] * prop_vaccinated[k])
+beta_updated[1:age_maternal_protection_ends, , ] <- beta_updated[i, j, k] * (1 - protection_weight[i] * prop_vaccinated[i, k])
 #Calculate the force of infection - using a contact matrix
 lambda[, , ] <- max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
 #Calculate Reff in two parts due to Odin
