@@ -23,6 +23,8 @@ param_packager <- function(
   prop_severe = 0,
   #Proportion of severe infections that have complications
   prop_complications = 0,
+  #Natural protection waning
+  delta = 0,
   
   #Vaccination
   vaccination_coverage = 0,
@@ -134,6 +136,8 @@ param_packager <- function(
     prop_severe = prop_severe,
     #Proportion of severe infections that have complications
     prop_complications = prop_complications,
+    #Natural protection waning
+    delta = delta,
     
     #Vaccination
     vaccination_coverage = vaccination_coverage,
@@ -188,7 +192,7 @@ param_packager <- function(
   non_neg_int <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high", "I0", "seeded", "tt_seeded")]
   
   #These must be probabilities
-  probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight_vacc", "protection_weight_rec", "aging_rate", "contact_matrix", "waning_rate")]
+  probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight_vacc", "protection_weight_rec", "aging_rate", "contact_matrix", "waning_rate", "delta")]
   
   #Non-negative
   non_negative <- export_list[c("R0")]

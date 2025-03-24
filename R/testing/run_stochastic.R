@@ -28,15 +28,20 @@ params <- param_packager(
   R0 = 10,
   initial_background_death = 0.001,
   aging_rate = 0.005,
-  I0 = 1,
+  I0 = 0,
   N0 = 100,
   severe_recovery_rate = 1/14,
   prop_severe = 0.1,
   prop_complications = 0.1,
+  delta = 0.001,
   
   #Seeding parameters
-  seeded = array(c(0, 0, 0, 0, 0, 0), dim = c(3, 2, 2, 1)),
-  tt_seeded = c(0, 200, 201),
+  seeded = array(c(0, 0, 0, 0, 
+                   0, 1, 0, 0, 
+                   0, 0, 0, 0,
+                   0, 5, 0, 0,
+                   0, 0, 0, 0), dim = c(5, 2, 2, 1)),
+  tt_seeded = c(0, 200, 201, 800, 801),
   
   #Check time varying vaccination
   vaccination_coverage = array(c(0, 0, 0.5/40, 0.5/40, 0, 0), dim = c(3, 2, 2, 1)),
@@ -50,7 +55,7 @@ sys <- dust2::dust_system_create(model(), params, n_particles = 100)
 dust2::dust_system_set_state_initial(sys)
 
 #Set time and run model
-time <- 0:800
+time <- 0:1200
 y <- dust2::dust_system_simulate(sys, time)
 
 #Clean output
