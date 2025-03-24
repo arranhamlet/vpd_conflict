@@ -218,8 +218,6 @@ no_death_changes <- parameter()
 tt_death_changes <- parameter()
 
 #Birth rate parameters
-#Maternal antibody protection
-protection_weight <- parameter()
 #Add in changing birth and deaths
 crude_birth <- parameter()
 #Number of changes to birth rate
@@ -232,6 +230,10 @@ repro_low <- parameter()
 repro_high <- parameter()
 #Maternal antibody protection
 age_maternal_protection_ends <- parameter()
+#Maternal antibody protection from vaccination
+protection_weight_vacc <- parameter()
+#Maternal antibody protection from natural infection
+protection_weight_rec <- parameter()
 
 #Aging parameters
 #Aging rate
@@ -258,8 +260,12 @@ t_R0 <- interpolate(tt_R0, R0, "constant")
 beta[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else t_R0 / infectious_period[i, j, k]
 #Update with vaccination and age mediation
 beta_updated[, , ] <- age_vaccination_beta_modifier[i, j, k] * beta[i, j, k]
+
 #Update with maternal protection to first groups
-beta_updated[1:age_maternal_protection_ends, , ] <- beta_updated[i, j, k] * (1 - protection_weight[i] * prop_vaccinated[i, k])
+beta_updated[1:age_maternal_protection_ends, , ] <- beta[i, j, k] * age_vaccination_beta_modifier[i, j, k] *
+  (1 - protection_weight_vacc[i] * prop_maternal_vaccinated[k] -
+     protection_weight_rec[i] * prop_maternal_natural[k])
+
 #Calculate the force of infection - using a contact matrix
 lambda[, , ] <- max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
 #Calculate Reff in two parts due to Odin
@@ -289,10 +295,16 @@ birth_rate[] <- if(reproductive_population[i] <= 0) 0 else sum(Npop_background_d
 birth_int <- interpolate(tt_birth_changes, crude_birth, "constant")
 #Calculate the number of births
 Births[] <-  if(reproductive_population[i] <= 0) 0 else if(simp_birth_death == 1) Binomial(reproductive_population[i], max(min(birth_rate[i], 1), 0)) else Binomial(reproductive_population[i], max(min(birth_int[i], 1), 0))
-# Proportion of mothers who confer maternal antibodies
+
+# Mothers who confer vaccine derived maternal antibodies
 vaccinated_mums[] <- sum(S[repro_low:repro_high, 2:n_vacc, i]) + sum(E[repro_low:repro_high, 2:n_vacc, i]) + sum(I[repro_low:repro_high, 2:n_vacc, i]) + sum(R[repro_low:repro_high, 2:n_vacc, i]) + sum(Is[repro_low:repro_high, 2:n_vacc, i]) + sum(Rc[repro_low:repro_high, 2:n_vacc, i])
-#Adding in R and Rc mums too
-prop_vaccinated[] <- if(reproductive_population[i] <= 0) 0 else (vaccinated_mums[i] + sum(R[repro_low:repro_high, 1, i]) + sum(Rc[repro_low:repro_high, 1, i]))/reproductive_population[i]
+
+# Mothers who confer natural derived maternal antibodies
+antibody_mums[] <- sum(I[repro_low:repro_high, , i]) + sum(R[repro_low:repro_high, , i]) + sum(Is[repro_low:repro_high, , i]) + sum(Rc[repro_low:repro_high, , i])
+
+# Maternal 
+prop_maternal_vaccinated[] <- if(reproductive_population[i] <= 0) 0 else vaccinated_mums[i]/reproductive_population[i]
+prop_maternal_natural[] <- if(reproductive_population[i] <= 0) 0 else antibody_mums[i]/reproductive_population[i]
 
 #Interpolate vaccination coverage
 vaccination_prop <- interpolate(tt_vaccination_coverage, vaccination_coverage, "constant")
@@ -354,9 +366,12 @@ dim(aging_into_Rc) <- c(n_age, n_vacc, n_risk)
 dim(aging_out_of_Rc) <- c(n_age, n_vacc, n_risk)
 dim(Npop_age_risk) <- c(n_age, n_risk)
 
-dim(prop_vaccinated) <- n_risk
+dim(prop_maternal_vaccinated) <- n_risk
+dim(prop_maternal_natural) <- n_risk
 dim(vaccinated_mums) <- n_risk
-dim(protection_weight) <- age_maternal_protection_ends
+dim(antibody_mums) <- n_risk
+dim(protection_weight_vacc) <- age_maternal_protection_ends
+dim(protection_weight_rec) <- age_maternal_protection_ends
 
 dim(tt_vaccination_coverage) <- no_vacc_changes
 dim(vaccination_coverage) <- c(no_vacc_changes, n_age, n_vacc, n_risk)

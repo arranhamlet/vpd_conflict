@@ -53,7 +53,9 @@ param_packager <- function(
   crude_birth = 0,
   crude_death = 0,
   #Weight given to maternal protection
-  protection_weight = 0,
+  protection_weight_vacc = 0,
+  protection_weight_rec = 0,
+  
   #Age group where maternal protection ends
   age_maternal_protection_ends = 1,
   #Reproductive ages
@@ -164,7 +166,8 @@ param_packager <- function(
     crude_birth = crude_birth,
     crude_death = crude_death,
     #Weight given to maternal protection
-    protection_weight = protection_weight,
+    protection_weight_vacc = protection_weight_vacc,
+    protection_weight_rec = protection_weight_rec,
     #Age group where maternal protection ends
     age_maternal_protection_ends = age_maternal_protection_ends,
     #Reproductive ages
@@ -185,7 +188,7 @@ param_packager <- function(
   non_neg_int <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high", "I0", "seeded", "tt_seeded")]
   
   #These must be probabilities
-  probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight", "aging_rate", "contact_matrix", "waning_rate")]
+  probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight_vacc", "protection_weight_rec", "aging_rate", "contact_matrix", "waning_rate")]
   
   #Non-negative
   non_negative <- export_list[c("R0")]
