@@ -4,7 +4,7 @@ param_packager <- function(
   #Dimensions
   n_age = 1,
   n_vacc = 1,
-  n_vulnerable = 1,  
+  n_risk = 1,  
   
   #Initial values
   N0 = 1000,
@@ -18,7 +18,7 @@ param_packager <- function(
   #Recovery rate
   recovery_rate,
   #Recovery rate for severe infections
-  severe_recovery_rate = 0,
+  severe_recovery_rate = NULL,
   #Proportion of infections that are severe
   prop_severe = 0,
   #Proportion of severe infections that have complications
@@ -69,6 +69,9 @@ param_packager <- function(
     contact_matrix <- matrix(1, nrow = n_age, ncol = n_age)/(n_age * n_age)
   }
   
+  #Set up severe recovery rate if missing
+  if(is.null(severe_recovery_rate)) severe_recovery_rate <- recovery_rate
+  
   #Vaccination
   no_vacc_changes <- length(tt_vaccination_coverage)
   
@@ -77,24 +80,24 @@ param_packager <- function(
   
   #Seeding
   no_seeded_changes <- length(tt_seeded)
-  seeded <- check_and_format_input(seeded, no_seeded_changes, n_age, n_vacc, n_vulnerable)
+  seeded <- check_and_format_input(seeded, no_seeded_changes, n_age, n_vacc, n_risk)
   
   #Format initial population and infections
-  N0 <- check_and_format_input(N0, n_age, n_vacc, n_vulnerable)
-  I0 <- check_and_format_input(I0, n_age, n_vacc, n_vulnerable)
+  N0 <- check_and_format_input(N0, n_age, n_vacc, n_risk)
+  I0 <- check_and_format_input(I0, n_age, n_vacc, n_risk)
   
   #Prop severe
-  prop_severe <- check_and_format_input(prop_severe, n_age, n_vacc, n_vulnerable)
+  prop_severe <- check_and_format_input(prop_severe, n_age, n_vacc, n_risk)
   
   #Vaccination
-  vaccination_coverage <- check_and_format_input(vaccination_coverage, no_vacc_changes, n_age, n_vacc, n_vulnerable)
-  age_vaccination_beta_modifier <- check_and_format_input(age_vaccination_beta_modifier, n_age, n_vacc, n_vulnerable)
+  vaccination_coverage <- check_and_format_input(vaccination_coverage, no_vacc_changes, n_age, n_vacc, n_risk)
+  age_vaccination_beta_modifier <- check_and_format_input(age_vaccination_beta_modifier, n_age, n_vacc, n_risk)
   waning_rate <- check_and_format_input(waning_rate, n_age, n_vacc)
   
   #Births, deaths, aging
-  initial_background_death <- check_and_format_input(initial_background_death, n_age, n_vulnerable)
-  crude_birth <- check_and_format_input(crude_birth, length(tt_birth_changes), n_vulnerable)
-  crude_death <- check_and_format_input(crude_death, length(tt_birth_changes), n_age, n_vulnerable)
+  initial_background_death <- check_and_format_input(initial_background_death, n_age, n_risk)
+  crude_birth <- check_and_format_input(crude_birth, length(tt_birth_changes), n_risk)
+  crude_death <- check_and_format_input(crude_death, length(tt_birth_changes), n_age, n_risk)
   no_birth_changes = length(tt_birth_changes)
   no_death_changes = length(tt_death_changes)
   aging_rate <- check_and_format_input(aging_rate, n_age)
@@ -109,7 +112,7 @@ param_packager <- function(
     #Dimensions
     n_age = n_age,
     n_vacc = n_vacc,
-    n_vulnerable = n_vulnerable,
+    n_risk = n_risk,
     
     #Initial values
     N0 = N0,
@@ -135,7 +138,6 @@ param_packager <- function(
     tt_vaccination_coverage = tt_vaccination_coverage,
     no_vacc_changes = no_vacc_changes,
     age_vaccination_beta_modifier = age_vaccination_beta_modifier,
-    vacc_start_group = vacc_start_group,
     waning_rate = waning_rate,
     
     #R0
@@ -174,13 +176,13 @@ param_packager <- function(
   # Checks and balances -----------------------------------------------------
   
   #These must be above 0 and an integer
-  above_zero_and_an_integer <- export_list[c("n_age", "n_vacc", "n_vulnerable", "age_maternal_protection_ends", "repro_low", "repro_high")]
+  above_zero_and_an_integer <- export_list[c("n_age", "n_vacc", "n_risk", "age_maternal_protection_ends", "repro_low", "repro_high")]
   
   #Check if the sum is above 0 and an integer
   sum_above_zero_and_an_integer <- export_list[c("N0")]
   
   #These must be non-negative and integers
-  non_neg_int <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "vacc_start_group", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high", "I0", "seeded", "tt_seeded")]
+  non_neg_int <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high", "I0", "seeded", "tt_seeded")]
   
   #These must be probabilities
   probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight", "aging_rate", "contact_matrix", "waning_rate")]
@@ -190,19 +192,17 @@ param_packager <- function(
   
   #Not above a reference value
   above_value_age <- export_list[c("repro_low", "repro_high")]
-  above_value_vacc <- export_list[c("vacc_start_group")]
-  
+
   #Run checks
   a <- check_parameter(above_zero_and_an_integer, check_above_zero = T, check_integer = T)
   b <- check_parameter(probability, check_probability = T)
   c <- check_parameter(non_negative, check_non_negative = T)
   d <- check_parameter(above_value_age, check_above_zero = T, check_not_above_reference_value = n_age)
-  e <- check_parameter(above_value_vacc, check_above_zero = T, check_not_above_reference_value = n_vacc)
-  f <- check_parameter(non_neg_int, check_non_negative = T, check_integer = T)
-  g <- check_parameter(sum_above_zero_and_an_integer, check_if_sum_above_zero = T, check_integer = T)
+  e <- check_parameter(non_neg_int, check_non_negative = T, check_integer = T)
+  f <- check_parameter(sum_above_zero_and_an_integer, check_if_sum_above_zero = T, check_integer = T)
   
   #All tests
-  all_failures <- rbind(a, b, c, d, e, f, g)
+  all_failures <- rbind(a, b, c, d, e, f)
   
   if(nrow(all_failures) > 0) {
     warning("The following parameters failed checks:\n", paste(capture.output(print(all_failures, row.names = FALSE)), collapse = "\n"))

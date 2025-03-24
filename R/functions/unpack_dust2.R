@@ -1,4 +1,5 @@
 unpack_dust2 <- function(model_system, model_object, dimension_names, which_state_dimensions) {
+  
   dust_state <- dust_unpack_state(model_system, model_object)
   
   these_are_compartments <- sapply(model_system$packing_state, length) != 0

@@ -14,20 +14,28 @@ process_obj <- function(this_obj, present_dimensions, colnames, time_length, x, 
       mutate(state = names(dust_state)[x]) %>%
       select(time, state, all_of(colnames[1:(which(colnames == "time") - 1)]), "run", "value")
     
+    #Speedy sum
     aggregate_array <- melted_array %>%
-      group_by(state, time, run) %>%
-      summarise(value = sum(value), .groups = 'drop')
-    
+      fgroup_by(state, time, run) %>%
+      fsummarise(
+        value = sum(value)
+      )
+
     list(melted_array, aggregate_array)
+    
   } else {
+    
     melted_array <- melt(this_obj) %>%
       setNames(c(which_state_dimensions[[which(names(which_state_dimensions) == names(these_are_compartments[x]))]], "value")) %>%
       mutate(state = names(dust_state)[x]) %>%
       select(time, state, everything(), value)
-    
+
+    #Speedy sum
     aggregate_array <- melted_array %>%
-      group_by(state, time) %>%
-      summarise(value = sum(value), .groups = 'drop')
+      fgroup_by(state, time) %>%
+      fsummarise(
+        value = sum(value)
+      )
     
     list(melted_array, aggregate_array)
   }

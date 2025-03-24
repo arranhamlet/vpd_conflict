@@ -31,11 +31,8 @@ update(Rc[, , ]) <- max(Rc[i, j, k] + recovered_Is_to_Rc[i, j, k] - waning_Rc[i,
 update(R_effective) <- t_R0 * sum(S_eff) / N
 update(total_pop) <- N
 
-update(wantoS) <- sum(waning_to_S)
-update(wanfromS) <- sum(waning_from_S)
-
-initial(wantoS) <- 0
-initial(wanfromS) <- 0
+update(seedy) <- sum(t_seeded)
+initial(seedy) <- 0
 
 
 # Entering and exiting compartments ---------------------------------------
@@ -63,7 +60,7 @@ recovered_I_to_R[, , ] <- if(I[i, j, k] <= 0) 0 else Binomial(I[i, j, k], max(mi
 
 #Is sampling
 recovered_from_Is[, , ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i, j, k], max(min(severe_recovery_rate, 1), 0))
-recovered_Is_to_R[, , ] <- if(recovered_from_Is[i, j, k] <= 0) 0 else Binomial(recovered_from_Is[i, j, k], max(min(prop_complications, 1), 0))
+recovered_Is_to_R[, , ] <- if(recovered_from_Is[i, j, k] <= 0) 0 else Binomial(recovered_from_Is[i, j, k], max(min(1 - prop_complications, 1), 0))
 recovered_Is_to_Rc[, , ] <- max(recovered_from_Is[i, j, k] - recovered_Is_to_R[i, j, k], 0)
 
 # Births and aging
@@ -167,8 +164,8 @@ waning_to_Rc[, n_vacc, ] <- 0
 n_age <- parameter(1)
 #Number of vaccination compartments
 n_vacc <- parameter(1)
-#Number of vulnerable population compartments
-n_vulnerable <- parameter(1)
+#Number of risk population compartments
+n_risk <- parameter(1)
 
 #Initial populations
 #Initial total population
@@ -271,10 +268,10 @@ t_seeded <- interpolate(tt_seeded, seeded, "constant")
 
 #Calculate populations
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
-Npop_age_vulnerable[, ] <- sum(S[i, , j]) + sum(E[i, , j]) + sum(I[i, , j]) + sum(R[i, , j]) + sum(Is[i, , j]) + sum(Rc[i, , j])
+Npop_age_risk[, ] <- sum(S[i, , j]) + sum(E[i, , j]) + sum(I[i, , j]) + sum(R[i, , j]) + sum(Is[i, , j]) + sum(Rc[i, , j])
 
 #Calculate death rates
-Npop_background_death[, ] <- Binomial(Npop_age_vulnerable[i, j], max(min(background_death[i, j], 1), 0))
+Npop_background_death[, ] <- Binomial(Npop_age_risk[i, j], max(min(background_death[i, j], 1), 0))
 #Interpolate changes in death rate
 death_int <- interpolate(tt_death_changes, crude_death, "constant")
 #Select background death rate to use
@@ -305,108 +302,108 @@ simp_birth_death <- parameter(1)
 
 # Dimensions --------------------------------------------------------------
 
-dim(S) <- c(n_age, n_vacc, n_vulnerable)
-dim(E) <- c(n_age, n_vacc, n_vulnerable)
-dim(I) <- c(n_age, n_vacc, n_vulnerable)
-dim(R) <- c(n_age, n_vacc, n_vulnerable)
-dim(Is) <- c(n_age, n_vacc, n_vulnerable)
-dim(Rc) <- c(n_age, n_vacc, n_vulnerable)
-dim(N0) <- c(n_age, n_vacc, n_vulnerable)
-dim(I0) <- c(n_age, n_vacc, n_vulnerable)
+dim(S) <- c(n_age, n_vacc, n_risk)
+dim(E) <- c(n_age, n_vacc, n_risk)
+dim(I) <- c(n_age, n_vacc, n_risk)
+dim(R) <- c(n_age, n_vacc, n_risk)
+dim(Is) <- c(n_age, n_vacc, n_risk)
+dim(Rc) <- c(n_age, n_vacc, n_risk)
+dim(N0) <- c(n_age, n_vacc, n_risk)
+dim(I0) <- c(n_age, n_vacc, n_risk)
 
 # Vaccination waning rate
 waning_rate <- parameter()
-dim(beta_updated) <- c(n_age, n_vacc, n_vulnerable)
-dim(age_vaccination_beta_modifier) <- c(n_age, n_vacc, n_vulnerable)
-dim(prop_severe) <- c(n_age, n_vacc, n_vulnerable)
-dim(beta) <- c(n_age, n_vacc, n_vulnerable)
-dim(infectious_period) <- c(n_age, n_vacc, n_vulnerable)
-dim(lambda) <- c(n_age, n_vacc, n_vulnerable)
+dim(beta_updated) <- c(n_age, n_vacc, n_risk)
+dim(age_vaccination_beta_modifier) <- c(n_age, n_vacc, n_risk)
+dim(prop_severe) <- c(n_age, n_vacc, n_risk)
+dim(beta) <- c(n_age, n_vacc, n_risk)
+dim(infectious_period) <- c(n_age, n_vacc, n_risk)
+dim(lambda) <- c(n_age, n_vacc, n_risk)
 dim(tt_R0) <- no_R0_changes
 dim(R0) <- no_R0_changes
-dim(S_eff) <- c(n_age, n_vacc, n_vulnerable)
+dim(S_eff) <- c(n_age, n_vacc, n_risk)
 dim(contact_matrix) <- c(n_age, n_age)
-dim(lambda_S) <- c(n_age, n_vacc, n_vulnerable)
-dim(waning_R) <- c(n_age, n_vacc, n_vulnerable)
-dim(waning_Rc) <- c(n_age, n_vacc, n_vulnerable)
+dim(lambda_S) <- c(n_age, n_vacc, n_risk)
+dim(waning_R) <- c(n_age, n_vacc, n_risk)
+dim(waning_Rc) <- c(n_age, n_vacc, n_risk)
 dim(waning_rate) <- c(n_age, n_vacc)
-dim(incubated) <- c(n_age, n_vacc, n_vulnerable)
+dim(incubated) <- c(n_age, n_vacc, n_risk)
 dim(tt_seeded) <- no_seeded_changes
-dim(seeded) <- c(no_seeded_changes, n_age, n_vacc, n_vulnerable)
-dim(t_seeded) <- c(n_age, n_vacc, n_vulnerable)
+dim(seeded) <- c(no_seeded_changes, n_age, n_vacc, n_risk)
+dim(t_seeded) <- c(n_age, n_vacc, n_risk)
 
-dim(into_I) <- c(n_age, n_vacc, n_vulnerable)
-dim(into_Is) <- c(n_age, n_vacc, n_vulnerable)
-dim(recovered_I_to_R) <- c(n_age, n_vacc, n_vulnerable)
-dim(recovered_from_Is) <- c(n_age, n_vacc, n_vulnerable)
-dim(recovered_Is_to_R) <- c(n_age, n_vacc, n_vulnerable)
-dim(recovered_Is_to_Rc) <- c(n_age, n_vacc, n_vulnerable)
+dim(into_I) <- c(n_age, n_vacc, n_risk)
+dim(into_Is) <- c(n_age, n_vacc, n_risk)
+dim(recovered_I_to_R) <- c(n_age, n_vacc, n_risk)
+dim(recovered_from_Is) <- c(n_age, n_vacc, n_risk)
+dim(recovered_Is_to_R) <- c(n_age, n_vacc, n_risk)
+dim(recovered_Is_to_Rc) <- c(n_age, n_vacc, n_risk)
 
 dim(aging_rate) <- n_age
-dim(aging_into_S) <- c(n_age, n_vacc, n_vulnerable)
-dim(aging_out_of_S) <- c(n_age, n_vacc, n_vulnerable)
-dim(aging_into_E) <- c(n_age, n_vacc, n_vulnerable)
-dim(aging_out_of_E) <- c(n_age, n_vacc, n_vulnerable)
-dim(aging_into_I) <- c(n_age, n_vacc, n_vulnerable)
-dim(aging_out_of_I) <- c(n_age, n_vacc, n_vulnerable)
-dim(aging_into_R) <- c(n_age, n_vacc, n_vulnerable)
-dim(aging_out_of_R) <- c(n_age, n_vacc, n_vulnerable)
-dim(aging_into_Is) <- c(n_age, n_vacc, n_vulnerable)
-dim(aging_out_of_Is) <- c(n_age, n_vacc, n_vulnerable)
-dim(aging_into_Rc) <- c(n_age, n_vacc, n_vulnerable)
-dim(aging_out_of_Rc) <- c(n_age, n_vacc, n_vulnerable)
-dim(Npop_age_vulnerable) <- c(n_age, n_vulnerable)
+dim(aging_into_S) <- c(n_age, n_vacc, n_risk)
+dim(aging_out_of_S) <- c(n_age, n_vacc, n_risk)
+dim(aging_into_E) <- c(n_age, n_vacc, n_risk)
+dim(aging_out_of_E) <- c(n_age, n_vacc, n_risk)
+dim(aging_into_I) <- c(n_age, n_vacc, n_risk)
+dim(aging_out_of_I) <- c(n_age, n_vacc, n_risk)
+dim(aging_into_R) <- c(n_age, n_vacc, n_risk)
+dim(aging_out_of_R) <- c(n_age, n_vacc, n_risk)
+dim(aging_into_Is) <- c(n_age, n_vacc, n_risk)
+dim(aging_out_of_Is) <- c(n_age, n_vacc, n_risk)
+dim(aging_into_Rc) <- c(n_age, n_vacc, n_risk)
+dim(aging_out_of_Rc) <- c(n_age, n_vacc, n_risk)
+dim(Npop_age_risk) <- c(n_age, n_risk)
 
-dim(prop_vaccinated) <- n_vulnerable
-dim(vaccinated_mums) <- n_vulnerable
+dim(prop_vaccinated) <- n_risk
+dim(vaccinated_mums) <- n_risk
 dim(protection_weight) <- age_maternal_protection_ends
 
 dim(tt_vaccination_coverage) <- no_vacc_changes
-dim(vaccination_coverage) <- c(no_vacc_changes, n_age, n_vacc, n_vulnerable)
-dim(vaccinating_into_S) <- c(n_age, n_vacc, n_vulnerable)
-dim(vaccinating_out_of_S) <- c(n_age, n_vacc, n_vulnerable)
-dim(vaccinating_into_E) <- c(n_age, n_vacc, n_vulnerable)
-dim(vaccinating_out_of_E) <- c(n_age, n_vacc, n_vulnerable)
-dim(vaccinating_into_I) <- c(n_age, n_vacc, n_vulnerable)
-dim(vaccinating_out_of_I) <- c(n_age, n_vacc, n_vulnerable)
-dim(vaccinating_into_R) <- c(n_age, n_vacc, n_vulnerable)
-dim(vaccinating_out_of_R) <- c(n_age, n_vacc, n_vulnerable)
-dim(vaccinating_into_Is) <- c(n_age, n_vacc, n_vulnerable)
-dim(vaccinating_out_of_Is) <- c(n_age, n_vacc, n_vulnerable)
-dim(vaccinating_into_Rc) <- c(n_age, n_vacc, n_vulnerable)
-dim(vaccinating_out_of_Rc) <- c(n_age, n_vacc, n_vulnerable)
-dim(vaccination_prop) <- c(n_age, n_vacc, n_vulnerable)
-dim(waning_from_S) <- c(n_age, n_vacc, n_vulnerable)
-dim(waning_to_S) <- c(n_age, n_vacc, n_vulnerable)
-dim(waning_from_E) <- c(n_age, n_vacc, n_vulnerable)
-dim(waning_to_E) <- c(n_age, n_vacc, n_vulnerable)
-dim(waning_from_I) <- c(n_age, n_vacc, n_vulnerable)
-dim(waning_to_I) <- c(n_age, n_vacc, n_vulnerable)
-dim(waning_from_R) <- c(n_age, n_vacc, n_vulnerable)
-dim(waning_to_R) <- c(n_age, n_vacc, n_vulnerable)
-dim(waning_from_Is) <- c(n_age, n_vacc, n_vulnerable)
-dim(waning_to_Is) <- c(n_age, n_vacc, n_vulnerable)
-dim(waning_from_Rc) <- c(n_age, n_vacc, n_vulnerable)
-dim(waning_to_Rc) <- c(n_age, n_vacc, n_vulnerable)
+dim(vaccination_coverage) <- c(no_vacc_changes, n_age, n_vacc, n_risk)
+dim(vaccinating_into_S) <- c(n_age, n_vacc, n_risk)
+dim(vaccinating_out_of_S) <- c(n_age, n_vacc, n_risk)
+dim(vaccinating_into_E) <- c(n_age, n_vacc, n_risk)
+dim(vaccinating_out_of_E) <- c(n_age, n_vacc, n_risk)
+dim(vaccinating_into_I) <- c(n_age, n_vacc, n_risk)
+dim(vaccinating_out_of_I) <- c(n_age, n_vacc, n_risk)
+dim(vaccinating_into_R) <- c(n_age, n_vacc, n_risk)
+dim(vaccinating_out_of_R) <- c(n_age, n_vacc, n_risk)
+dim(vaccinating_into_Is) <- c(n_age, n_vacc, n_risk)
+dim(vaccinating_out_of_Is) <- c(n_age, n_vacc, n_risk)
+dim(vaccinating_into_Rc) <- c(n_age, n_vacc, n_risk)
+dim(vaccinating_out_of_Rc) <- c(n_age, n_vacc, n_risk)
+dim(vaccination_prop) <- c(n_age, n_vacc, n_risk)
+dim(waning_from_S) <- c(n_age, n_vacc, n_risk)
+dim(waning_to_S) <- c(n_age, n_vacc, n_risk)
+dim(waning_from_E) <- c(n_age, n_vacc, n_risk)
+dim(waning_to_E) <- c(n_age, n_vacc, n_risk)
+dim(waning_from_I) <- c(n_age, n_vacc, n_risk)
+dim(waning_to_I) <- c(n_age, n_vacc, n_risk)
+dim(waning_from_R) <- c(n_age, n_vacc, n_risk)
+dim(waning_to_R) <- c(n_age, n_vacc, n_risk)
+dim(waning_from_Is) <- c(n_age, n_vacc, n_risk)
+dim(waning_to_Is) <- c(n_age, n_vacc, n_risk)
+dim(waning_from_Rc) <- c(n_age, n_vacc, n_risk)
+dim(waning_to_Rc) <- c(n_age, n_vacc, n_risk)
 
 
-dim(Births) <- n_vulnerable
-dim(reproductive_population) <- n_vulnerable
-dim(birth_rate) <- n_vulnerable
+dim(Births) <- n_risk
+dim(reproductive_population) <- n_risk
+dim(birth_rate) <- n_risk
 dim(tt_birth_changes) <- no_birth_changes
 dim(tt_death_changes) <- no_death_changes
 
-dim(background_death) <- c(n_age, n_vulnerable)
-dim(Npop_background_death) <- c(n_age, n_vulnerable)
-dim(initial_background_death) <- c(n_age, n_vulnerable)
-dim(crude_birth) <- c(no_birth_changes, n_vulnerable)
-dim(crude_death) <- c(no_birth_changes, n_age, n_vulnerable)
-dim(birth_int) <- n_vulnerable
-dim(death_int) <- c(n_age, n_vulnerable)
-dim(S_death) <- c(n_age, n_vacc, n_vulnerable)
-dim(E_death) <- c(n_age, n_vacc, n_vulnerable)
-dim(I_death) <- c(n_age, n_vacc, n_vulnerable)
-dim(R_death) <- c(n_age, n_vacc, n_vulnerable)
-dim(Is_death) <- c(n_age, n_vacc, n_vulnerable)
-dim(Rc_death) <- c(n_age, n_vacc, n_vulnerable)
+dim(background_death) <- c(n_age, n_risk)
+dim(Npop_background_death) <- c(n_age, n_risk)
+dim(initial_background_death) <- c(n_age, n_risk)
+dim(crude_birth) <- c(no_birth_changes, n_risk)
+dim(crude_death) <- c(no_birth_changes, n_age, n_risk)
+dim(birth_int) <- n_risk
+dim(death_int) <- c(n_age, n_risk)
+dim(S_death) <- c(n_age, n_vacc, n_risk)
+dim(E_death) <- c(n_age, n_vacc, n_risk)
+dim(I_death) <- c(n_age, n_vacc, n_risk)
+dim(R_death) <- c(n_age, n_vacc, n_risk)
+dim(Is_death) <- c(n_age, n_vacc, n_risk)
+dim(Rc_death) <- c(n_age, n_vacc, n_risk)
 
