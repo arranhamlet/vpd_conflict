@@ -3,6 +3,10 @@ This project is developed to support dynamic, adaptable, and scalable transmissi
 
 # Key Features
 
+- Stochastic: Stochastic models are essential in crisis settings where population sizes, vaccination coverage, and exposure risks are often variable and unpredictable.
+	- Reflect realistic outbreak variability in small or displaced populations.
+	- Capture the probability of rare but high-impact events, such as a sudden influx of infectious individuals.
+
 - Flexible Modeling Framework: Developed using odin2, the package allows for modular construction of dynamic transmission models, facilitating easy adaptation for different pathogens.
 
 - Comprehensive Structure: The models incorporate multiple dimensions such as age groups, vaccination statuses, and risk factors to reflect realistic population dynamics.
