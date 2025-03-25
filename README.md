@@ -34,6 +34,6 @@ Severe Infections (Is): Individuals who develop severe disease.
 
 Recovered with Complications (Rc): Individuals who recover with long-term health impacts.
 
-[Simple model structure](/figs/model_structure/simple_model_structure.JPG)
+![Simple model structure](/figs/model_structure/simple_model_structure.JPG)
 
 
