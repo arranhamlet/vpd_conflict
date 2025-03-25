@@ -1,4 +1,42 @@
-
+#' Parameter Packager Function
+#' 
+#' This function packages parameters for an infectious disease model with multiple compartments, vaccination, and demographic processes.
+#' 
+#' @param n_age Number of age groups
+#' @param n_vacc Number of vaccination statuses
+#' @param n_risk Number of risk groups
+#' @param N0 Initial population size
+#' @param I0 Initial number of infections
+#' @param contact_matrix Contact matrix for transmission rates
+#' @param incubation_rate Rate of incubation period progression
+#' @param recovery_rate Rate of recovery for non-severe cases
+#' @param severe_recovery_rate Rate of recovery for severe cases
+#' @param prop_severe Proportion of infections that are severe
+#' @param prop_complications Proportion of severe cases with complications
+#' @param delta Rate of natural protection waning
+#' @param vaccination_coverage Proportion vaccinated
+#' @param tt_vaccination_coverage Time points for changes in vaccination coverage
+#' @param age_vaccination_beta_modifier Modifier for vaccination impact by age
+#' @param waning_rate Rate of immunity waning
+#' @param R0 Basic reproduction number
+#' @param tt_R0 Time points for changes in R0
+#' @param seeded Initial seeding of infections
+#' @param tt_seeded Time points for changes in seeding
+#' @param aging_rate Rate at which individuals move between age groups
+#' @param initial_background_death Baseline background death rate
+#' @param simp_birth_death Toggle for simplified births and deaths
+#' @param tt_birth_changes Time points for changes in birth rate
+#' @param tt_death_changes Time points for changes in death rate
+#' @param crude_birth Crude birth rate
+#' @param crude_death Crude death rate
+#' @param protection_weight_vacc Weight for maternal protection from vaccination
+#' @param protection_weight_rec Weight for maternal protection from natural recovery
+#' @param age_maternal_protection_ends Age at which maternal protection ends
+#' @param repro_low Minimum age for reproduction
+#' @param repro_high Maximum age for reproduction
+#' 
+#' @return A list of formatted parameters ready for use in the infectious disease model
+#' @export
 param_packager <- function(
     
   #Dimensions

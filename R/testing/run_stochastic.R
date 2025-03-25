@@ -17,8 +17,6 @@ invisible(sapply(list.files("R/functions", full.names = T, recursive = T), funct
 model <- odin2::odin("models/stochastic_model_v1.R")
 
 #Get parameters
-time1 <- Sys.time()
-
 params <- param_packager(
  
   n_age = 2,
@@ -28,8 +26,8 @@ params <- param_packager(
   incubation_rate = 0.2,
   recovery_rate = 1/14,
   R0 = 10,
-  initial_background_death = 0.001,
-  aging_rate = 0.005,
+  initial_background_death = 1/(6.0 * 365),
+  aging_rate = 1/(1.6 * 365),
   I0 = 0,
   
   N0 = array(c(0, 1000, 0, 0), dim = c(2, 2, 1)),
@@ -37,7 +35,7 @@ params <- param_packager(
   severe_recovery_rate = 1/14,
   prop_severe = 0.1,
   prop_complications = 0.1,
-  delta = 0.001,
+  delta = 0,
   
   #Seeding parameters
   seeded = array(c(0, 0, 0, 0,
@@ -48,13 +46,13 @@ params <- param_packager(
   tt_seeded = c(0, 200, 201, 800, 801),
   
   #Time varying vaccination
-  vaccination_coverage = array(
-    c(0, 0, 0, 0,
-      .5/14, .5/14, .5/14, .5/14,
-      0, 0, 0, 0,
-      .5/7, .5/7, .5/7, .5/7,
-      0, 0, 0, 0), dim = c(5, 2, 2, 1)),
-  tt_vaccination_coverage = c(0, 200, 214, 800, 807),
+  # vaccination_coverage = array(
+  #   c(0, 0, 0, 0,
+  #     .5/14, .5/14, .5/14, .5/14,
+  #     0, 0, 0, 0,
+  #     .5/7, .5/7, .5/7, .5/7,
+  #     0, 0, 0, 0), dim = c(5, 2, 2, 1)),
+  # tt_vaccination_coverage = c(0, 200, 214, 800, 807),
   
   waning_rate = 0.0001
 
@@ -64,10 +62,8 @@ params <- param_packager(
 clean_df <- run_model(
   params = params,
   time = 365 * 5,
-  no_runs = 100
+  no_runs = 5
   )
-
-time2 <- Sys.time()
 
 ##############
 

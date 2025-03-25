@@ -142,19 +142,21 @@ waning_to_S[, 1:(n_vacc - 1), ] <- waning_from_S[i, j + 1, k]
 waning_to_S[, n_vacc, ] <- 0  # No one moves into the highest compartment
 
 waning_to_E[, 1:(n_vacc - 1), ] <- waning_from_E[i, j + 1, k]
-waning_to_E[, n_vacc, ] <- 0  
+waning_to_E[, n_vacc, ] <- 0
 
 waning_to_I[, 1:(n_vacc - 1), ] <- waning_from_I[i, j + 1, k]
-waning_to_I[, n_vacc, ] <- 0  
+waning_to_I[, n_vacc, ] <- 0
 
 waning_to_R[, 1:(n_vacc - 1), ] <- waning_from_R[i, j + 1, k]
-waning_to_R[, n_vacc, ] <- 0  
+waning_to_R[, n_vacc, ] <- 0
 
 waning_to_Is[, 1:(n_vacc - 1), ] <- waning_from_Is[i, j + 1, k]
-waning_to_Is[, n_vacc, ] <- 0  
+waning_to_Is[, n_vacc, ] <- 0
 
 waning_to_Rc[, 1:(n_vacc - 1), ] <- waning_from_Rc[i, j + 1, k]
-waning_to_Rc[, n_vacc, ] <- 0  
+waning_to_Rc[, n_vacc, ] <- 0
+
+#Movement between risk compartments
 
 
 # User parameter values --------------------------------------------------------
@@ -177,7 +179,7 @@ I0 <- parameter()
 #Incubation rate
 incubation_rate <- parameter()
 #Recovery rate
-recovery_rate <- parameter() 
+recovery_rate <- parameter()
 #Disease specific mortality
 alpha <- parameter(0)
 #Waning antibody rate
@@ -285,9 +287,9 @@ background_death[, ]<- if(simp_birth_death == 1) max(min(initial_background_deat
 
 #Calculate birth rates
 #Reproductive population
-reproductive_population[] <- sum(S[repro_low:repro_high, , i]) + 
-  sum(E[repro_low:repro_high, , i]) + 
-  sum(I[repro_low:repro_high, , i]) + 
+reproductive_population[] <- sum(S[repro_low:repro_high, , i]) +
+  sum(E[repro_low:repro_high, , i]) +
+  sum(I[repro_low:repro_high, , i]) +
   sum(R[repro_low:repro_high, , i])
 #Calculate birth rate
 birth_rate[] <- if(reproductive_population[i] <= 0) 0 else sum(Npop_background_death[, i])/reproductive_population[i]
@@ -302,7 +304,7 @@ vaccinated_mums[] <- sum(S[repro_low:repro_high, 2:n_vacc, i]) + sum(E[repro_low
 # Mothers who confer natural derived maternal antibodies
 antibody_mums[] <- sum(I[repro_low:repro_high, , i]) + sum(R[repro_low:repro_high, , i]) + sum(Is[repro_low:repro_high, , i]) + sum(Rc[repro_low:repro_high, , i])
 
-# Maternal 
+# Maternal
 prop_maternal_vaccinated[] <- if(reproductive_population[i] <= 0) 0 else vaccinated_mums[i]/reproductive_population[i]
 prop_maternal_natural[] <- if(reproductive_population[i] <= 0) 0 else antibody_mums[i]/reproductive_population[i]
 
@@ -421,4 +423,5 @@ dim(I_death) <- c(n_age, n_vacc, n_risk)
 dim(R_death) <- c(n_age, n_vacc, n_risk)
 dim(Is_death) <- c(n_age, n_vacc, n_risk)
 dim(Rc_death) <- c(n_age, n_vacc, n_risk)
+
 
