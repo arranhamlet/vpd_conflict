@@ -151,7 +151,7 @@ waning_to_R[, 1:(n_vacc - 1), ] <- waning_from_R[i, j + 1, k]
 waning_to_R[, n_vacc, ] <- 0
 
 waning_to_Is[, 1:(n_vacc - 1), ] <- waning_from_Is[i, j + 1, k]
-waning_to_Is[, n_vacc, ] <- 0
+waning_to_Is[, n_vacc, ] <- 0 
 
 waning_to_Rc[, 1:(n_vacc - 1), ] <- waning_from_Rc[i, j + 1, k]
 waning_to_Rc[, n_vacc, ] <- 0
