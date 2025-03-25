@@ -22,17 +22,17 @@ This project is developed to support dynamic, adaptable, and scalable transmissi
 
 The VPD model follows an extended SEIR framework with two additional compartments, forming an SEIRIsRc structure:
 
-Susceptible (S): Individuals who are at risk of infection.
+**Susceptible (S)**: Individuals who are at risk of infection.
 
-Exposed (E): Individuals in the incubation period who are infected but not yet infectious.
+**Exposed (E)**: Individuals in the incubation period who are infected but not yet infectious.
 
-Infectious (I): Individuals who are actively infectious.
+**Infectious (I)**: Individuals who are actively infectious.
 
-Recovered (R): Individuals who have recovered with full immunity.
+**Recovered (R)**: Individuals who have recovered with full immunity.
 
-Severe Infections (Is): Individuals who develop severe disease.
+**Severe Infections (Is)**: Individuals who develop severe disease.
 
-Recovered with Complications (Rc): Individuals who recover with long-term health impacts.
+**Recovered with Complications (Rc)**: Individuals who recover with long-term health impacts.
 
 ![Simple model structure](/figs/model_structure/simple_model_structure.JPG)
 
