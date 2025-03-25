@@ -39,8 +39,11 @@ Each compartment accounts for age, vaccination and risk groups.
 ![Simple model structure](/figs/model_structure/simple_model_structure.JPG)
 
 Where:
+
 i = Age group
+
 j = Vaccination group
+
 k = Risk group
 
 The multi-dimensional nature of the model allows us to account for specific risks, or protections, offered by different formulations of age, vaccination and risk.
