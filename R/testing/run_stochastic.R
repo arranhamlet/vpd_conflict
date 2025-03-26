@@ -20,7 +20,7 @@ model <- odin2::odin("models/stochastic_model_v1.R")
 
 params <- param_packager(
  
-  n_age = 1,
+  n_age = 2,
   n_vacc = 1,
   n_risk = 4,
   
@@ -30,17 +30,23 @@ params <- param_packager(
   
   tt_moving_risk = c(0, 500, 501),
   
-  moving_risk_values = array(c(0, 0, 0, 0,
-                               1, 0, 0, 0,
-                               0, 0, 0, 0), dim = c(3, 1, 1, 4)),
+  moving_risk_values = data.frame(
+    dim1 = 2,
+    dim2 = 1, 
+    dim3 = 1, 
+    dim4 = 1, 
+    value = 0.5
+  ),
   
-  moving_risk_distribution_values = tz
-  
+  moving_risk_distribution_values = data.frame(
+    dim1 = 2,
+    dim2 = 1, 
+    dim3 = 1, 
+    dim4 = c(2, 3, 4), 
+    value = c(0.2, 0.3, 0.5)
+    )
 
 )
-
-tz = generate_array_df(dim1 = 3, dim2 = 1, dim3 = 1, dim4 = 4,
-                       updates = data.frame(dim1 = 2, dim2 = 1, dim3 = 1, dim4 = c(2, 3, 4), value = c(0.2, 0.3, 0.5))) %>% df_to_array
 
 
 #Run model

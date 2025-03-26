@@ -37,8 +37,8 @@
 #' @param repro_low Lowest reproductive age group.
 #' @param repro_high Highest reproductive age group (defaults to `n_age` if `NULL`).
 #' @param tt_moving_risk Time points for risk group movement transitions.
-#' @param moving_risk_values Total number of people moving between risk groups (by age/vacc/risk).
-#' @param moving_risk_distribution_values Proportion of movers going to each risk group (by age/vacc/risk).
+#' @param moving_risk_values Total number of people moving between risk groups (by age/vacc/risk), accepts a data.frame of dimensions 1-4, and values.
+#' @param moving_risk_distribution_values Proportion of movers going to each risk group (by age/vacc/risk), accepts a data.frame of dimensions 1-4, and values.
 #'
 #' @return A named list of formatted and validated parameters for input into a stochastic infectious disease model.
 #'         The function also performs internal checks on validity and consistency of the inputs.
@@ -150,8 +150,30 @@ param_packager <- function(
   
   #Moving between risk groups
   no_moving_risk_changes <- length(tt_moving_risk)
-  moving_risk_values <- check_and_format_input(moving_risk_values, no_moving_risk_changes, n_age, n_vacc, n_risk)
-  moving_risk_distribution_values <- check_and_format_input(moving_risk_distribution_values, no_moving_risk_changes, n_age, n_vacc, n_risk)
+  
+  moving_risk_values <- if(all(moving_risk_values == 0)) check_and_format_input(no_moving_risk_changes, no_vacc_changes, n_age, n_vacc, n_risk) else {
+  generate_array_df(
+    dim1 = no_moving_risk_changes, 
+    dim2 = n_age, 
+    dim3 = n_vacc, 
+    dim4 = n_risk, 
+    default_value = 0,
+    updates = moving_risk_values
+  ) %>%
+    df_to_array
+  }
+  
+  moving_risk_distribution_values <- if(all(moving_risk_distribution_values == 0)) check_and_format_input(no_moving_risk_changes, no_vacc_changes, n_age, n_vacc, n_risk) else {
+    generate_array_df(
+    dim1 = no_moving_risk_changes, 
+    dim2 = n_age, 
+    dim3 = n_vacc, 
+    dim4 = n_risk, 
+    default_value = 0,
+    updates = moving_risk_distribution_values
+  ) %>%
+    df_to_array
+  }
   
   #Births, deaths, aging
   if(is.null(repro_high)) repro_high <- n_age
