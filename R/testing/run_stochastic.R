@@ -17,51 +17,31 @@ invisible(sapply(list.files("R/functions", full.names = T, recursive = T), funct
 model <- odin2::odin("models/stochastic_model_v1.R")
 
 #Get parameters
+
 params <- param_packager(
  
   n_age = 1,
   n_vacc = 1,
-  n_risk = 2,
+  n_risk = 4,
   
-  incubation_rate = 0.2,
-  recovery_rate = 1/14,
-  R0 = 10,
   I0 = 0,
   initial_background_death = 1/(6.0 * 365),
-  # aging_rate = 1/(1.6 * 365),
-  # I0 = 0,
-  # 
-  # N0 = array(c(0, 1000, 0, 0), dim = c(2, 2, 1)),
-  # 
-  # severe_recovery_rate = 1/14,
-  # prop_severe = 0.1,
-  # prop_complications = 0.1,
-  # delta = 0,
-  # 
-  # #Seeding parameters
-  # # seeded = array(c(0, 0, 0, 0,
-  # #                  0, 10, 0, 0,
-  # #                  0, 0, 0, 0,
-  # #                  0, 10, 0, 0,
-  # #                  0, 0, 0, 0), dim = c(5, 2, 2, 1)),
-  # # tt_seeded = c(0, 200, 201, 800, 801),
-  # 
-  # #Time varying vaccination
-  # # vaccination_coverage = array(
-  # #   c(0, 0, 0, 0,
-  # #     .5/14, .5/14, .5/14, .5/14,
-  # #     0, 0, 0, 0,
-  # #     .5/7, .5/7, .5/7, .5/7,
-  # #     0, 0, 0, 0), dim = c(5, 2, 2, 1)),
-  # # tt_vaccination_coverage = c(0, 200, 214, 800, 807),
-  # 
-  # waning_rate = 0.0001
+  aging_rate = 1/(1.6 * 365),
   
+  tt_moving_risk = c(0, 500, 501),
   
-  tt_moving_risk = c(0, 500, 501) ,
-  moving_risk_values = array(c(0, 1, 0, 0, 0, 0), dim = c(3, 1, 1, 2)),
-  moving_risk_distribution_values = array(c(0, 0, 0, 0, 1, 0), dim = c(3, 1, 1, 2))
+  moving_risk_values = array(c(0, 0, 0, 0,
+                               1, 0, 0, 0,
+                               0, 0, 0, 0), dim = c(3, 1, 1, 4)),
+  
+  moving_risk_distribution_values = tz
+  
+
 )
+
+tz = generate_array_df(dim1 = 3, dim2 = 1, dim3 = 1, dim4 = 4,
+                       updates = data.frame(dim1 = 2, dim2 = 1, dim3 = 1, dim4 = c(2, 3, 4), value = c(0.2, 0.3, 0.5))) %>% df_to_array
+
 
 #Run model
 clean_df <- run_model(
@@ -73,7 +53,7 @@ clean_df <- run_model(
 
 #Check risk groups
 ggplot(
-  data = subset(clean_df, (state == "S" & risk != "All" | state == "total_pop" | state %in% c("risk_to_2", "risk_to_1", "riskSin")) & run == "run_1"),
+  data = subset(clean_df, (state == "S" & risk != "All" | state == "total_pop") & run == "run_1"),
   mapping = aes(
     x = time,
     y = value,
@@ -84,6 +64,25 @@ ggplot(
   facet_wrap(~state, scales = "free_y")
 
 ##############
+moving_risk_values = data.frame(
+  dim1 = 2, 
+  dim2 = 1, 
+  dim3 = 1, 
+  dim4 = 1, 
+  value = 0.5
+  )
+
+moving_risk_distribution_values = data.frame(
+  dim1 = 2, 
+  dim2 = 1, 
+  dim3 = 1, 
+  dim4 = c(2, 3, 4), 
+  value = c(0.1, 0.3, 0.6)
+)
+
+
+
+
 
 #Speedy average
 all_run_average <- fgroup_by(clean_df, time, state, age, vaccination, risk) %>%
@@ -144,13 +143,31 @@ ggplot(
 
 
 
-array(c(0, 
-        1, 
-        0, 0, 0, 0), dim = c(3, 1, 1, 2))
 
-array1 <- array(c(0, 0), dim = c(1, 1, 2))
-array2 <- array(c(0, 1), dim = c(1, 1, 2))
-array3 <- array(c(0, 0), dim = c(1, 1, 2))
-
-big_array <- array(c(array1, array2, array3), dim = c(3, 1, 1, 2))
-
+# I0 = 0,
+# 
+# N0 = array(c(0, 1000, 0, 0), dim = c(2, 2, 1)),
+# 
+# severe_recovery_rate = 1/14,
+# prop_severe = 0.1,
+# prop_complications = 0.1,
+# delta = 0,
+# 
+# #Seeding parameters
+# # seeded = array(c(0, 0, 0, 0,
+# #                  0, 10, 0, 0,
+# #                  0, 0, 0, 0,
+# #                  0, 10, 0, 0,
+# #                  0, 0, 0, 0), dim = c(5, 2, 2, 1)),
+# # tt_seeded = c(0, 200, 201, 800, 801),
+# 
+# #Time varying vaccination
+# # vaccination_coverage = array(
+# #   c(0, 0, 0, 0,
+# #     .5/14, .5/14, .5/14, .5/14,
+# #     0, 0, 0, 0,
+# #     .5/7, .5/7, .5/7, .5/7,
+# #     0, 0, 0, 0), dim = c(5, 2, 2, 1)),
+# # tt_vaccination_coverage = c(0, 200, 214, 800, 807),
+# 
+# waning_rate = 0.0001

@@ -1,41 +1,48 @@
 #' Parameter Packager Function
-#' 
-#' This function packages parameters for an infectious disease model with multiple compartments, vaccination, and demographic processes.
-#' 
-#' @param n_age Number of age groups
-#' @param n_vacc Number of vaccination statuses
-#' @param n_risk Number of risk groups
-#' @param N0 Initial population size
-#' @param I0 Initial number of infections
-#' @param contact_matrix Contact matrix for transmission rates
-#' @param incubation_rate Rate of incubation period progression
-#' @param recovery_rate Rate of recovery for non-severe cases
-#' @param severe_recovery_rate Rate of recovery for severe cases
-#' @param prop_severe Proportion of infections that are severe
-#' @param prop_complications Proportion of severe cases with complications
-#' @param delta Rate of natural protection waning
-#' @param vaccination_coverage Proportion vaccinated
-#' @param tt_vaccination_coverage Time points for changes in vaccination coverage
-#' @param age_vaccination_beta_modifier Modifier for vaccination impact by age
-#' @param waning_rate Rate of immunity waning
-#' @param R0 Basic reproduction number
-#' @param tt_R0 Time points for changes in R0
-#' @param seeded Initial seeding of infections
-#' @param tt_seeded Time points for changes in seeding
-#' @param aging_rate Rate at which individuals move between age groups
-#' @param initial_background_death Baseline background death rate
-#' @param simp_birth_death Toggle for simplified births and deaths
-#' @param tt_birth_changes Time points for changes in birth rate
-#' @param tt_death_changes Time points for changes in death rate
-#' @param crude_birth Crude birth rate
-#' @param crude_death Crude death rate
-#' @param protection_weight_vacc Weight for maternal protection from vaccination
-#' @param protection_weight_rec Weight for maternal protection from natural recovery
-#' @param age_maternal_protection_ends Age at which maternal protection ends
-#' @param repro_low Minimum age for reproduction
-#' @param repro_high Maximum age for reproduction
-#' 
-#' @return A list of formatted parameters ready for use in the infectious disease model
+#'
+#' This function packages and formats all input parameters for an infectious disease transmission model
+#' with age, vaccination, and risk stratification. It includes support for demographic processes such as
+#' births, deaths, aging, and risk group movement, as well as interpolated time-varying parameters.
+#'
+#' @param n_age Number of age groups.
+#' @param n_vacc Number of vaccination strata.
+#' @param n_risk Number of risk groups.
+#' @param N0 Initial population size (array or scalar).
+#' @param I0 Initial number of infections (array or scalar).
+#' @param contact_matrix Contact matrix defining age-specific contact patterns.
+#' @param incubation_rate Incubation rate (E to I transition).
+#' @param recovery_rate Recovery rate for non-severe infections.
+#' @param severe_recovery_rate Recovery rate for severe infections (defaults to `recovery_rate` if `NULL`).
+#' @param prop_severe Proportion of infections that become severe (can be scalar or array).
+#' @param prop_complications Proportion of severe infections that result in complications.
+#' @param delta Waning rate of natural protection.
+#' @param vaccination_coverage Time-varying vaccination coverage array.
+#' @param tt_vaccination_coverage Time points for changes in vaccination coverage.
+#' @param age_vaccination_beta_modifier Modifies transmission based on age and vaccination status.
+#' @param waning_rate Time- and group-specific waning rate for vaccination-induced immunity.
+#' @param R0 Basic reproduction number.
+#' @param tt_R0 Time points at which R0 changes.
+#' @param seeded Initial number of seeded infections (can be time-varying).
+#' @param tt_seeded Time points for seeding changes.
+#' @param aging_rate Rate of aging between age compartments (last age group should be 0).
+#' @param initial_background_death Background death rate at baseline.
+#' @param simp_birth_death If set to 1, births and deaths are linked to background rates.
+#' @param tt_birth_changes Time points when the birth rate changes.
+#' @param tt_death_changes Time points when the death rate changes.
+#' @param crude_birth Crude birth rate (used if `simp_birth_death != 1`).
+#' @param crude_death Crude death rate (used if `simp_birth_death != 1`).
+#' @param protection_weight_vacc Weight of vaccine-derived maternal protection by age.
+#' @param protection_weight_rec Weight of natural infection-derived maternal protection by age.
+#' @param age_maternal_protection_ends Age group at which maternal protection ends.
+#' @param repro_low Lowest reproductive age group.
+#' @param repro_high Highest reproductive age group (defaults to `n_age` if `NULL`).
+#' @param tt_moving_risk Time points for risk group movement transitions.
+#' @param moving_risk_values Total number of people moving between risk groups (by age/vacc/risk).
+#' @param moving_risk_distribution_values Proportion of movers going to each risk group (by age/vacc/risk).
+#'
+#' @return A named list of formatted and validated parameters for input into a stochastic infectious disease model.
+#'         The function also performs internal checks on validity and consistency of the inputs.
+#'
 #' @export
 param_packager <- function(
     
@@ -52,9 +59,9 @@ param_packager <- function(
   contact_matrix = NULL,
   #Disease parameters
   #Incubation rate
-  incubation_rate,
+  incubation_rate = 1/5,
   #Recovery rate
-  recovery_rate,
+  recovery_rate = 1/14,
   #Recovery rate for severe infections
   severe_recovery_rate = NULL,
   #Proportion of infections that are severe
@@ -71,7 +78,7 @@ param_packager <- function(
   waning_rate = 0,
   
   #R0
-  R0,
+  R0 = 2,
   tt_R0 = 0,
   
   #Seeding parameters
@@ -156,7 +163,6 @@ param_packager <- function(
   aging_rate <- check_and_format_input(aging_rate, n_age)
   #Final aging rate must be 0
   aging_rate[length(aging_rate)] <- 0
-  
   
   # Export list -------------------------------------------------------------
   

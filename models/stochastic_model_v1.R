@@ -12,14 +12,6 @@ initial(Rc[, , ]) <- 0
 initial(R_effective) <- R0[1]
 initial(total_pop) <- sum(N0)
 
-update(risk_to_1) <- sum(moving_risk_to_S[, , 1])
-update(risk_to_2) <- sum(moving_risk_to_S[, , 2])
-update(riskSin) <- sum(moving_risk_from_S)
-
-initial(riskSin) <- 0
-initial(risk_to_1) <- 0
-initial(risk_to_2) <- 0
-
 # Compartments ------------------------------------------------------------
 
 # Update compartments
@@ -38,10 +30,6 @@ update(Rc[, , ]) <- max(Rc[i, j, k] + recovered_Is_to_Rc[i, j, k] - waning_Rc[i,
 #Additional outputs
 update(R_effective) <- t_R0 * sum(S_eff) / N
 update(total_pop) <- N
-
-update(seedy) <- sum(t_seeded)
-initial(seedy) <- 0
-
 
 # Entering and exiting compartments ---------------------------------------
 
@@ -180,15 +168,12 @@ moving_risk_from_Is[, , ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i, j, k], m
 moving_risk_from_Rc[, , ] <- if(Rc[i, j, k] <= 0) 0 else Binomial(Rc[i, j, k], max(min(moving_risk_prop[i, j, k], 1), 0))
 
 # Moving INTO each compartment with specified distribution
-moving_risk_to_S[, , ] <- if(sum(moving_risk_distribution[i, j, ]) == 0) moving_risk_from_S[i, j, k] else moving_risk_from_S[i, j, k] * moving_risk_distribution[i, j, k]
-
-
-
-moving_risk_to_E[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_risk_from_E[i, j, k] else moving_risk_from_E[i, j, k] * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
-moving_risk_to_I[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_risk_from_I[i, j, k] else moving_risk_from_I[i, j, k] * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
-moving_risk_to_R[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_risk_from_R[i, j, k] else moving_risk_from_R[i, j, k] * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
-moving_risk_to_Is[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_risk_from_Is[i, j, k] else moving_risk_from_Is[i, j, k] * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
-moving_risk_to_Rc[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_risk_from_Rc[i, j, k] else moving_risk_from_Rc[i, j, k] * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
+moving_risk_to_S[, , ] <- if(sum(moving_risk_distribution[i, j, ]) == 0) moving_risk_from_S[i, j, k] else sum(moving_risk_from_S[i, j, ]) * moving_risk_distribution[i, j, k]/sum(moving_risk_distribution[i, j, ])
+moving_risk_to_E[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_risk_from_E[i, j, k] else sum(moving_risk_from_E[i, j, ]) * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
+moving_risk_to_I[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_risk_from_I[i, j, k] else sum(moving_risk_from_I[i, j, ]) * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
+moving_risk_to_R[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_risk_from_R[i, j, k] else sum(moving_risk_from_R[i, j, ]) * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
+moving_risk_to_Is[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_risk_from_Is[i, j, k] else sum(moving_risk_from_Is[i, j, ]) * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
+moving_risk_to_Rc[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_risk_from_Rc[i, j, k] else sum(moving_risk_from_Rc[i, j, ]) * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
 
 # User parameter values --------------------------------------------------------
 
