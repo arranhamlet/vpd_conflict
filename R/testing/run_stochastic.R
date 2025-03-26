@@ -25,26 +25,8 @@ params <- param_packager(
   n_risk = 4,
   
   I0 = 0,
-  initial_background_death = 1/(6.0 * 365),
-  aging_rate = 1/(1.6 * 365),
-  
-  tt_moving_risk = c(0, 500, 501),
-  
-  moving_risk_values = data.frame(
-    dim1 = 2,
-    dim2 = 1, 
-    dim3 = 1, 
-    dim4 = 1, 
-    value = 0.5
-  ),
-  
-  moving_risk_distribution_values = data.frame(
-    dim1 = 2,
-    dim2 = 1, 
-    dim3 = 1, 
-    dim4 = c(2, 3, 4), 
-    value = c(0.2, 0.3, 0.5)
-    )
+  initial_background_death = 1/(.16 * 365),
+  aging_rate = 1/(.16 * 365)
 
 )
 
@@ -59,78 +41,20 @@ clean_df <- run_model(
 
 #Check risk groups
 ggplot(
-  data = subset(clean_df, (state == "S" & risk != "All" | state == "total_pop") & run == "run_1"),
+  data = subset(clean_df, (state == "S" | state == "total_pop") & age != "All" & run == "run_1"),
   mapping = aes(
     x = time,
     y = value,
-    color = risk
+    color = risk,
+    linetype = age
   )
 ) +
   geom_line() +
-  facet_wrap(~state, scales = "free_y")
+  facet_wrap(~age, scales = "free_y") +
+  theme_bw()
 
 ##############
-moving_risk_values = data.frame(
-  dim1 = 2, 
-  dim2 = 1, 
-  dim3 = 1, 
-  dim4 = 1, 
-  value = 0.5
-  )
 
-moving_risk_distribution_values = data.frame(
-  dim1 = 2, 
-  dim2 = 1, 
-  dim3 = 1, 
-  dim4 = c(2, 3, 4), 
-  value = c(0.1, 0.3, 0.6)
-)
-
-
-
-
-
-#Speedy average
-all_run_average <- fgroup_by(clean_df, time, state, age, vaccination, risk) %>%
-  fsummarise(
-    q_low = fquantile(value, 0.025),
-    q_high = fquantile(value, 0.975),
-    value = fmedian(value)
-  )
-
-
-#Plot
-ggplot(
-  data = subset(all_run_average, age == "All"),
-  mapping = aes(
-    x = time,
-    y = value,
-    ymin = q_low,
-    ymax = q_high
-  )
-) +
-  geom_line(col = "black") +
-  geom_ribbon(alpha = 0.25) +
-  theme_bw() +
-  labs(x = "",
-       y = "") +
-  facet_wrap(~state, scale = "free_y")
-
-#All vaccination coverage
-no_runs <- length(unique(clean_df$run))
-
-all_run_vacc <- fgroup_by(subset(clean_df, age != "All"), time, vaccination) %>%
-  fsummarise(
-    value = sum(value)/no_runs
-  ) %>%
-  spread(
-    key = vaccination,
-    value = value
-  ) %>%
-  set_names("time", "unvaccinated", "vaccinated") %>%
-  mutate(
-    vac_coverage = vaccinated/(unvaccinated + vaccinated)
-  )
 
 #Plot vaccination coverage
 ggplot(
