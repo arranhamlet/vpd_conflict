@@ -50,7 +50,7 @@ process_obj <- function(this_obj, present_dimensions, colnames, time_length, x, 
   } else {
     
     #' Melt data directly for single-particle models
-    melted_array <- melt(this_obj) %>%
+    melted_array <- reshape2::melt(this_obj) %>%
       setNames(c(which_state_dimensions[[which(names(which_state_dimensions) == names(these_are_compartments[x]))]], "value")) %>%
       mutate(state = names(dust_state)[x]) %>%
       select(time, state, everything(), value)

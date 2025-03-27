@@ -17,10 +17,10 @@ run_model <- function(params, time = 1000, no_runs = 25) {
   dust2::dust_system_set_state_initial(sys)
   
   #' Define the time vector for simulation (starting from 0)
-  time <- 0:time
+  full_time_vector <- 0:time
   
   #' Run the dust system simulation over the defined time period
-  y <- dust2::dust_system_simulate(sys, time)
+  y <- dust2::dust_system_simulate(sys, full_time_vector)
   
   #' Process and clean output data by unpacking the results
   clean_df <- unpack_dust2(
@@ -30,7 +30,7 @@ run_model <- function(params, time = 1000, no_runs = 25) {
       age = list(as.character(1:params$n_age)),
       vaccination = list(as.character(1:params$n_vacc)),
       risk = list(as.character(1:params$n_risk)),
-      time = list(time)
+      time = list(full_time_vector)
     ),
     which_state_dimensions = list(
       S = c("age", "vaccination", "risk", "time"),

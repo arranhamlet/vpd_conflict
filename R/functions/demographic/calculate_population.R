@@ -24,17 +24,29 @@ population_female <- import(here("data", "raw_data", "palestine_WPP2024_POP_F01_
 #Import model
 model <- odin2::odin("models/stochastic_model_v1.R")
 
+population_subset <- population_both %>%
+  filter(Year >= 1964) %>%
+  select(`0`:`100+`) 
+
 #Yearly changes
 #Run for 60 years
 time_run_for <- 60 * 365
-time <- seq(0, time_run_for, by = 1)
+time_all <- seq(0, time_run_for, by = 1)
 data_change_here <- seq(0, time_run_for, by = 365)
 #Work out mortality
 mortality_change <- mortality_both %>%
   filter(Year >= 1964) %>%
-  select(`0`:`100+`) %>% 
+  select(`0`:`100+`) 
+
+mortality_correct_format <- mortality_change/population_subset
+is.na(mortality_correct_format)<-sapply(mortality_correct_format, is.infinite)
+mortality_correct_format[is.na(mortality_correct_format)]<-1
+mortality_vector <- mortality_correct_format %>%
   as.matrix %>%
   c
+mortality_vector <- pmin(mortality_vector, 1)
+
+
 #Work out births
 population_female_matched <- population_female %>%
   filter(Year >= 1964) %>%
@@ -46,17 +58,13 @@ fertility_matched <- fertility %>%
   select(`15`:`49`) %>%
   as.matrix
 
-population_all <- population_both %>%
-  filter(Year >= 1964) %>%
-  select(`0`:`100+`) %>% 
+population_all <- population_subset %>% 
   as.matrix %>%
-  rowSums()
+  rowSums() %>%
   c
 
 #Fertility calculations
 fertility_by_year <- rowSums(population_female_matched * fertility_matched/100)/population_all
-
-
 
 params <- param_packager(
   
@@ -64,7 +72,7 @@ params <- param_packager(
   n_vacc = 1,
   n_risk = 1,
   
-  N0 = 
+  N0 = array(c(unlist(round(population_subset[1, ] * 1000, 0))), dim = c(101, 1, 1)),
   
   I0 = 0,
   initial_background_death = 1/(.16 * 365),
@@ -74,27 +82,35 @@ params <- param_packager(
   #Turn off simple birth/deaths
   simp_birth_death = 0,
   #List of when birth_death_changes
-  tt_birth_changes = 0,
-  tt_death_changes = 0,
+  tt_birth_changes = data_change_here,
+  tt_death_changes = data_change_here,
   #Values of changes
-  crude_birth = fertility_by_year,
-  crude_death = array(mortality_change, dim = c(101, 1, 1)),
+  crude_birth = array(fertility_by_year, dim = c(length(data_change_here), 1)),
+  crude_death = array(mortality_vector, dim = c(length(data_change_here), 101, 1)),
   #Birth ages
   repro_low = 15,
   repro_high = 59
 )
 
 
+#Run model
+time1 <- Sys.time()
+clean_df <- run_model(
+  params = params,
+  time = time_run_for,
+  no_runs = 1
+)
+time2 <- Sys.time()
 
-simp_birth_death = 1,
-
-#Crude birth rate if simp_birth_death != 1
-crude_birth = 0,
-crude_death = 0,
+time2 - time1
 
 
-
-
-
-
+ggplot(
+  data = subset(clean_df, state == "total_pop"),
+  mapping = aes(
+    x = time,
+    y = value
+  )
+) +
+  geom_line()
 
