@@ -437,7 +437,7 @@ dim(background_death) <- c(n_age, n_risk)
 dim(Npop_background_death) <- c(n_age, n_risk)
 dim(initial_background_death) <- c(n_age, n_risk)
 dim(crude_birth) <- c(no_birth_changes, n_risk)
-dim(crude_death) <- c(no_birth_changes, n_age, n_risk)
+dim(crude_death) <- c(no_death_changes, n_age, n_risk)
 dim(birth_int) <- n_risk
 dim(death_int) <- c(n_age, n_risk)
 dim(S_death) <- c(n_age, n_vacc, n_risk)
