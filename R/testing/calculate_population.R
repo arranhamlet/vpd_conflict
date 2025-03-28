@@ -16,6 +16,17 @@ pacman::p_load(
 invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recursive = F), function(x) source(x)))
 
 #Load in data
+migration <- import(here("data", "raw_data", "palestine_WPP2024_GEN_F01_DEMOGRAPHIC_INDICATORS_COMPACT.csv"))
+
+ggplot(data = migration,
+       mapping = aes(x = Year,
+                     y = `Net Number of Migrants (thousands)`)) +
+  geom_line() +
+  theme_bw() +
+  geom_hline(yintercept = 0, linetype = "dashed")
+
+ggsave("palestine_migration.jpg")
+
 fertility <- import(here("data", "raw_data", "palestine_WPP2024_FERT_F01_FERTILITY_RATES_BY_SINGLE_AGE_OF_MOTHER.csv"))
 mortality_both <- import(here("data", "raw_data", "palestine_WPP2024_MORT_F01_1_DEATHS_SINGLE_AGE_BOTH_SEXES.csv"))
 population_both <- import(here("data", "raw_data", "palestine_WPP2024_POP_F01_1_POPULATION_SINGLE_AGE_BOTH_SEXES.csv"))
@@ -143,8 +154,8 @@ ggplot(
   scale_y_continuous(label = scales::comma) +
   labs(x = "Year",
        y = "Population") +
-  theme_bw()
-
+  theme_bw() +
+  facet_wrap(~state)
 
 
 

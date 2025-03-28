@@ -112,7 +112,12 @@ param_packager <- function(
   #Movement between risk groups
   tt_moving_risk = 0,
   moving_risk_values = 0,
-  moving_risk_distribution_values = 0
+  moving_risk_distribution_values = 0,
+  
+  #Migration
+  tt_migration = 0,
+  migration_in_number = 0,
+  migration_distribution_values = 0
   
 ){
   
@@ -175,6 +180,23 @@ param_packager <- function(
     df_to_array
   }
   
+  #Migration
+  no_migration_changes <- length(tt_migration)
+  
+  migration_in_number <- if(all(migration_in_number == 0)) check_and_format_input(migration_in_number, no_migration_changes, n_age, n_vacc, n_risk) else {
+    generate_array_df(
+      dim1 = no_migration_changes, 
+      dim2 = n_age, 
+      dim3 = n_vacc, 
+      dim4 = n_risk, 
+      default_value = 0,
+      updates = migration_in_number
+    ) %>%
+      df_to_array
+  }
+  
+  migration_distribution_values <- check_and_format_input(migration_distribution_values, no_migration_changes, 6)
+
   #Births, deaths, aging
   if(is.null(repro_high)) repro_high <- n_age
   initial_background_death <- check_and_format_input(initial_background_death, n_age, n_risk)
@@ -258,7 +280,13 @@ param_packager <- function(
     tt_moving_risk = tt_moving_risk ,
     no_moving_risk_changes = no_moving_risk_changes, 
     moving_risk_values = moving_risk_values,
-    moving_risk_distribution_values = moving_risk_distribution_values
+    moving_risk_distribution_values = moving_risk_distribution_values,
+    
+    #Migration
+    tt_migration = tt_migration,
+    no_migration_changes = no_migration_changes,
+    migration_in_number = migration_in_number,
+    migration_distribution_values = migration_distribution_values
     
   )
   
@@ -271,16 +299,19 @@ param_packager <- function(
   sum_above_zero_and_an_integer <- export_list[c("N0")]
   
   #These must be non-negative and integers
-  non_neg_int <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high", "I0", "seeded", "tt_seeded", "tt_moving_risk", "no_moving_risk_changes")]
+  non_neg_int <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high", "I0", "seeded", "tt_seeded", "tt_moving_risk", "no_moving_risk_changes", "tt_migration", "no_migration_changes")]
   
   #These must be probabilities
-  probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight_vacc", "protection_weight_rec", "aging_rate", "contact_matrix", "waning_rate", "delta", "moving_risk_values", "moving_risk_distribution_values")]
+  probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight_vacc", "protection_weight_rec", "aging_rate", "contact_matrix", "waning_rate", "delta", "moving_risk_values", "moving_risk_distribution_values", "migration_distribution_values")]
   
   #Non-negative
   non_negative <- export_list[c("R0")]
   
   #Not above a reference value
   above_value_age <- export_list[c("repro_low", "repro_high")]
+  
+  #Must be an integer
+  integer <- export_list[c("migration_in_number")]
 
   #Run checks
   a <- check_parameter(above_zero_and_an_integer, check_above_zero = T, check_integer = T)
@@ -289,9 +320,10 @@ param_packager <- function(
   d <- check_parameter(above_value_age, check_above_zero = T, check_not_above_reference_value = n_age)
   e <- check_parameter(non_neg_int, check_non_negative = T, check_integer = T)
   f <- check_parameter(sum_above_zero_and_an_integer, check_if_sum_above_zero = T, check_integer = T)
+  g <- check_parameter(integer, check_integer = T)
   
   #All tests
-  all_failures <- rbind(a, b, c, d, e, f)
+  all_failures <- rbind(a, b, c, d, e, f, g)
   
   if(nrow(all_failures) > 0) {
     warning("The following parameters failed checks:\n", paste(capture.output(print(all_failures, row.names = FALSE)), collapse = "\n"))

@@ -17,31 +17,41 @@ invisible(sapply(list.files("R/functions", full.names = T, recursive = T), funct
 model <- odin2::odin("models/stochastic_model_v1.R")
 
 #Get parameters
-
 params <- param_packager(
  
-  n_age = 2,
+  n_age = 1,
   n_vacc = 1,
-  n_risk = 4,
+  n_risk = 1,
   
-  I0 = 0,
-  initial_background_death = 1/(.16 * 365),
-  aging_rate = 1/(.16 * 365)
+  I0 = 1,
+  initial_background_death = 1/(1.6 * 365),
+  aging_rate = 1/(1.6 * 365),
+  
+  #Migration
+  tt_migration = c(0, 500, 501),
+  migration_in_number = data.frame(dim1 = 2, dim2 = 1, dim3 = 1, dim4 = 1, value = c(-1000)),
+  migration_distribution_values = matrix(c(0, 0, 0, 0, 0, 0,
+                                           0.25, .25, .25, .25, .25, .25,
+                                           0, 0, 0, 0, 0, 0), nrow = 3, ncol = 6)
+  
 
 )
+
+
+
 
 
 #Run model
 clean_df <- run_model(
   params = params,
-  time = 365 * 5,
-  no_runs = 5
+  time = 365 * 3,
+  no_runs = 2
   )
 
 
 #Check risk groups
 ggplot(
-  data = subset(clean_df, (state == "S" | state == "total_pop") & age != "All" & run == "run_1"),
+  data = subset(clean_df, age != "All" & run == "run_1"),
   mapping = aes(
     x = time,
     y = value,
@@ -50,7 +60,7 @@ ggplot(
   )
 ) +
   geom_line() +
-  facet_wrap(~age, scales = "free_y") +
+  facet_wrap(~state, scales = "free_y") +
   theme_bw()
 
 ##############

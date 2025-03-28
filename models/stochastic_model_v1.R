@@ -17,17 +17,17 @@ initial(total_death) <- 0
 # Compartments ------------------------------------------------------------
 
 # Update compartments
-update(S[, , ]) <- max(S[i, j, k] + waning_R[i, j, k] + waning_Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k] + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k] - lambda_S[i, j, k] - S_death[i, j, k] - waning_from_S[i, j, k] + waning_to_S[i, j, k] + moving_risk_to_S[i, j, k] - moving_risk_from_S[i, j, k], 0)
+update(S[, , ]) <- max(S[i, j, k] + waning_R[i, j, k] + waning_Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k] + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k] - lambda_S[i, j, k] - S_death[i, j, k] - waning_from_S[i, j, k] + waning_to_S[i, j, k] + moving_risk_to_S[i, j, k] - moving_risk_from_S[i, j, k] + migration_S[i, j, k] * pos_neg_migration, 0)
 
-update(E[, , ]) <- max(E[i, j, k] + lambda_S[i, j, k] - incubated[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k] + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k] - E_death[i, j, k] - waning_from_E[i, j, k] + waning_to_E[i, j, k] + moving_risk_to_E[i, j, k] - moving_risk_from_E[i, j, k], 0)
+update(E[, , ]) <- max(E[i, j, k] + lambda_S[i, j, k] - incubated[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k] + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k] - E_death[i, j, k] - waning_from_E[i, j, k] + waning_to_E[i, j, k] + moving_risk_to_E[i, j, k] - moving_risk_from_E[i, j, k] + migration_E[i, j, k] * pos_neg_migration, 0)
 
-update(I[, , ]) <- max(I[i, j, k] + into_I[i, j, k] + aging_into_I[i, j, k] - aging_out_of_I[i, j, k] + vaccinating_into_I[i, j, k] - vaccinating_out_of_I[i, j, k] - recovered_I_to_R[i, j, k] - I_death[i, j, k] + t_seeded[i, j, k] - waning_from_I[i, j, k] + waning_to_I[i, j, k] + moving_risk_to_I[i, j, k] - moving_risk_from_I[i, j, k], 0)
+update(I[, , ]) <- max(I[i, j, k] + into_I[i, j, k] + aging_into_I[i, j, k] - aging_out_of_I[i, j, k] + vaccinating_into_I[i, j, k] - vaccinating_out_of_I[i, j, k] - recovered_I_to_R[i, j, k] - I_death[i, j, k] + t_seeded[i, j, k] - waning_from_I[i, j, k] + waning_to_I[i, j, k] + moving_risk_to_I[i, j, k] - moving_risk_from_I[i, j, k] + migration_I[i, j, k] * pos_neg_migration, 0)
 
-update(R[, , ]) <- max(R[i, j, k] + recovered_I_to_R[i, j, k] + recovered_Is_to_R[i, j, k] - waning_R[i, j, k] + aging_into_R[i, j, k] - aging_out_of_R[i, j, k] + vaccinating_into_R[i, j, k] - vaccinating_out_of_R[i, j, k] - R_death[i, j, k] - waning_from_R[i, j, k] + waning_to_R[i, j, k] + moving_risk_to_R[i, j, k] - moving_risk_from_R[i, j, k], 0)
+update(R[, , ]) <- max(R[i, j, k] + recovered_I_to_R[i, j, k] + recovered_Is_to_R[i, j, k] - waning_R[i, j, k] + aging_into_R[i, j, k] - aging_out_of_R[i, j, k] + vaccinating_into_R[i, j, k] - vaccinating_out_of_R[i, j, k] - R_death[i, j, k] - waning_from_R[i, j, k] + waning_to_R[i, j, k] + moving_risk_to_R[i, j, k] - moving_risk_from_R[i, j, k] + migration_R[i, j, k] * pos_neg_migration, 0)
 
-update(Is[, , ]) <- max(Is[i, j, k] + into_Is[i, j, k] - recovered_from_Is[i, j, k] + aging_into_Is[i, j, k] - aging_out_of_Is[i, j, k] + vaccinating_into_Is[i, j, k] - vaccinating_out_of_Is[i, j, k] - Is_death[i, j, k] - waning_from_Is[i, j, k] + waning_to_Is[i, j, k] + moving_risk_to_Is[i, j, k] - moving_risk_from_Is[i, j, k], 0)
+update(Is[, , ]) <- max(Is[i, j, k] + into_Is[i, j, k] - recovered_from_Is[i, j, k] + aging_into_Is[i, j, k] - aging_out_of_Is[i, j, k] + vaccinating_into_Is[i, j, k] - vaccinating_out_of_Is[i, j, k] - Is_death[i, j, k] - waning_from_Is[i, j, k] + waning_to_Is[i, j, k] + moving_risk_to_Is[i, j, k] - moving_risk_from_Is[i, j, k] + migration_Is[i, j, k] * pos_neg_migration, 0)
 
-update(Rc[, , ]) <- max(Rc[i, j, k] + recovered_Is_to_Rc[i, j, k] - waning_Rc[i, j, k] + aging_into_Rc[i, j, k] - aging_out_of_Rc[i, j, k] + vaccinating_into_Rc[i, j, k] - vaccinating_out_of_Rc[i, j, k] - Rc_death[i, j, k] - waning_from_Rc[i, j, k] + waning_to_Rc[i, j, k] + moving_risk_to_Rc[i, j, k] - moving_risk_from_Rc[i, j, k], 0)
+update(Rc[, , ]) <- max(Rc[i, j, k] + recovered_Is_to_Rc[i, j, k] - waning_Rc[i, j, k] + aging_into_Rc[i, j, k] - aging_out_of_Rc[i, j, k] + vaccinating_into_Rc[i, j, k] - vaccinating_out_of_Rc[i, j, k] - Rc_death[i, j, k] - waning_from_Rc[i, j, k] + waning_to_Rc[i, j, k] + moving_risk_to_Rc[i, j, k] - moving_risk_from_Rc[i, j, k] + migration_Rc[i, j, k] * pos_neg_migration, 0)
 
 #Additional outputs
 update(R_effective) <- t_R0 * sum(S_eff) / N
@@ -179,6 +179,23 @@ moving_risk_to_R[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_r
 moving_risk_to_Is[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_risk_from_Is[i, j, k] else sum(moving_risk_from_Is[i, j, ]) * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
 moving_risk_to_Rc[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_risk_from_Rc[i, j, k] else sum(moving_risk_from_Rc[i, j, ]) * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
 
+# Parameters to control movement between risk groups
+migration <- interpolate(tt_migration, migration_in_number, "constant")
+migration_distribution <- interpolate(tt_migration, migration_distribution_values, "constant")
+
+#Positive or negative flow
+pos_neg_migration <- if(sum(migration) < 0) -1 else 1
+migration_adjusted[, , ] <- migration[i, j, k] * pos_neg_migration
+
+# Moving INTO each compartment with specified distribution
+migration_S[, , ] <- if(migration_adjusted[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k], migration_distribution[1])
+migration_E[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k], migration_distribution[2])
+migration_I[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k], migration_distribution[3])
+migration_R[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k], migration_distribution[4])
+migration_Is[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k], migration_distribution[5])
+migration_Rc[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k] - migration_Is[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k] - migration_Is[i, j, k], migration_distribution[6])
+
+
 # User parameter values --------------------------------------------------------
 
 #Compartment dimensions
@@ -276,6 +293,12 @@ tt_moving_risk <- parameter()
 no_moving_risk_changes <- parameter()
 moving_risk_values <- parameter()
 moving_risk_distribution_values <- parameter()
+
+#Migration parameters
+no_migration_changes <- parameter()
+tt_migration <- parameter()
+migration_in_number <- parameter()
+migration_distribution_values <- parameter()
 
 # Calculated parameters ---------------------------------------------------
 
@@ -469,3 +492,17 @@ dim(moving_risk_values) <-  c(no_moving_risk_changes, n_age, n_vacc, n_risk)
 dim(moving_risk_distribution_values) <- c(no_moving_risk_changes, n_age, n_vacc, n_risk)
 dim(moving_risk_prop) <- c(n_age, n_vacc, n_risk)
 dim(moving_risk_distribution) <- c(n_age, n_vacc, n_risk)
+
+#Dimensions for migration
+dim(tt_migration) <- c(no_migration_changes)
+dim(migration_distribution) <- c(6)
+dim(migration_in_number) <- c(no_migration_changes, n_age, n_vacc, n_risk)
+dim(migration_distribution_values) <- c(no_migration_changes, 6)
+dim(migration) <- c(n_age, n_vacc, n_risk)
+dim(migration_adjusted) <- c(n_age, n_vacc, n_risk)
+dim(migration_S) <- c(n_age, n_vacc, n_risk)
+dim(migration_E) <- c(n_age, n_vacc, n_risk)
+dim(migration_I) <- c(n_age, n_vacc, n_risk)
+dim(migration_R) <- c(n_age, n_vacc, n_risk)
+dim(migration_Is) <- c(n_age, n_vacc, n_risk)
+dim(migration_Rc) <- c(n_age, n_vacc, n_risk)
