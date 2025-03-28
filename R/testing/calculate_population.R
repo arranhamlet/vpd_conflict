@@ -16,21 +16,27 @@ pacman::p_load(
 invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recursive = F), function(x) source(x)))
 
 #Load in data
+diff_fert_rates <- import(here("data", "raw_data", "crude_birth_rates_palestine.xlsx"))
+
+gaza_prop_palestine_population <- 1#0.35
+gaza_palestine_fertility_modifier <- median(diff_fert_rates$Gaza_Strip/diff_fert_rates$Palestine)
+
 migration <- import(here("data", "raw_data", "palestine_WPP2024_GEN_F01_DEMOGRAPHIC_INDICATORS_COMPACT.csv"))
 
 five_year <- import(here("data", "raw_data", "five_year.csv"))
 
 fertility <- import(here("data", "raw_data", "palestine_WPP2024_FERT_F01_FERTILITY_RATES_BY_SINGLE_AGE_OF_MOTHER.csv"))
+
 mortality_both <- import(here("data", "raw_data", "palestine_WPP2024_MORT_F01_1_DEATHS_SINGLE_AGE_BOTH_SEXES.csv"))
-population_both <- import(here("data", "raw_data", "palestine_WPP2024_POP_F01_1_POPULATION_SINGLE_AGE_BOTH_SEXES.csv"))
-population_female <- import(here("data", "raw_data", "palestine_WPP2024_POP_F01_3_POPULATION_SINGLE_AGE_FEMALE.csv"))
+population_both <- import(here("data", "raw_data", "palestine_WPP2024_POP_F01_1_POPULATION_SINGLE_AGE_BOTH_SEXES.csv")) 
+population_female <- import(here("data", "raw_data", "palestine_WPP2024_POP_F01_3_POPULATION_SINGLE_AGE_FEMALE.csv")) 
 
 #Import model
 model <- odin2::odin("models/stochastic_model_v1.R")
 
 population_subset <- population_both %>%
   filter(Year >= 1964) %>%
-  select(`0`:`100+`) 
+  select(`0`:`100+`) * .35
 
 #Deaths measured in 1000s
 #Fertility measured in per 1000 women
@@ -59,17 +65,20 @@ mortality_vector <- mortality_correct_format %>%
 #Need to convert to per day
 mortality_vector <- pmin(mortality_vector, 1)
 
-
 #Work out births
 population_female_matched <- population_female %>%
   filter(Year >= 1964) %>%
-  select(`15`:`49`) %>%
+  select(`15`:`49`) * 0.35 %>% 
   as.matrix
+  
+population_female_matched <- population_female_matched
 
 fertility_matched <- fertility %>%
   filter(Year >= 1964) %>%
   select(`15`:`49`) %>%
   as.matrix
+
+fertility_matched <- fertility_matched * gaza_palestine_fertility_modifier
 
 population_all <- population_subset %>% 
   as.matrix %>%
@@ -87,7 +96,7 @@ palestine_migration <- migration %>%
   c %>%
   unlist %>%
   as.numeric
-  
+
 #Work out migration by year
 migration <- round(do.call(rbind, sapply(1:nrow(population_subset), function(x){
   population_subset[x,] * palestine_migration[x]/1000 
@@ -97,6 +106,7 @@ migration <- round(do.call(rbind, sapply(1:nrow(population_subset), function(x){
 migration_expanded_grid <- do.call(rbind, sapply(1:60, function(x){
   data.frame(dim1 = x, dim2 = 1:101, dim3 = 1, dim4 = 1, value = as.numeric(migration[x, ]))
 }, simplify = FALSE))
+
 
 
 params <- param_packager(
@@ -148,14 +158,14 @@ population_over_time <- ggplot() +
     data = subset(clean_df, run == "run_1" & state == "total_pop"),
     mapping = aes(
       x = 1964 + time,
-      y = value,
+      y = value * .35,
       color = "Model"
     )) +
   geom_line(
     data = data.frame(year = 1965:2024, value = 1000 * population_all),
     mapping = aes(
       x = year,
-      y = value, 
+      y = value * .35, 
       color = "UN WPP"
     )
   ) + 
@@ -166,6 +176,8 @@ population_over_time <- ggplot() +
        subtitle = paste0(paste0("Model population estimated in 2024: ", formatC(last(subset(clean_df, state == "total_pop")$value), big.mark = ",", format = "fg")), "\n",
                          paste0("UN WPP population estimated in 2024: ", formatC(last(population_all) * 1000, big.mark = ",", format = "fg")))) +
   theme_bw()
+
+population_over_time
 
 ggsave("figs/population_over_time_palestine_demographics.jpg", population_over_time, width = 5, height = 3)
 
@@ -252,10 +264,11 @@ pop_pyramid_prop <- ggplot(mapping = aes(
   geom_histogram(
     data = age_pyramid_df_agg,
     mapping = aes( y = age_group_prop),
-    stat = "identity"
+    stat = "identity",
+    position = position_dodge()
   ) +
   theme_bw() +
-  labs(title = "Palestine population age pyramid in 2024",
+  labs(title = "Proportion of Palestine population by age group (2024)",
        y = "",
        x = "",
        fill = "") +
@@ -263,5 +276,5 @@ pop_pyramid_prop <- ggplot(mapping = aes(
 
 pop_pyramid_prop
 
-ggsave("figs/age_pyramid_prop_palestine_demographics.jpg", pop_pyramid_prop, width = 6, height = 4)
+ggsave("figs/age_pyramid_prop_palestine_demographics.jpg", pop_pyramid_prop, width = 8, height = 3)
 
