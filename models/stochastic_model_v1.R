@@ -11,6 +11,8 @@ initial(Rc[, , ]) <- 0
 #Additional outputs
 initial(R_effective) <- R0[1]
 initial(total_pop) <- sum(N0)
+initial(total_birth) <- 0
+initial(total_death) <- 0
 
 # Compartments ------------------------------------------------------------
 
@@ -30,6 +32,8 @@ update(Rc[, , ]) <- max(Rc[i, j, k] + recovered_Is_to_Rc[i, j, k] - waning_Rc[i,
 #Additional outputs
 update(R_effective) <- t_R0 * sum(S_eff) / N
 update(total_pop) <- N
+update(total_birth) <- sum(Births)
+update(total_death) <- sum(S_death) + sum(E_death) + sum(I_death) + sum(R_death) + sum(Is_death) + sum(Rc_death)
 
 # Entering and exiting compartments ---------------------------------------
 

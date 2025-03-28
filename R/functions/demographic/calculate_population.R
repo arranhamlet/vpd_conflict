@@ -3,17 +3,17 @@ if(!require("pacman")) install.packages("pacman")
 #Load packages
 pacman::p_load(
   odin2,
+  rio,
+  here,
   dust2,
   tidyverse,
   reshape2,
   collapse,
-  here,
-  rio,
   data.table
 )
 
 #Import functions
-invisible(sapply(list.files("R/functions", full.names = T, recursive = T), function(x) source(x)))
+invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recursive = F), function(x) source(x)))
 
 #Load in data
 fertility <- import(here("data", "raw_data", "palestine_WPP2024_FERT_F01_FERTILITY_RATES_BY_SINGLE_AGE_OF_MOTHER.csv"))
@@ -28,11 +28,17 @@ population_subset <- population_both %>%
   filter(Year >= 1964) %>%
   select(`0`:`100+`) 
 
+#Deaths measured in 1000s
+#Fertility measured in per 1000 women
+#Population measured in 1000s
+
+
 #Yearly changes
 #Run for 60 years
-time_run_for <- 60 * 365
+time_run_for <- 60
 time_all <- seq(0, time_run_for, by = 1)
-data_change_here <- seq(0, time_run_for, by = 365)
+data_change_here <- seq(0, time_run_for, by = 1)
+
 #Work out mortality
 mortality_change <- mortality_both %>%
   filter(Year >= 1964) %>%
@@ -43,7 +49,10 @@ is.na(mortality_correct_format)<-sapply(mortality_correct_format, is.infinite)
 mortality_correct_format[is.na(mortality_correct_format)]<-1
 mortality_vector <- mortality_correct_format %>%
   as.matrix %>%
+  t %>%
   c
+
+#Need to convert to per day
 mortality_vector <- pmin(mortality_vector, 1)
 
 
@@ -63,8 +72,9 @@ population_all <- population_subset %>%
   rowSums() %>%
   c
 
-#Fertility calculations
-fertility_by_year <- rowSums(population_female_matched * fertility_matched/100)/population_all
+#Fertility calculations, divide by 2 assuming the population is 50:50 male/female (it isnt) and convert to daily
+fertility_by_year <- rowSums((fertility_matched/1000 * population_female_matched))/rowSums(population_female_matched)
+
 
 params <- param_packager(
   
@@ -75,8 +85,8 @@ params <- param_packager(
   N0 = array(c(unlist(round(population_subset[1, ] * 1000, 0))), dim = c(101, 1, 1)),
   
   I0 = 0,
-  initial_background_death = 1/(.16 * 365),
-  aging_rate = 1/(365),
+  initial_background_death = 0,
+  aging_rate = 1,
   
   #Changing mortality and birth
   #Turn off simple birth/deaths
@@ -98,19 +108,44 @@ time1 <- Sys.time()
 clean_df <- run_model(
   params = params,
   time = time_run_for,
-  no_runs = 1
+  no_runs = 10
 )
 time2 <- Sys.time()
 
 time2 - time1
 
 
+#Agg to year
 ggplot(
   data = subset(clean_df, state == "total_pop"),
   mapping = aes(
-    x = time,
-    y = value
+    x = 1964 + time,
+    y = value,
+    group = run
   )
 ) +
-  geom_line()
+  geom_line() +
+  scale_y_continuous(label = scales::comma) +
+  labs(x = "Year",
+         y = "Population") +
+  theme_bw()
+
+#Agg to year
+ggplot(
+  data = subset(clean_df, state %in% c("total_death", "total_birth")),
+  mapping = aes(
+    x = 1964 + time,
+    y = value,
+    group = run
+  )
+) +
+  geom_line() +
+  scale_y_continuous(label = scales::comma) +
+  labs(x = "Year",
+       y = "Population") +
+  theme_bw()
+
+
+
+
 
