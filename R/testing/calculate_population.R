@@ -18,14 +18,7 @@ invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recur
 #Load in data
 migration <- import(here("data", "raw_data", "palestine_WPP2024_GEN_F01_DEMOGRAPHIC_INDICATORS_COMPACT.csv"))
 
-ggplot(data = migration,
-       mapping = aes(x = Year,
-                     y = `Net Number of Migrants (thousands)`)) +
-  geom_line() +
-  theme_bw() +
-  geom_hline(yintercept = 0, linetype = "dashed")
-
-ggsave("palestine_migration.jpg")
+five_year <- import(here("data", "raw_data", "five_year.csv"))
 
 fertility <- import(here("data", "raw_data", "palestine_WPP2024_FERT_F01_FERTILITY_RATES_BY_SINGLE_AGE_OF_MOTHER.csv"))
 mortality_both <- import(here("data", "raw_data", "palestine_WPP2024_MORT_F01_1_DEATHS_SINGLE_AGE_BOTH_SEXES.csv"))
@@ -86,6 +79,25 @@ population_all <- population_subset %>%
 #Fertility calculations, divide by 2 assuming the population is 50:50 male/female (it isnt) and convert to daily
 fertility_by_year <- rowSums((fertility_matched/1000 * population_female_matched))/rowSums(population_female_matched)
 
+#Calculate migration
+palestine_migration <- migration %>%
+  filter(Year >= 1964) %>%
+  select(`Net Migration Rate (per 1,000 population)`) %>%
+  set_names("migration_per_1000") %>%
+  c %>%
+  unlist %>%
+  as.numeric
+  
+#Work out migration by year
+migration <- round(do.call(rbind, sapply(1:nrow(population_subset), function(x){
+  population_subset[x,] * palestine_migration[x]/1000 
+}, simplify = F)) * 1000, 0)
+
+#Expanded grid
+migration_expanded_grid <- do.call(rbind, sapply(1:60, function(x){
+  data.frame(dim1 = x, dim2 = 1:101, dim3 = 1, dim4 = 1, value = as.numeric(migration[x, ]))
+}, simplify = FALSE))
+
 
 params <- param_packager(
   
@@ -110,53 +122,146 @@ params <- param_packager(
   crude_death = array(mortality_vector, dim = c(length(data_change_here), 101, 1)),
   #Birth ages
   repro_low = 15,
-  repro_high = 59
+  repro_high = 49,
+  
+  #Migration
+  tt_migration = data_change_here,
+  migration_in_number = migration_expanded_grid,
+  migration_distribution_values = 1
+  
 )
-
 
 #Run model
 time1 <- Sys.time()
 clean_df <- run_model(
   params = params,
   time = time_run_for,
-  no_runs = 10
+  no_runs = 2
 )
 time2 <- Sys.time()
 
 time2 - time1
 
-
 #Agg to year
-ggplot(
-  data = subset(clean_df, state == "total_pop"),
-  mapping = aes(
-    x = 1964 + time,
-    y = value,
-    group = run
-  )
-) +
-  geom_line() +
+population_over_time <- ggplot() +
+  geom_line(
+    data = subset(clean_df, run == "run_1" & state == "total_pop"),
+    mapping = aes(
+      x = 1964 + time,
+      y = value,
+      color = "Model"
+    )) +
+  geom_line(
+    data = data.frame(year = 1965:2024, value = 1000 * population_all),
+    mapping = aes(
+      x = year,
+      y = value, 
+      color = "UN WPP"
+    )
+  ) + 
   scale_y_continuous(label = scales::comma) +
   labs(x = "Year",
-         y = "Population") +
+         y = "Population",
+       color = "",
+       subtitle = paste0(paste0("Model population estimated in 2024: ", formatC(last(subset(clean_df, state == "total_pop")$value), big.mark = ",", format = "fg")), "\n",
+                         paste0("UN WPP population estimated in 2024: ", formatC(last(population_all) * 1000, big.mark = ",", format = "fg")))) +
   theme_bw()
 
-#Agg to year
-ggplot(
-  data = subset(clean_df, state %in% c("total_death", "total_birth")),
-  mapping = aes(
-    x = 1964 + time,
-    y = value,
-    group = run
-  )
-) +
-  geom_line() +
-  scale_y_continuous(label = scales::comma) +
-  labs(x = "Year",
-       y = "Population") +
+ggsave("figs/population_over_time_palestine_demographics.jpg", population_over_time, width = 5, height = 3)
+
+
+#Plot histogram
+age_pyramid_df <- rbind(
+  
+  data.frame(age = 1:101,
+             value = subset(clean_df, run == "run_1" & state == "S" & time == 60 & age != "All") %>% mutate(age = as.numeric(age)) %>% pull(value),
+             type = "Model estimate"),
+  
+  data.frame(age = 1:101,
+             value = as.numeric(population_subset[60, ] * 1000),
+             type = "UN WPP")
+  
+)
+
+#Population pyramid
+ggplot(mapping = aes(
+  x = age,
+  fill = type
+)) +
+  geom_histogram(
+    data = subset(age_pyramid_df, type == "Model estimate"),
+    mapping = aes( y = value),
+    stat = "identity"
+  ) +
+  geom_histogram(
+    data = subset(age_pyramid_df, type == "UN WPP"),
+    mapping = aes(y = -1 * value),
+    stat = "identity"
+  ) +
+  coord_flip() +
+  theme_bw()
+
+#Aggregate by five
+age_pyramid_df_agg <- age_pyramid_df %>% 
+  group_by(type, ceiling(age/5)) %>% 
+  summarise(value = sum(value, na.rm = TRUE)) %>%
+  ungroup() %>%
+  set_names("type", "age_group", "value") %>%
+  mutate(age_group = factor(c(names(five_year), names(five_year)), levels = names(five_year))) %>%
+  group_by(type) %>%
+  mutate(age_group_prop = value/sum(value))
+
+
+#Population pyramid
+age_pyramid_df_agg
+
+pop_pyramid <- ggplot(mapping = aes(
+  x = age_group,
+  fill = type
+)) +
+  scale_y_continuous(label = scales::comma, limits = c(-800000, 800000)) +
+  geom_histogram(
+    data = subset(age_pyramid_df_agg, type == "Model estimate"),
+    mapping = aes( y = value),
+    stat = "identity"
+  ) +
+  geom_histogram(
+    data = subset(age_pyramid_df_agg, type == "UN WPP"),
+    mapping = aes(y = -1 * value),
+    stat = "identity"
+  ) +
+  coord_flip() +
   theme_bw() +
-  facet_wrap(~state)
+  labs(title = "Palestine population age pyramid in 2024",
+       y = "",
+       x = "",
+       fill = "") +
+  theme(legend.position = "bottom")
+
+pop_pyramid
+
+ggsave("figs/age_pyramid_palestine_demographics.jpg", pop_pyramid, width = 6, height = 4)
 
 
 
+
+pop_pyramid_prop <- ggplot(mapping = aes(
+  x = age_group,
+  fill = type
+)) +
+  geom_histogram(
+    data = age_pyramid_df_agg,
+    mapping = aes( y = age_group_prop),
+    stat = "identity"
+  ) +
+  theme_bw() +
+  labs(title = "Palestine population age pyramid in 2024",
+       y = "",
+       x = "",
+       fill = "") +
+  theme(legend.position = "bottom")
+
+pop_pyramid_prop
+
+ggsave("figs/age_pyramid_prop_palestine_demographics.jpg", pop_pyramid_prop, width = 6, height = 4)
 

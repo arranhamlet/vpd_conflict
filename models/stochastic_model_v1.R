@@ -13,6 +13,7 @@ initial(R_effective) <- R0[1]
 initial(total_pop) <- sum(N0)
 initial(total_birth) <- 0
 initial(total_death) <- 0
+initial(repro_pop) <- 0
 
 # Compartments ------------------------------------------------------------
 
@@ -34,6 +35,7 @@ update(R_effective) <- t_R0 * sum(S_eff) / N
 update(total_pop) <- N
 update(total_birth) <- sum(Births)
 update(total_death) <- sum(S_death) + sum(E_death) + sum(I_death) + sum(R_death) + sum(Is_death) + sum(Rc_death)
+update(repro_pop) <- sum(reproductive_population)
 
 # Entering and exiting compartments ---------------------------------------
 
@@ -338,13 +340,16 @@ background_death[, ]<- if(simp_birth_death == 1) max(min(initial_background_deat
 reproductive_population[] <- sum(S[repro_low:repro_high, , i]) +
   sum(E[repro_low:repro_high, , i]) +
   sum(I[repro_low:repro_high, , i]) +
-  sum(R[repro_low:repro_high, , i])
+  sum(R[repro_low:repro_high, , i]) +
+  sum(Is[repro_low:repro_high, , i]) +
+  sum(Rc[repro_low:repro_high, , i])
+
 #Calculate birth rate
 birth_rate[] <- if(reproductive_population[i] <= 0) 0 else sum(Npop_background_death[, i])/reproductive_population[i]
 #Interpolate changes in birth rate
 birth_int <- interpolate(tt_birth_changes, crude_birth, "constant")
 #Calculate the number of births
-Births[] <-  if(reproductive_population[i] <= 0) 0 else if(simp_birth_death == 1) Binomial(reproductive_population[i], max(min(birth_rate[i], 1), 0)) else Binomial(reproductive_population[i], max(min(birth_int[i], 1), 0))
+Births[] <-  if(reproductive_population[i] <= 0) 0 else if(simp_birth_death == 1) Binomial(reproductive_population[i], max(min(birth_rate[i]/2, 1), 0)) else Binomial(reproductive_population[i], max(min(birth_int[i]/2, 1), 0))
 
 # Mothers who confer vaccine derived maternal antibodies
 vaccinated_mums[] <- sum(S[repro_low:repro_high, 2:n_vacc, i]) + sum(E[repro_low:repro_high, 2:n_vacc, i]) + sum(I[repro_low:repro_high, 2:n_vacc, i]) + sum(R[repro_low:repro_high, 2:n_vacc, i]) + sum(Is[repro_low:repro_high, 2:n_vacc, i]) + sum(Rc[repro_low:repro_high, 2:n_vacc, i])
