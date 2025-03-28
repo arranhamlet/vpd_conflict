@@ -61,9 +61,9 @@ unpack_dust2 <- function(model_system, model_object, dimension_names, which_stat
   
   #' Final data cleaning and formatting
   bind_rows(unpacked_compartments, unpacked_noncompartments) %>%
-    mutate(across(colnames_use, as.character)) %>%
-    mutate(across(c(time, value), as.numeric)) %>%
-    mutate(across(colnames_use, replace_na, "All")) %>%
+    mutate(across(.cols = all_of(colnames_use), .fns = as.character)) %>%
+    mutate(across(.cols = all_of(c("time", "value")), as.numeric)) %>%
+    mutate(across(.cols = all_of(colnames_use), \(x) replace_na(x, "All"))) %>%
     mutate(state = factor(state, levels = c(
       names(these_are_compartments[these_are_compartments]),
       names(these_are_compartments[!these_are_compartments])
