@@ -135,9 +135,6 @@ param_packager <- function(
   #Set up severe recovery rate if missing
   if(is.null(severe_recovery_rate)) severe_recovery_rate <- recovery_rate
   
-  #Vaccination
-  no_vacc_changes <- length(tt_vaccination_coverage)
-  
   #R0
   no_R0_changes <- length(tt_R0)
   
@@ -153,14 +150,26 @@ param_packager <- function(
   prop_severe <- check_and_format_input(prop_severe, n_age, n_vacc, n_risk)
   
   #Vaccination
-  vaccination_coverage <- check_and_format_input(vaccination_coverage, no_vacc_changes, n_age, n_vacc, n_risk)
+  no_vacc_changes <- length(tt_vaccination_coverage)
   age_vaccination_beta_modifier <- check_and_format_input(age_vaccination_beta_modifier, n_age, n_vacc, n_risk)
   waning_rate <- check_and_format_input(waning_rate, n_age, n_vacc)
+  
+  vaccination_coverage <- if(all(vaccination_coverage == 0)) check_and_format_input(vaccination_coverage, no_vacc_changes, n_age, n_vacc, n_risk) else {
+    generate_array_df(
+      dim1 = no_vacc_changes, 
+      dim2 = n_age, 
+      dim3 = n_vacc, 
+      dim4 = n_risk, 
+      default_value = 0,
+      updates = vaccination_coverage
+    ) %>%
+      df_to_array
+  }
   
   #Moving between risk groups
   no_moving_risk_changes <- length(tt_moving_risk)
   
-  moving_risk_values <- if(all(moving_risk_values == 0)) check_and_format_input(no_moving_risk_changes, no_vacc_changes, n_age, n_vacc, n_risk) else {
+  moving_risk_values <- if(all(moving_risk_values == 0)) check_and_format_input(no_moving_risk_changes, no_moving_risk_changes, n_age, n_vacc, n_risk) else {
   generate_array_df(
     dim1 = no_moving_risk_changes, 
     dim2 = n_age, 
@@ -172,7 +181,7 @@ param_packager <- function(
     df_to_array
   }
   
-  moving_risk_distribution_values <- if(all(moving_risk_distribution_values == 0)) check_and_format_input(no_moving_risk_changes, no_vacc_changes, n_age, n_vacc, n_risk) else {
+  moving_risk_distribution_values <- if(all(moving_risk_distribution_values == 0)) check_and_format_input(no_moving_risk_changes, no_moving_risk_changes, n_age, n_vacc, n_risk) else {
     generate_array_df(
     dim1 = no_moving_risk_changes, 
     dim2 = n_age, 

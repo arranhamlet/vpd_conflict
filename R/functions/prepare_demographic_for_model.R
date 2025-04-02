@@ -10,7 +10,8 @@ prepare_demographic_for_model <- function(
     population_modifier = 1,
     fertility_modifier = 1,
     death_modifier = 1,
-    migration_modifier = 1
+    migration_modifier = 1,
+    n_vac = 1
   ){
   
   #Set year subset
@@ -89,9 +90,23 @@ prepare_demographic_for_model <- function(
     data.frame(dim1 = x, dim2 = 1:101, dim3 = 1, dim4 = 1, value = as.numeric(migration[x, ]))
   }, simplify = FALSE))
   
+  #Generate arrays to match dimensions
+  expand.grid(1:101, 1, 1)
+  
+  
+  N0_array <- generate_array_df(dim1 = 101, dim2 = n_vac, dim3 = 1, 
+                    updates = data.frame(
+                      dim1 = 1:101,
+                      dim2 = 1,
+                      dim3 = 1,
+                      value = round(as.numeric(total_population_data[1, ] * 1000), 0)
+                    )) %>%
+    df_to_array
+  
+  
   #Output
   list(
-    N0 = array(c(unlist(round(total_population_data[1, ] * 1000, 0))), dim = c(101, 1, 1)),
+    N0 = N0_array,#array(c(unlist(round(total_population_data[1, ] * 1000, 0))), dim = c(101, 1, 1)),
     crude_birth = array(fertility_by_year, dim = c(length(time_all), 1)),
     crude_death = array(mortality_vector, dim = c(length(time_all), 101, 1)),
     tt_migration = time_all,
