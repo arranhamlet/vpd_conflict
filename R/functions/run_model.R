@@ -17,7 +17,7 @@ run_model <- function(params, time = 1000, no_runs = 25) {
   dust2::dust_system_set_state_initial(sys)
   
   #' Define the time vector for simulation (starting from 0)
-  full_time_vector <- 0:time
+  full_time_vector <- 0:(time - 1)
   
   #' Run the dust system simulation over the defined time period
   y <- dust2::dust_system_simulate(sys, full_time_vector)

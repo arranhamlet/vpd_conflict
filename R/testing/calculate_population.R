@@ -26,7 +26,7 @@ mortality <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2
 population_all <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_pop_f01_1_population_single_age_both_sexes.csv"))
 population_female <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_pop_f01_3_population_single_age_female.csv"))
 
-#Run function
+#Run function - add in modifiers to account for Gaza
 demog_data <- prepare_demographic_for_model(
   migration = migration, 
   fertility = fertility, 
@@ -35,8 +35,8 @@ demog_data <- prepare_demographic_for_model(
   population_female = population_female,
   year_start = 1964,
   year_end = "",
-  population_modifier = 0.35,
-  fertility_modifier = 1.15,
+  population_modifier = 0.4,
+  fertility_modifier = 1.18,
   death_modifier = 1,
   migration_modifier = 1
 )
@@ -84,7 +84,8 @@ clean_df <- run_model(
 #Generate plots
 saved_plots <- model_run_demographic_plots(
   clean_df,
-  demog_data
+  demog_data,
+  end_year = 2022
 )
 
 saved_plots[[1]]
@@ -107,11 +108,16 @@ gaza_age_breakdown <- import(here("data", "raw_data", "2022_Gaza_Strip_Age_Struc
 
 #Replace data for a plot
 pyramid_data[which(pyramid_data$type == "UN WPP"), ]$prop <- gaza_age_breakdown$median_percent/100
+pyramid_data_spread <- pyramid_data %>%
+  select(-value) %>%
+  spread(key = type, value = prop) %>%
+  set_names("age_group", "model_estimate", "un_wpp") %>%
+  mutate(absolute_difference = model_estimate - un_wpp,
+         relative_difference = (model_estimate - un_wpp)/un_wpp)
+
 
 #Plot
-ggsave("figs/gaza_linegraph.jpg", saved_plots[[1]], height = 3, width = 5)
-
-ggplot(mapping = aes(
+gaza_demographic <- ggplot(mapping = aes(
   x = age_group,
   fill = type
 )) +
@@ -128,5 +134,29 @@ ggplot(mapping = aes(
        fill = "") +
   theme(legend.position = "bottom")
 
+gaza_demographic
 
-ggsave("figs/gaza_demographic.jpg", height = 3, width = 7)
+gaza_age_prop_difference <- ggplot(mapping = aes(
+  x = age_group,
+)) +
+  geom_bar(
+    data = pyramid_data_spread,
+    mapping = aes(y = absolute_difference * 100),
+    stat = "identity",
+    position = position_dodge()
+  ) +
+  theme_bw() +
+  labs(title = paste0("Percent population proportion difference between model\nand Palestinian Statistical Authority estimates by age group (2022)"), 
+       y = "",
+       x = "",
+       fill = "") +
+  theme(legend.position = "bottom")
+
+
+
+ggsave("figs/demography/gaza_linegraph.jpg", saved_plots[[1]], height = 3, width = 5)
+ggsave("figs/demography/gaza_demographic_difference.jpg", gaza_age_prop_difference, height = 3, width = 7)
+ggsave("figs/demography/gaza_demographic.jpg", gaza_demographic, height = 3, width = 7)
+
+
+

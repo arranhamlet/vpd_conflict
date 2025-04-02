@@ -38,9 +38,6 @@ params <- param_packager(
 )
 
 
-
-
-
 #Run model
 clean_df <- run_model(
   params = params,

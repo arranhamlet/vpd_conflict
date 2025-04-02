@@ -1,8 +1,22 @@
 
 model_run_demographic_plots <- function(
     clean_model_df,
-    demog_data
+    demog_data,
+    end_year = NA
     ){
+  
+  #Update end year
+  end_year <- if(is.na(end_year)) max(demog_data$years) else end_year
+  
+  #Subset to end year
+  full_time_year <- data.frame(model_time = 1:max(clean_model_df$time),
+                               year = demog_data$years)
+  
+  model_data_subset <- clean_model_df %>%
+    filter(time <= full_time_year %>% filter(year == end_year) %>% pull(model_time))
+  
+  total_population_df <- data.frame(year = demog_data$years, value = 1000 * rowSums(demog_data$population_data)) %>%
+    filter(year <= end_year)
   
   #Five year groupings
   age_groups <- c(
@@ -12,18 +26,17 @@ model_run_demographic_plots <- function(
     "90-94", "95-99", "100+"
   )
   
-  
   #Plot linegraph
   linegraph <- ggplot() +
     geom_line(
-      data = subset(clean_model_df, run == "run_1" & state == "total_pop"),
+      data = subset(model_data_subset, run == "run_1" & state == "total_pop"),
       mapping = aes(
-        x = 1964 + time,
+        x = min(demog_data$years) - 1 + time,
         y = value,
         color = "Model"
       )) +
     geom_line(
-      data = data.frame(year = 1965:2024, value = 1000 * rowSums(demog_data$population_data)),
+      data = total_population_df,
       mapping = aes(
         x = year,
         y = value, 
@@ -34,8 +47,8 @@ model_run_demographic_plots <- function(
     labs(x = "Year",
          y = "Population",
          color = "",
-         subtitle = paste0(paste0("Model population estimated in 2024: ", formatC(last(subset(clean_model_df, state == "total_pop")$value), big.mark = ",", format = "fg")), "\n",
-                           paste0("UN WPP population estimated in 2024: ", formatC(sum(demog_data$population_data[nrow(demog_data$population_data), ]) * 1000, big.mark = ",", format = "fg")))) +
+         subtitle = paste0(paste0("Model population estimated in ", end_year, ": ", formatC(subset(model_data_subset, time == full_time_year %>% filter(year == end_year) %>% pull(model_time) & state == "total_pop")$value, big.mark = ",", format = "fg")), "\n",
+                           paste0("UN WPP population estimated in ", end_year, ": ", formatC(sum(total_population_df[nrow(total_population_df), ]$value), big.mark = ",", format = "fg")))) +
     theme_bw()
   
   #Now create age pyramid
@@ -43,11 +56,11 @@ model_run_demographic_plots <- function(
   age_pyramid_df <- rbind(
     
     data.frame(age = 1:101,
-               value = subset(clean_df, run == "run_1" & state == "S" & time == last(time) & age != "All") %>% mutate(age = as.numeric(age)) %>% pull(value),
+               value = subset(clean_df, run == "run_1" & state == "S" & time == full_time_year %>% filter(year == end_year) %>% pull(model_time) & age != "All") %>% mutate(age = as.numeric(age)) %>% pull(value),
                type = "Model estimate"),
     
     data.frame(age = 1:101,
-               value = as.numeric(demog_data$population_data[nrow(demog_data$population_data), ] * 1000),
+               value = as.numeric(demog_data$population_data[full_time_year %>% filter(year == end_year) %>% pull(model_time), ] * 1000),
                type = "UN WPP")
     
   ) %>% 
@@ -77,7 +90,7 @@ model_run_demographic_plots <- function(
     ) +
     coord_flip() +
     theme_bw() +
-    labs(title = paste0("Population age pyramid (", max(demog_data$years), ")"),
+    labs(title = paste0("Population age pyramid (", end_year, ")"),
          y = "",
          x = "",
          fill = "") +
@@ -95,7 +108,7 @@ model_run_demographic_plots <- function(
       position = position_dodge()
     ) +
     theme_bw() +
-    labs(title = paste0("Population proportion by age group (", max(demog_data$years), ")"), 
+    labs(title = paste0("Population proportion by age group (", end_year, ")"), 
          y = "",
          x = "",
          fill = "") +
@@ -108,6 +121,5 @@ model_run_demographic_plots <- function(
     pop_pyramid_prop = pop_pyramid_prop,
     pyramid_data = age_pyramid_df
     )
-  
   
 }

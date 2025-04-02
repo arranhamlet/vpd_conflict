@@ -302,6 +302,10 @@ tt_migration <- parameter()
 migration_in_number <- parameter()
 migration_distribution_values <- parameter()
 
+#Modifiers for fitting
+fertility_modifier = parameter()
+death_modifier = parameter()
+
 # Calculated parameters ---------------------------------------------------
 
 #Calculate transmission parameters
@@ -333,7 +337,7 @@ Npop_background_death[, ] <- Binomial(Npop_age_risk[i, j], max(min(background_de
 #Interpolate changes in death rate
 death_int <- interpolate(tt_death_changes, crude_death, "constant")
 #Select background death rate to use
-background_death[, ]<- if(simp_birth_death == 1) max(min(initial_background_death[i, j], 1), 0) else max(min(death_int[i, j], 1), 0)
+background_death[, ]<- if(simp_birth_death == 1) max(min(initial_background_death[i, j] * death_modifier, 1), 0) else max(min(death_int[i, j] * death_modifier, 1), 0)
 
 #Calculate birth rates
 #Reproductive population
@@ -349,7 +353,7 @@ birth_rate[] <- if(reproductive_population[i] <= 0) 0 else sum(Npop_background_d
 #Interpolate changes in birth rate
 birth_int <- interpolate(tt_birth_changes, crude_birth, "constant")
 #Calculate the number of births
-Births[] <-  if(reproductive_population[i] <= 0) 0 else if(simp_birth_death == 1) Binomial(reproductive_population[i], max(min(birth_rate[i]/2, 1), 0)) else Binomial(reproductive_population[i], max(min(birth_int[i]/2, 1), 0))
+Births[] <-  if(reproductive_population[i] <= 0) 0 else if(simp_birth_death == 1) Binomial(reproductive_population[i], max(min(fertility_modifier * birth_rate[i]/2, 1), 0)) else Binomial(reproductive_population[i], max(min(fertility_modifier * birth_int[i]/2, 1), 0))
 
 # Mothers who confer vaccine derived maternal antibodies
 vaccinated_mums[] <- sum(S[repro_low:repro_high, 2:n_vacc, i]) + sum(E[repro_low:repro_high, 2:n_vacc, i]) + sum(I[repro_low:repro_high, 2:n_vacc, i]) + sum(R[repro_low:repro_high, 2:n_vacc, i]) + sum(Is[repro_low:repro_high, 2:n_vacc, i]) + sum(Rc[repro_low:repro_high, 2:n_vacc, i])
@@ -511,3 +515,7 @@ dim(migration_I) <- c(n_age, n_vacc, n_risk)
 dim(migration_R) <- c(n_age, n_vacc, n_risk)
 dim(migration_Is) <- c(n_age, n_vacc, n_risk)
 dim(migration_Rc) <- c(n_age, n_vacc, n_risk)
+
+#Compare to data
+population_total <- data()
+population_total ~ Poisson(N/100000)
