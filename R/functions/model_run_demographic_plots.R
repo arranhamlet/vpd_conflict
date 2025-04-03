@@ -6,6 +6,14 @@ model_run_demographic_plots <- function(
     ){
   
   #Update end year
+  clean_model_df <-   clean_model_df %>% filter(run == "run_1")
+    # fgroup_by(state, time, age, vaccination, risk) %>%
+    # fsummarise(
+    #   value = median(value),
+    #   value_low = quantile(value, 0.025),
+    #   value_high = quantile(value, 0.975)
+    # )
+
   end_year <- if(is.na(end_year)) max(demog_data$years) else end_year
   
   #Subset to end year
@@ -29,7 +37,7 @@ model_run_demographic_plots <- function(
   #Plot linegraph
   linegraph <- ggplot() +
     geom_line(
-      data = subset(model_data_subset, run == "run_1" & state == "total_pop"),
+      data = subset(model_data_subset, state == "total_pop"),
       mapping = aes(
         x = min(demog_data$years) - 1 + time,
         y = value,
@@ -56,7 +64,7 @@ model_run_demographic_plots <- function(
   age_pyramid_df <- rbind(
     
     data.frame(age = 1:101,
-               value = subset(clean_df, run == "run_1" & state == "S" & time == full_time_year %>% filter(year == end_year) %>% pull(model_time) & age != "All") %>% mutate(age = as.numeric(age)) %>% pull(value),
+               value = subset(clean_df,state == "S" & time == full_time_year %>% filter(year == end_year) %>% pull(model_time) & age != "All") %>% mutate(age = as.numeric(age)) %>% pull(value),
                type = "Model estimate"),
     
     data.frame(age = 1:101,

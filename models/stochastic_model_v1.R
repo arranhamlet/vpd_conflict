@@ -37,6 +37,18 @@ update(total_birth) <- sum(Births)
 update(total_death) <- sum(S_death) + sum(E_death) + sum(I_death) + sum(R_death) + sum(Is_death) + sum(Rc_death)
 update(repro_pop) <- sum(reproductive_population)
 
+update(death_interpolated) <- sum(death_int[5, ])
+initial(death_interpolated) <- sum(initial_background_death[5, ])
+
+update(birth_rate_out) <- sum(birth_int)
+initial(birth_rate_out) <- 0
+
+update(migration_prop_out) <- sum(migration_distribution)
+initial(migration_prop_out) <- 0
+
+update(migration_number_out) <- sum(migration_adjusted)
+initial(migration_number_out) <- 0
+
 # Entering and exiting compartments ---------------------------------------
 
 #Death
@@ -190,12 +202,12 @@ pos_neg_migration <- if(sum(migration) < 0) -1 else 1
 migration_adjusted[, , ] <- migration[i, j, k] * pos_neg_migration
 
 # Moving INTO each compartment with specified distribution
-migration_S[, , ] <- if(migration_adjusted[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k], migration_distribution[1])
-migration_E[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k], migration_distribution[2])
-migration_I[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k], migration_distribution[3])
-migration_R[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k], migration_distribution[4])
-migration_Is[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k], migration_distribution[5])
-migration_Rc[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k] - migration_Is[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k] - migration_Is[i, j, k], migration_distribution[6])
+migration_S[, , ] <- if(migration_adjusted[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k], migration_distribution[1, i, j, k])
+migration_E[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k], migration_distribution[2, i, j, k])
+migration_I[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k], migration_distribution[3, i, j, k])
+migration_R[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k], migration_distribution[4, i, j, k])
+migration_Is[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k], migration_distribution[5, i, j, k])
+migration_Rc[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k] - migration_Is[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k] - migration_Is[i, j, k], migration_distribution[6, i, j, k])
 
 
 # User parameter values --------------------------------------------------------
@@ -356,7 +368,7 @@ birth_int <- interpolate(tt_birth_changes, crude_birth, "constant")
 Births[] <-  if(reproductive_population[i] <= 0) 0 else if(simp_birth_death == 1) Binomial(reproductive_population[i], max(min(fertility_modifier * birth_rate[i]/2, 1), 0)) else Binomial(reproductive_population[i], max(min(fertility_modifier * birth_int[i]/2, 1), 0))
 
 # Mothers who confer vaccine derived maternal antibodies
-vaccinated_mums[] <- sum(S[repro_low:repro_high, 2:n_vacc, i]) + sum(E[repro_low:repro_high, 2:n_vacc, i]) + sum(I[repro_low:repro_high, 2:n_vacc, i]) + sum(R[repro_low:repro_high, 2:n_vacc, i]) + sum(Is[repro_low:repro_high, 2:n_vacc, i]) + sum(Rc[repro_low:repro_high, 2:n_vacc, i])
+vaccinated_mums[] <- if(n_vacc <= 1) 0 else sum(S[repro_low:repro_high, 2:n_vacc, i]) + sum(E[repro_low:repro_high, 2:n_vacc, i]) + sum(I[repro_low:repro_high, 2:n_vacc, i]) + sum(R[repro_low:repro_high, 2:n_vacc, i]) + sum(Is[repro_low:repro_high, 2:n_vacc, i]) + sum(Rc[repro_low:repro_high, 2:n_vacc, i])
 
 # Mothers who confer natural derived maternal antibodies
 antibody_mums[] <- sum(I[repro_low:repro_high, , i]) + sum(R[repro_low:repro_high, , i]) + sum(Is[repro_low:repro_high, , i]) + sum(Rc[repro_low:repro_high, , i])
@@ -504,9 +516,9 @@ dim(moving_risk_distribution) <- c(n_age, n_vacc, n_risk)
 
 #Dimensions for migration
 dim(tt_migration) <- c(no_migration_changes)
-dim(migration_distribution) <- c(6)
+dim(migration_distribution) <- c(6, n_age, n_vacc, n_risk)
 dim(migration_in_number) <- c(no_migration_changes, n_age, n_vacc, n_risk)
-dim(migration_distribution_values) <- c(no_migration_changes, 6)
+dim(migration_distribution_values) <- c(no_migration_changes, 6, n_age, n_vacc, n_risk)
 dim(migration) <- c(n_age, n_vacc, n_risk)
 dim(migration_adjusted) <- c(n_age, n_vacc, n_risk)
 dim(migration_S) <- c(n_age, n_vacc, n_risk)

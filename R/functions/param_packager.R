@@ -208,7 +208,18 @@ param_packager <- function(
       df_to_array
   }
   
-  migration_distribution_values <- check_and_format_input(migration_distribution_values, no_migration_changes, 6)
+  migration_distribution_values <- if(all(migration_in_number == 0)) check_and_format_input(input = migration_distribution_values, dim1 = no_migration_changes, dim2 = 6, dim3 = n_age, dim4 = n_vacc, dim5 = n_risk) else {
+    generate_array_df(
+      dim1 = no_migration_changes, 
+      dim2 = 6,
+      dim3 = n_age, 
+      dim4 = n_vacc, 
+      dim5 = n_risk, 
+      default_value = 0,
+      updates = migration_distribution_values
+    ) %>%
+      df_to_array
+  } 
 
   #Births, deaths, aging
   if(is.null(repro_high)) repro_high <- n_age
