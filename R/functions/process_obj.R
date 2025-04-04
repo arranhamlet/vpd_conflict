@@ -26,6 +26,7 @@ process_obj <- function(this_obj, present_dimensions, colnames, time_length, x, 
     
     #' Assign appropriate dimension names for non-particle dimensions
     lapply(these_names, function(i) {
+      
       dimnames(this_obj)[[i]] <- dimension_names[[which(names(dimension_names) == present_dimensions[these_names == i])]][[1]]
     })
     

@@ -37,20 +37,49 @@ update(total_birth) <- sum(Births)
 update(total_death) <- sum(S_death) + sum(E_death) + sum(I_death) + sum(R_death) + sum(Is_death) + sum(Rc_death)
 update(repro_pop) <- sum(reproductive_population)
 
-update(death_interpolated) <- sum(death_int[5, ])
-initial(death_interpolated) <- sum(initial_background_death[5, ])
+# update(death_interpolated) <- sum(death_int[5, ])
+# initial(death_interpolated) <- sum(initial_background_death[5, ])
+# 
+# update(birth_rate_out) <- sum(birth_int)
+# initial(birth_rate_out) <- 0
+# 
+# update(migration_prop_out) <- sum(migration_distribution)
+# initial(migration_prop_out) <- 0
+# 
+# # update(migration_number_out) <- sum(migration)
+# # initial(migration_number_out) <- 0
+# 
+# update(migration_input_data) <- sum(migration_in_number)
+# initial(migration_input_data) <- 0
+# 
+update(mig_in_v1) <- sum(migration_in_number[, , 1, ])
+update(mig_in_v3) <- sum(migration_in_number[, , 3, ])
+update(mig_in_v5) <- sum(migration_in_number[, , 5, ])
 
-update(birth_rate_out) <- sum(birth_int)
-initial(birth_rate_out) <- 0
+initial(mig_in_v1) <- 0
+initial(mig_in_v3) <- 0
+initial(mig_in_v5) <- 0
 
-update(migration_prop_out) <- sum(migration_distribution)
-initial(migration_prop_out) <- 0
+update(mig_in_1dim) <- sum(migration_in_number[1, , , ])
+update(mig_in_2dim) <- sum(migration_in_number[, 1, , ])
+update(mig_in_3dim) <- sum(migration_in_number[, , 1, ])
+update(mig_in_4dim) <- sum(migration_in_number[, , , 1])
 
-update(migration_number_out) <- sum(migration_adjusted)
-initial(migration_number_out) <- 0
+initial(mig_in_1dim) <- 0
+initial(mig_in_2dim) <- 0
+initial(mig_in_3dim) <- 0
+initial(mig_in_4dim) <- 0
 
-update(migration_input_data) <- sum(migration_in_number)
-initial(migration_input_data) <- 0
+update(mig_v1) <- sum(migration[, 1, ])
+update(mig_v3) <- sum(migration[, 3, ])
+update(mig_v5) <- sum(migration[, 5, ])
+
+initial(mig_v1) <- 0
+initial(mig_v3) <- 0
+initial(mig_v5) <- 0
+# # 
+# update(tt_migration_go) <- sum(tt_migration)
+# initial(tt_migration_go) <- 0
 
 # Entering and exiting compartments ---------------------------------------
 
@@ -197,6 +226,10 @@ moving_risk_to_Is[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_
 moving_risk_to_Rc[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_risk_from_Rc[i, j, k] else sum(moving_risk_from_Rc[i, j, ]) * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
 
 # Parameters to control movement between risk groups
+# update(migration_oot[, , , ]) <- migration_in_number[i, j, k, l]
+# initial(migration_oot[, , , ]) <- 0
+# dim(migration_oot) <- c(no_migration_changes, n_age, n_vacc, n_risk)       
+  
 migration <- interpolate(tt_migration, migration_in_number, "constant")
 migration_distribution <- interpolate(tt_migration, migration_distribution_values, "constant")
 
@@ -337,7 +370,7 @@ t_R0 <- interpolate(tt_R0, R0, "constant")
 #Calculate beta from the R0 and infectious period
 beta[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else t_R0 / infectious_period[i, j, k]
 #Update with vaccination and age mediation
-beta_updated[, , ] <- age_vaccination_beta_modifier[i, j, k] * beta[i, j, k]
+beta_updated[, , ] <- (1 - age_vaccination_beta_modifier[i, j, k]) * beta[i, j, k]
 
 #Update with maternal protection to first groups
 beta_updated[1:age_maternal_protection_ends, , ] <- beta[i, j, k] * age_vaccination_beta_modifier[i, j, k] *

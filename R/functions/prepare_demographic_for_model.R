@@ -81,7 +81,7 @@ prepare_demographic_for_model <- function(
     as.numeric
   
   #Expanded grid for inputting into the model
-  migration <- do.call(rbind, sapply(1:nrow(total_population_data), function(x){
+  migration_upd <- do.call(rbind, sapply(1:nrow(total_population_data), function(x){
     data.frame(dim1 = x, dim2 = 1:101, dim3 = 1, dim4 = 1, value = round(as.numeric(total_population_data[x,] * palestine_migration[x]/1000 ) * 1000, 0))
   }, simplify = FALSE))
 
@@ -107,14 +107,25 @@ prepare_demographic_for_model <- function(
     as.data.frame %>%
     df_to_array
   
+  # #Migration
+  migration_distribution_values <- expand.grid(
+    dim1 = 1:length(time_all), 
+    dim2 = 1, 
+    dim3 = 1:ncol(total_population_data), 
+    dim4 = 1, 
+    dim5 = 1, 
+    value = 1
+  )
+  
   #Output
   list(
     N0 = N0_array,#array(c(unlist(round(total_population_data[1, ] * 1000, 0))), dim = c(101, 1, 1)),
     crude_birth = pmin(fertility_by_year, 1), #array(fertility_by_year, dim = c(length(time_all), 1)),
     crude_death = pmin(mortality_vector, 1), #pmin(mortality_array, 1),
     tt_migration = time_all,
-    migration_in_number = migration,
+    migration_in_number = migration_upd,
     population_data = total_population_data,
+    migration_distribution_values = migration_distribution_values,
     years = years
   )
   

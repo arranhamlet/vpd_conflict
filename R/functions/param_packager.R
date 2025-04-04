@@ -74,7 +74,7 @@ param_packager <- function(
   #Vaccination
   vaccination_coverage = 0,
   tt_vaccination_coverage = 0,
-  age_vaccination_beta_modifier = 1,
+  age_vaccination_beta_modifier = 0,
   waning_rate = 0,
   
   #R0
@@ -169,7 +169,7 @@ param_packager <- function(
   #Moving between risk groups
   no_moving_risk_changes <- length(tt_moving_risk)
   
-  moving_risk_values <- if(all(moving_risk_values == 0)) check_and_format_input(no_moving_risk_changes, no_moving_risk_changes, n_age, n_vacc, n_risk) else {
+  moving_risk_values <- if(all(moving_risk_values == 0)) check_and_format_input(moving_risk_values, no_moving_risk_changes, n_age, n_vacc, n_risk) else {
   generate_array_df(
     dim1 = no_moving_risk_changes, 
     dim2 = n_age, 
@@ -181,7 +181,7 @@ param_packager <- function(
     df_to_array
   }
   
-  moving_risk_distribution_values <- if(all(moving_risk_distribution_values == 0)) check_and_format_input(no_moving_risk_changes, no_moving_risk_changes, n_age, n_vacc, n_risk) else {
+  moving_risk_distribution_values <- if(all(moving_risk_distribution_values == 0)) check_and_format_input(moving_risk_distribution_values, no_moving_risk_changes, n_age, n_vacc, n_risk) else {
     generate_array_df(
     dim1 = no_moving_risk_changes, 
     dim2 = n_age, 
