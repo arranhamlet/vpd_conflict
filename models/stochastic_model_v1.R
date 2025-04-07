@@ -37,21 +37,7 @@ update(total_birth) <- sum(Births)
 update(total_death) <- sum(S_death) + sum(E_death) + sum(I_death) + sum(R_death) + sum(Is_death) + sum(Rc_death)
 update(repro_pop) <- sum(reproductive_population)
 
-# update(death_interpolated) <- sum(death_int[5, ])
-# initial(death_interpolated) <- sum(initial_background_death[5, ])
-# 
-# update(birth_rate_out) <- sum(birth_int)
-# initial(birth_rate_out) <- 0
-# 
-# update(migration_prop_out) <- sum(migration_distribution)
-# initial(migration_prop_out) <- 0
-# 
-# # update(migration_number_out) <- sum(migration)
-# # initial(migration_number_out) <- 0
-# 
-# update(migration_input_data) <- sum(migration_in_number)
-# initial(migration_input_data) <- 0
-# 
+#Diagnosing why migration is different 
 update(migint[, , ]) <- migration[i, j, k]
 initial(migint[, , ]) <- 0
 dim(migint) <- c(n_age, n_vacc, n_risk)
