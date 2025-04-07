@@ -143,18 +143,53 @@ param_packager <- function(
   seeded <- check_and_format_input(seeded, no_seeded_changes, n_age, n_vacc, n_risk)
   
   #Format initial population and infections
-  N0 <- check_and_format_input(N0, n_age, n_vacc, n_risk)
-  I0 <- check_and_format_input(I0, n_age, n_vacc, n_risk)
+  N0 <- if(length(N0) == 1) check_and_format_input(N0, n_age, n_vacc, n_risk) else {
+    generate_array_df(
+      dim1 = n_age,
+      dim2 = n_vacc,
+      dim3 = n_risk,
+      updates = N0
+    ) %>%
+      df_to_array
+  }
   
+  I0 <- if(length(I0) == 1) check_and_format_input(I0, n_age, n_vacc, n_risk) else {
+    generate_array_df(
+      dim1 = n_age,
+      dim2 = n_vacc,
+      dim3 = n_risk,
+      updates = I0
+    ) %>%
+      df_to_array
+  }
+
   #Prop severe
   prop_severe <- check_and_format_input(prop_severe, n_age, n_vacc, n_risk)
   
   #Vaccination
   no_vacc_changes <- length(tt_vaccination_coverage)
-  age_vaccination_beta_modifier <- check_and_format_input(age_vaccination_beta_modifier, n_age, n_vacc, n_risk)
-  waning_rate <- check_and_format_input(waning_rate, n_age, n_vacc)
   
-  vaccination_coverage <- if(all(vaccination_coverage == 0)) check_and_format_input(vaccination_coverage, no_vacc_changes, n_age, n_vacc, n_risk) else {
+  age_vaccination_beta_modifier <- if(length(age_vaccination_beta_modifier) == 1) check_and_format_input(age_vaccination_beta_modifier, n_age, n_vacc, n_risk) else {
+    generate_array_df(
+      dim1 = n_age,
+      dim2 = n_vacc,
+      dim3 = n_risk,
+      updates = age_vaccination_beta_modifier
+    ) %>%
+      df_to_array
+  }
+  
+  waning_rate <- if(length(waning_rate) == 1) check_and_format_input(waning_rate, n_age, n_vacc) else {
+    generate_array_df(
+      dim2 = n_age, 
+      dim3 = n_vacc, 
+      default_value = 0,
+      updates = waning_rate
+    ) %>%
+      df_to_array
+  }
+  
+  vaccination_coverage <- if(length(vaccination_coverage) == 1) check_and_format_input(vaccination_coverage, no_vacc_changes, n_age, n_vacc, n_risk) else {
     generate_array_df(
       dim1 = no_vacc_changes, 
       dim2 = n_age, 
@@ -169,7 +204,7 @@ param_packager <- function(
   #Moving between risk groups
   no_moving_risk_changes <- length(tt_moving_risk)
   
-  moving_risk_values <- if(all(moving_risk_values == 0)) check_and_format_input(moving_risk_values, no_moving_risk_changes, n_age, n_vacc, n_risk) else {
+  moving_risk_values <- if(length(moving_risk_values) == 1) check_and_format_input(moving_risk_values, no_moving_risk_changes, n_age, n_vacc, n_risk) else {
   generate_array_df(
     dim1 = no_moving_risk_changes, 
     dim2 = n_age, 
@@ -181,7 +216,7 @@ param_packager <- function(
     df_to_array
   }
   
-  moving_risk_distribution_values <- if(all(moving_risk_distribution_values == 0)) check_and_format_input(moving_risk_distribution_values, no_moving_risk_changes, n_age, n_vacc, n_risk) else {
+  moving_risk_distribution_values <- if(length(moving_risk_distribution_values) == 1) check_and_format_input(moving_risk_distribution_values, no_moving_risk_changes, n_age, n_vacc, n_risk) else {
     generate_array_df(
     dim1 = no_moving_risk_changes, 
     dim2 = n_age, 
@@ -190,7 +225,7 @@ param_packager <- function(
     default_value = 0,
     updates = moving_risk_distribution_values
   ) %>%
-    df_to_array()
+    df_to_array
   }
   
   #Migration

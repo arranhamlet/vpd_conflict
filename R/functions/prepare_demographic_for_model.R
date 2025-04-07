@@ -86,14 +86,16 @@ prepare_demographic_for_model <- function(
   }, simplify = FALSE))
 
   #Generate arrays to match dimensions
-  N0_array <- generate_array_df(dim1 = 101, dim2 = n_vacc, dim3 = 1, 
-                    updates = data.frame(
-                      dim1 = 1:101,
-                      dim2 = 1,
-                      dim3 = 1,
-                      value = round(as.numeric(total_population_data[1, ] * 1000), 0)
-                    )) %>%
-    df_to_array(version = "new")
+  N0_array <- data.frame(
+    dim1 = 1:101,
+    dim2 = 1,
+    dim3 = 1,
+    value = round(as.numeric(total_population_data[1, ] * 1000), 0)
+  )
+  
+  total_population_df <- do.call(rbind, sapply(1:nrow(total_population_data), function(x){
+    data.frame(dim1 = x, dim2 = 1:101, dim3 = 1, dim4 = 1, value = round(as.numeric(total_population_data[x,]) * 1000, 0))
+  }, simplify = FALSE))
   
   #Run through birth and death
   mortality_array <- data.table::rbindlist(sapply(1:nrow(mortality_correct_format), function(x){
@@ -104,8 +106,7 @@ prepare_demographic_for_model <- function(
         value = as.numeric(mortality_correct_format[x, ])
       )
   }, simplify = FALSE)) %>%
-    as.data.frame #%>%
-    # df_to_array
+    as.data.frame
   
   # #Migration
   migration_distribution_values <- expand.grid(
@@ -119,13 +120,13 @@ prepare_demographic_for_model <- function(
   
   #Output
   list(
-    N0 = N0_array,#array(c(unlist(round(total_population_data[1, ] * 1000, 0))), dim = c(101, 1, 1)),
-    crude_birth = pmin(fertility_by_year, 1), #array(fertility_by_year, dim = c(length(time_all), 1)),
-    crude_death = pmin(mortality_vector, 1), #pmin(mortality_array, 1),
+    N0 = N0_array,
+    crude_birth = pmin(fertility_by_year, 1),
+    crude_death = pmin(mortality_vector, 1),
     tt_migration = time_all,
     migration_in_number = migration_upd,
-    population_data = total_population_data,
     migration_distribution_values = migration_distribution_values,
+    population_data = total_population_data,
     years = years
   )
   

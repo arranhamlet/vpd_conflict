@@ -42,7 +42,7 @@
 # # 
 
 
-df_to_array <- function(df, version = "old") {
+df_to_array <- function(df, version = "new") {
 
   # version <- "old"
   
