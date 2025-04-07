@@ -190,13 +190,13 @@ param_packager <- function(
     default_value = 0,
     updates = moving_risk_distribution_values
   ) %>%
-    df_to_array
+    df_to_array()
   }
   
   #Migration
   no_migration_changes <- length(tt_migration)
   
-  migration_in_number <- if(all(migration_in_number == 0)) check_and_format_input(migration_in_number, no_migration_changes, n_age, n_vacc, n_risk) else {
+  migration_in_number <- if(length(migration_in_number) == 1) check_and_format_input(input = migration_in_number, dim1 = no_migration_changes, dim2 = n_age, dim3 = n_vacc, dim4 = n_risk) else {
     generate_array_df(
       dim1 = no_migration_changes, 
       dim2 = n_age, 
@@ -208,7 +208,7 @@ param_packager <- function(
       df_to_array
   }
   
-  migration_distribution_values <- if(all(migration_in_number == 0)) check_and_format_input(input = migration_distribution_values, dim1 = no_migration_changes, dim2 = 6, dim3 = n_age, dim4 = n_vacc, dim5 = n_risk) else {
+  migration_distribution_values <- if(length(migration_distribution_values) == 1) check_and_format_input(input = migration_distribution_values, dim1 = no_migration_changes, dim2 = 6, dim3 = n_age, dim4 = n_vacc, dim5 = n_risk) else {
     generate_array_df(
       dim1 = no_migration_changes, 
       dim2 = 6,
@@ -220,7 +220,6 @@ param_packager <- function(
     ) %>%
       df_to_array
   } 
-
 
   #Births, deaths, aging
   if(is.null(repro_high)) repro_high <- n_age

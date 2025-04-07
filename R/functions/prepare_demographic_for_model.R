@@ -93,7 +93,7 @@ prepare_demographic_for_model <- function(
                       dim3 = 1,
                       value = round(as.numeric(total_population_data[1, ] * 1000), 0)
                     )) %>%
-    df_to_array
+    df_to_array(version = "new")
   
   #Run through birth and death
   mortality_array <- data.table::rbindlist(sapply(1:nrow(mortality_correct_format), function(x){
@@ -104,8 +104,8 @@ prepare_demographic_for_model <- function(
         value = as.numeric(mortality_correct_format[x, ])
       )
   }, simplify = FALSE)) %>%
-    as.data.frame %>%
-    df_to_array
+    as.data.frame #%>%
+    # df_to_array
   
   # #Migration
   migration_distribution_values <- expand.grid(

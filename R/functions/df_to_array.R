@@ -42,8 +42,10 @@
 # # 
 
 
-df_to_array <- function(df, version = "new") {
+df_to_array <- function(df, version = "old") {
 
+  # version <- "old"
+  
   if(version == "new"){
     dim_cols <- grep("^dim\\d+$", names(df), value = TRUE)
     n_dims <- length(dim_cols)
