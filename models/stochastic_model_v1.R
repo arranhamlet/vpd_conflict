@@ -221,24 +221,17 @@ pos_neg_migration <- if(sum(migration) < 0) -1 else 1
 migration_adjusted[, , ] <- migration[i, j, k] * pos_neg_migration
 
 # Moving INTO each compartment with specified distribution
-# migration_S[, , ] <- if(migration_adjusted[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k], migration_distribution[1, i, j, k])
-# migration_E[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k], migration_distribution[2, i, j, k])
-# migration_I[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k], migration_distribution[3, i, j, k])
-# migration_R[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k], migration_distribution[4, i, j, k])
-# migration_Is[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k], migration_distribution[5, i, j, k])
-# migration_Rc[, , ] <- if(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k] - migration_Is[i, j, k] <= 0) 0 else Binomial(migration_adjusted[i, j, k] - migration_S[i, j, k] - migration_E[i, j, k] - migration_I[i, j, k] - migration_R[i, j, k] - migration_Is[i, j, k], migration_distribution[6, i, j, k])
-
 migration_S[, , ] <- if(sum(migration_adjusted) <= 0 || migration_distribution[1, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted), migration_distribution[1, i, j, k]/sum(migration_distribution))
 
 migration_E[, , ] <- if(sum(migration_adjusted) - sum(migration_S) <= 0 || migration_distribution[2, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S), migration_distribution[2, i, j, k]/sum(migration_distribution))
 
-migration_I[, , ] <- if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) <= 0 || migration_distribution[3, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E), migration_distribution[3, i, j, k]/sum(migration_distribution))
+migration_I[, , ] <- min(if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) <= 0 || migration_distribution[3, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E), migration_distribution[3, i, j, k]/sum(migration_distribution)), sum(migration_adjusted) - sum(migration_S) - sum(migration_E))
 
-migration_R[, , ] <- if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) <= 0 || migration_distribution[4, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I), migration_distribution[4, i, j, k]/sum(migration_distribution))
+migration_R[, , ] <- min(if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) <= 0 || migration_distribution[4, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I), migration_distribution[4, i, j, k]/sum(migration_distribution)), sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I))
 
-migration_Is[, , ] <- if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) <= 0 || migration_distribution[5, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R), migration_distribution[5, i, j, k]/sum(migration_distribution))
+migration_Is[, , ] <- min(if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) <= 0 || migration_distribution[5, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R), migration_distribution[5, i, j, k]/sum(migration_distribution)), sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R))
 
-migration_Rc[, , ] <- if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is) <= 0 || migration_distribution[6, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is), migration_distribution[6, i, j, k]/sum(migration_distribution))
+migration_Rc[, , ] <- min(if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is) <= 0 || migration_distribution[6, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is), migration_distribution[6, i, j, k]/sum(migration_distribution)), sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is))
 
 
 # User parameter values --------------------------------------------------------

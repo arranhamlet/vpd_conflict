@@ -53,7 +53,7 @@ param_packager <- function(
   
   #Initial values
   N0 = 1000,
-  I0 = 1,
+  I0 = 0,
   
   #Add in contact matrix
   contact_matrix = NULL,
@@ -85,12 +85,12 @@ param_packager <- function(
   seeded = 0,
   #Define times when seeding occurs
   tt_seeded = 0,
-
+  
   #Births, deaths and aging
   #Aging rate by compartment
   aging_rate = 0,
   #Set initial background death rate
-  initial_background_death = 1/(80 * 365),
+  initial_background_death = 0,
   #Set simple births and deaths
   simp_birth_death = 1,
   #Changing birth rate if  simp_birth_death != 1
@@ -162,7 +162,7 @@ param_packager <- function(
     ) %>%
       df_to_array
   }
-
+  
   #Prop severe
   prop_severe <- check_and_format_input(prop_severe, n_age, n_vacc, n_risk)
   
@@ -205,27 +205,27 @@ param_packager <- function(
   no_moving_risk_changes <- length(tt_moving_risk)
   
   moving_risk_values <- if(length(moving_risk_values) == 1) check_and_format_input(moving_risk_values, no_moving_risk_changes, n_age, n_vacc, n_risk) else {
-  generate_array_df(
-    dim1 = no_moving_risk_changes, 
-    dim2 = n_age, 
-    dim3 = n_vacc, 
-    dim4 = n_risk, 
-    default_value = 0,
-    updates = moving_risk_values
-  ) %>%
-    df_to_array
+    generate_array_df(
+      dim1 = no_moving_risk_changes, 
+      dim2 = n_age, 
+      dim3 = n_vacc, 
+      dim4 = n_risk, 
+      default_value = 0,
+      updates = moving_risk_values
+    ) %>%
+      df_to_array
   }
   
   moving_risk_distribution_values <- if(length(moving_risk_distribution_values) == 1) check_and_format_input(moving_risk_distribution_values, no_moving_risk_changes, n_age, n_vacc, n_risk) else {
     generate_array_df(
-    dim1 = no_moving_risk_changes, 
-    dim2 = n_age, 
-    dim3 = n_vacc, 
-    dim4 = n_risk, 
-    default_value = 0,
-    updates = moving_risk_distribution_values
-  ) %>%
-    df_to_array
+      dim1 = no_moving_risk_changes, 
+      dim2 = n_age, 
+      dim3 = n_vacc, 
+      dim4 = n_risk, 
+      default_value = 0,
+      updates = moving_risk_distribution_values
+    ) %>%
+      df_to_array
   }
   
   #Migration
@@ -255,7 +255,7 @@ param_packager <- function(
     ) %>%
       df_to_array
   } 
-
+  
   #Births, deaths, aging
   if(is.null(repro_high)) repro_high <- n_age
   initial_background_death <- check_and_format_input(initial_background_death, n_age, n_risk)
@@ -375,7 +375,7 @@ param_packager <- function(
   
   #Must be an integer
   integer <- export_list[c("migration_in_number")]
-
+  
   #Run checks
   a <- check_parameter(above_zero_and_an_integer, check_above_zero = T, check_integer = T)
   b <- check_parameter(probability, check_probability = T)
@@ -391,5 +391,5 @@ param_packager <- function(
   if(nrow(all_failures) > 0) {
     warning("The following parameters failed checks:\n", paste(capture.output(print(all_failures, row.names = FALSE)), collapse = "\n"))
   } else export_list
-    
+  
 }
