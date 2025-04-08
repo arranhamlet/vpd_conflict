@@ -36,16 +36,18 @@ loop_this <- sapply(c(1, 3, 5), function(n_vacc){
   n_age <- 2
   n_risk <- 1
   
-  tt_migration <- seq(0, 24, length.out = 6)
+  tt_migration <- round(seq(0, 24, length.out = 9))
   
   N0 <- array(0, dim = c(n_age, n_vacc, n_risk))
   N0[1, 1, 1] <- 1000
   
-  migration_in_number <- array(0, dim = c(6, n_age, n_vacc, n_risk))
-  migration_in_number[, 1, 1, 1] <- c(0, 100, 200, -500, 300, 100)
+  migration_in_number <- array(0, dim = c(length(tt_migration), n_age, n_vacc, n_risk))
+  migration_in_number[, 1, 1, 1] <- c(0, 100, 200, 
+                                       -500, 300, 100,
+                                       1000, -700, -300)
   
   migration_distribution_values <- array(0, dim = c(length(tt_migration), 6, n_age, n_vacc, n_risk))
-  migration_distribution_values[, 1, 1, 1, 1] <- 1
+  migration_distribution_values[1, 1, 1, 1, 1] <- 1
   
   # Define model parameters
   params <- list(
@@ -122,8 +124,15 @@ loop_this <- sapply(c(1, 3, 5), function(n_vacc){
     clean_df <- rbind(
       standard_unpacked,
       vector_unpacked,
-      input_migration_unpacked
-    ) %>% mutate(n_vacc_comp = n_vacc_comp)
+      rbind(input_migration_unpacked,
+            input_migration_unpacked  %>%
+              group_by(state, time) %>%
+              summarise(value = sum(value), .groups = "drop") %>%
+              mutate(n_age = "All",
+                     n_vacc = "All",
+                     n_risk = "All"))) %>% 
+      mutate(n_vacc_comp = n_vacc_comp,
+             state = factor(state, levels = c(standard_comp, vector_comp, "input_migration_interpolate")))
   
   # Return model output and parameters for later use
   list(clean_df, params)
@@ -143,7 +152,7 @@ all_params <- sapply(loop_this, function(x) x[[2]], simplify = FALSE)
 # Plot 1: Time series of susceptible individuals across vaccination schemes (total population)
 #Boooo, populations are different
 ggplot(
-  data = subset(all_looped, state == "total_pop" & n_age == "All"),
+  data = subset(all_looped, n_age == "All"),
   mapping = aes(
     x = time,
     y = value,
@@ -162,7 +171,8 @@ ggplot(
     y = "Population",
     title = "Population over time for different numbers of vaccination compartments"
   ) +
-  scale_y_continuous(label = scales::comma)
+  scale_y_continuous(label = scales::comma) +
+  facet_wrap(~state, scales = "free_y")
 
 #Okay check everything goin in. Have to aggregate because it has the extra dimension of time at the start
 #Looks good
@@ -211,7 +221,7 @@ ggplot(
   labs(
     x = "Time",
     y = "Population",
-    title = "Population over time for different numbers of vaccination compartments"
+    title = "Population outflow at different numbers of vaccination compartments"
   ) +
   scale_y_continuous(label = scales::comma)
 
