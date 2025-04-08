@@ -134,10 +134,62 @@ ggplot(
   ) +
   scale_y_continuous(label = scales::comma)
 
+#Okay check everything goin in. Have to aggregate because it has the extra dimension of time at the start
+#Looks good
+ggplot(
+  data = subset(all_looped, run == "run_1" & age != "All" & state == "input_migration_interpolate")  %>%
+    group_by(time, state, vaccination, n_vacc_comp) %>%
+    summarise(value = sum(value)),
+  mapping = aes(
+    x = time,
+    y = value,
+    color = as.factor(vaccination) # Color by number of vaccination compartments
+  )
+) +
+  geom_line() +
+  theme_bw() +
+  labs(
+    x = "",
+    y = "",
+    color = "" 
+  ) +
+  labs(
+    x = "Time",
+    y = "Population",
+    title = "Population over time for different numbers of vaccination compartments"
+  ) +
+  scale_y_continuous(label = scales::comma) +
+  facet_wrap(~n_vacc_comp)
+
+#Now check on it post integration.
+#Boo
+ggplot(
+  data = subset(all_looped, run == "run_1" & state == "output_migration_interpolate" & age == "All"),
+  mapping = aes(
+    x = time,
+    y = value,
+    color = as.factor(n_vacc_comp) # Color by number of vaccination compartments
+  )
+) +
+  geom_line() +
+  theme_bw() +
+  labs(
+    x = "",
+    y = "",
+    color = "" 
+  ) +
+  labs(
+    x = "Time",
+    y = "Population",
+    title = "Population over time for different numbers of vaccination compartments"
+  ) +
+  scale_y_continuous(label = scales::comma)
+
+
 # Plot 2: Snapshot across age groups for susceptible population (non-aggregated by age)
 # Looks good - all the age profiles are the same, and only those in compartment 1 are there
 ggplot(
-  data = subset(all_looped, run == "run_1" & state == "S" & age != "All"),
+  data = subset(all_looped, run == "run_1" & state == "S" & time == 5 & age != "All"),
   mapping = aes(
     x = as.numeric(age),
     y = value,
@@ -155,7 +207,7 @@ ggplot(
   labs(
     x = "Age",
     y = "Population",
-    title = "Population by age over time for different numbers of vaccination compartments"
+    title = "Population by age at time 5 for different numbers of vaccination compartments"
   ) +
   scale_y_continuous(label = scales::comma)
 
@@ -187,7 +239,7 @@ ggplot(
     y = "Population",
     title = "Population leftover from migration compartments"
   ) +
-  scale_y_continuous(label = scales::comma)
+  scale_y_continuous(label = scales::comma) 
 
 
 
