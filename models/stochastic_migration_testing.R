@@ -23,6 +23,9 @@ update(Is[, , ]) <- max(Is[i, j, k] + migration_Is[i, j, k] * pos_neg_migration,
 
 update(Rc[, , ]) <- max(Rc[i, j, k] + migration_Rc[i, j, k] * pos_neg_migration, 0)
 
+update(total_pop) <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
+initial(total_pop) <- sum(N0)
+
 # Parameters to control movement between risk groups
 migration <- interpolate(tt_migration, migration_in_number, "constant")
 migration_distribution <- interpolate(tt_migration, migration_distribution_values, "constant")
