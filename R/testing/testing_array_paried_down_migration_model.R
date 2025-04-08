@@ -35,26 +35,28 @@ loop_this <- sapply(c(1, 3, 5), function(n_vacc){
   n_age <- 1
   n_risk <- 1
   
-  tt_migration <- 0:23 
-  N0 <- array(100, dim = c(n_age, n_vacc, n_risk))
+  tt_migration <- 0:23
+  
+  N0 <- array(0, dim = c(n_age, n_vacc, n_risk))
+  N0[1, 1, 1] <- 1000
+  
   migration_in_number <- array(0, dim = c(length(tt_migration), n_age, n_vacc, n_risk))
-  migration_in_number[, , 1, 1] <- 100
+  migration_in_number[, 1, 1, 1] <- rep(c(0, 100, 200, -500, 300, 100), 4)
   
   migration_distribution_values <- array(0, dim = c(length(tt_migration), 6, n_age, n_vacc, n_risk))
-  migration_distribution_values[, 1, , 1, 1] <- 1
+  migration_distribution_values[] <- 1
   
   # Define model parameters
   params <- list(
-    
     #Set up demographics
-    n_age = n_age,            # Age groups (e.g., 0-100)
-    n_vacc = n_vacc,        # Number of vaccination compartments
-    n_risk = 1,             # Only one risk group used here
+    n_age = n_age,            
+    n_vacc = n_vacc,        
+    n_risk = 1,             
     N0 = N0,
     
     #Migration
-    no_migration_changes = length(tt_migration), # Number of time points with migration data
-    tt_migration = tt_migration,       # Time points for migration
+    no_migration_changes = length(tt_migration), 
+    tt_migration = tt_migration,      
     migration_in_number = migration_in_number,
     migration_distribution_values = migration_distribution_values
   )
@@ -62,7 +64,7 @@ loop_this <- sapply(c(1, 3, 5), function(n_vacc){
   # Run the model with defined parameters and for time steps equal to migration data
   clean_df <- run_model(
     params = params,
-    time = length(demog_data$tt_migration),
+    time = 24,
     no_runs = 2  # Number of stochastic simulations
   ) %>%
     mutate(n_vacc_comp = n_vacc) # Add identifier for vaccination stratification
@@ -161,7 +163,7 @@ ggplot(
 # Plot 2: Snapshot across age groups for susceptible population (non-aggregated by age)
 # Looks good - all the age profiles are the same, and only those in compartment 1 are there
 ggplot(
-  data = subset(all_looped, run == "run_1" & state == "S" & time == 5 & age != "All"),
+  data = subset(all_looped, run == "run_1" & state == "S" & time == 1 & age != "All"),
   mapping = aes(
     x = as.factor(age),
     y = value,

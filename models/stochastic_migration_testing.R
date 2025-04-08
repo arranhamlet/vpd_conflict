@@ -88,7 +88,7 @@ dim(Rc) <- c(n_age, n_vacc, n_risk)
 dim(N0) <- c(n_age, n_vacc, n_risk)
 
 #Dimensions for migration
-dim(tt_migration) <- c(no_migration_changes)
+dim(tt_migration) <- no_migration_changes
 dim(migration_distribution) <- c(6, n_age, n_vacc, n_risk)
 dim(migration_in_number) <- c(no_migration_changes, n_age, n_vacc, n_risk)
 dim(migration_distribution_values) <- c(no_migration_changes, 6, n_age, n_vacc, n_risk)

@@ -31,7 +31,7 @@ run_model <- function(params, time = 1000, no_runs = 25) {
       vaccination = list(as.character(1:params$n_vacc)),
       risk = list(as.character(1:params$n_risk)),
       time = list(full_time_vector),
-      no_migration_changes = list(full_time_vector + 1)
+      no_migration_changes = list(params$tt_migration + 1)
     ),
     which_state_dimensions = list(
       S = c("age", "vaccination", "risk", "time"),
