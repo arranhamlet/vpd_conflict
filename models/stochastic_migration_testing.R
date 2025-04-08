@@ -44,6 +44,10 @@ migration_Is[, , ] <- min(if(sum(migration_adjusted) - sum(migration_S) - sum(mi
 
 migration_Rc[, , ] <- min(if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is) <= 0 || migration_distribution[6, i, j, k] == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is), migration_distribution[6, i, j, k]/sum(migration_distribution)), sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is))
 
+migration_left <- sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is) - sum(Rc)
+
+update(migration_leftover) <- migration_left
+initial(migration_leftover) <- 0
 
 # User parameter values --------------------------------------------------------
 

@@ -166,6 +166,28 @@ all_looped %>%
   summarise(value = sum(value)) %>%
   filter(vaccination != "All" & run == "run_1" & value != 0)
 
+#But look, theyre here!!!
+ggplot(
+  data = subset(all_looped, run == "run_1" & state == "migration_leftover" & age == "All"),
+  mapping = aes(
+    x = time,
+    y = value,
+    color = as.factor(n_vacc_comp) # Color by number of vaccination compartments
+  )
+) +
+  geom_line() +
+  theme_bw() +
+  labs(
+    x = "",
+    y = "",
+    color = "" 
+  ) +
+  labs(
+    x = "Time",
+    y = "Population",
+    title = "Population leftover from migration compartments"
+  ) +
+  scale_y_continuous(label = scales::comma)
 
 
 
