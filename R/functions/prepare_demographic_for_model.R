@@ -19,10 +19,17 @@
 #' @return A named list containing prepared demographic components.
 #' @export
 prepare_demographic_for_model <- function(
-    migration, fertility, mortality, population_all, population_female,
-    year_start = "", year_end = "", population_modifier = 1,
-    fertility_modifier = 1, death_modifier = 1, migration_modifier = 1,
-    n_vacc = 1
+    migration, 
+    fertility, 
+    mortality, 
+    population_all, 
+    population_female,
+    year_start = "", 
+    year_end = "", 
+    population_modifier = 1,
+    fertility_modifier = 1, 
+    death_modifier = 1, 
+    migration_modifier = 1
 ) {
   # ---------------------- Subset to desired years ----------------------
   years <- if (year_start == "" & year_end == "") {
