@@ -29,7 +29,8 @@ prepare_demographic_for_model <- function(
     population_modifier = 1,
     fertility_modifier = 1, 
     death_modifier = 1, 
-    migration_modifier = 1
+    migration_modifier = 1,
+    n_age = 1
 ) {
   # ---------------------- Subset to desired years ----------------------
   years <- if (year_start == "" & year_end == "") {
@@ -89,39 +90,53 @@ prepare_demographic_for_model <- function(
     as.vector() * migration_modifier
   
   migration_upd <- do.call(rbind, lapply(1:nrow(total_population_data), function(x) {
+    value <- round(as.numeric(total_population_data[x, ] * net_migration[x] / 1000) * 1000, 0)
+    value_chunk <- as.numeric(sapply(split(value, 1:n_age), function(t) sum(t)))
     data.frame(
-      dim1 = x, dim2 = 1:101, dim3 = 1, dim4 = 1,
-      value = round(as.numeric(total_population_data[x, ] * net_migration[x] / 1000) * 1000, 0)
+      dim1 = x, dim2 = 1:n_age, dim3 = 1, dim4 = 1,
+      value = value_chunk
     )
   }))
   
   # ---------------------- Initial Population ----------------------
+  value_N0 <- round(as.numeric(total_population_data[1, ]) * 1000, 0)
+  value_N0_chunk <- as.numeric(sapply(split(value_N0, 1:n_age), function(t) sum(t)))
+  
   N0_df <- data.frame(
-    dim1 = 1:101, dim2 = 1, dim3 = 1,
-    value = round(as.numeric(total_population_data[1, ]) * 1000, 0)
+    dim1 = 1:n_age, dim2 = 1, dim3 = 1,
+    value = value_N0_chunk
   )
   
   # ---------------------- Population Data Data.frame ----------------------
   total_population_df <- do.call(rbind, lapply(1:nrow(total_population_data), function(x) {
+    value <- round(as.numeric(total_population_data[x, ]) * 1000, 0)
+    value_chunk <- as.numeric(sapply(split(value, 1:n_age), function(t) sum(t)))
+    
     data.frame(
-      dim1 = x, dim2 = 1:101, dim3 = 1, dim4 = 1,
-      value = round(as.numeric(total_population_data[x, ]) * 1000, 0)
+      dim1 = x, dim2 = 1:n_age, dim3 = 1, dim4 = 1,
+      value = value_chunk
     )
   }))
   
   # ---------------------- Mortality Data.frame ----------------------
   mortality_df <- data.table::rbindlist(lapply(1:nrow(mortality_correct_format), function(x) {
+    value <- as.numeric(mortality_correct_format[x, ])
+    value_chunk <- as.numeric(sapply(split(value, 1:n_age), function(t) sum(t)))
+    
     data.frame(
-      dim1 = x, dim2 = 1:101, dim3 = 1,
-      value = as.numeric(mortality_correct_format[x, ])
+      dim1 = x, dim2 = 1:n_age, dim3 = 1,
+      value = value_chunk
     )
   })) %>% as.data.frame()
   
   # ---------------------- Migration Distribution ----------------------
   migration_distribution_values <- expand.grid(
-    dim1 = 1:length(time_all), dim2 = 1,
-    dim3 = 1:ncol(total_population_data), dim4 = 1,
-    dim5 = 1, value = 1
+    dim1 = 1:length(time_all), 
+    dim2 = 1,
+    dim3 = 1:n_age, 
+    dim4 = 1,
+    dim5 = 1, 
+    value = 1
   )
   
   # ---------------------- Output ----------------------
@@ -133,6 +148,7 @@ prepare_demographic_for_model <- function(
     migration_in_number = migration_upd,
     migration_distribution_values = migration_distribution_values,
     population_data = total_population_data,
-    years = years
+    years = years,
+    n_age = n_age
   )
 }

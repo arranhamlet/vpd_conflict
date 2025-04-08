@@ -27,64 +27,36 @@ invisible(sapply(
 # Import odin2 model from file - a simplified model focusing only on migration
 model <- odin2::odin("models/stochastic_migration_testing.R")
 
-# Load demographic input files (WPP = UN World Population Prospects) for Palestine
-migration <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_gen_f01_demographic_indicators_compact.csv"))
-fertility <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_fert_f01_fertility_rates_by_single_age_of_mother.csv"))
-mortality <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_mort_f01_1_deaths_single_age_both_sexes.csv"))
-population_all <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_pop_f01_1_population_single_age_both_sexes.csv"))
-population_female <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_pop_f01_3_population_single_age_female.csv"))
-
-# Prepare demographic data for modeling (includes population, migration, etc.)
-# Likely adjusts for Gaza context and prepares arrays for model input
-demog_data <- prepare_demographic_for_model(
-  migration = migration, 
-  fertility = fertility, 
-  mortality = mortality, 
-  population_all = population_all, 
-  population_female = population_female,
-  year_start = 2000,
-  year_end = "" # Possibly uses full range available
-)
-
 # Run simulations across different numbers of vaccination compartments: 1, 3, 5
 loop_this <- sapply(c(1, 3, 5), function(n_vacc){
   
   print(n_vacc) # Print progress indicator
   
+  n_age <- 1
+  n_risk <- 1
+  
+  tt_migration <- 0:23 
+  N0 <- array(100, dim = c(n_age, n_vacc, n_risk))
+  migration_in_number <- array(0, dim = c(length(tt_migration), n_age, n_vacc, n_risk))
+  migration_in_number[, , 1, 1] <- 100
+  
+  migration_distribution_values <- array(0, dim = c(length(tt_migration), 6, n_age, n_vacc, n_risk))
+  migration_distribution_values[, 1, , 1, 1] <- 1
+  
   # Define model parameters
   params <- list(
     
-    n_age = 101,            # Age groups (e.g., 0-100)
+    #Set up demographics
+    n_age = n_age,            # Age groups (e.g., 0-100)
     n_vacc = n_vacc,        # Number of vaccination compartments
     n_risk = 1,             # Only one risk group used here
-    
-    N0 = generate_array_df( # Initial population
-      dim1 = 101,
-      dim2 = n_vacc,
-      dim3 = 1,
-      updates = demog_data$N0
-    ) %>% df_to_array,      # Convert to array format for the model
+    N0 = N0,
     
     #Migration
-    no_migration_changes = 24, # Number of time points with migration data
-    tt_migration = 0:23,       # Time points for migration
-    
-    migration_in_number = generate_array_df( # Absolute number of migrants
-      dim1 = 24,
-      dim2 = 101,
-      dim3 = n_vacc,
-      dim4 = 1,
-      updates = demog_data$migration_in_number
-    ) %>% df_to_array,
-    
-    migration_distribution_values = generate_array_df( # How migrants are distributed
-      dim1 = 24,
-      dim2 = 6,     # Number of compartments (S, E, I, R, Is, Rc)
-      dim3 = 101,
-      dim4 = n_vacc,
-      dim5 = 1,
-      updates = demog_data$migration_distribution_values
-    ) %>% df_to_array
+    no_migration_changes = length(tt_migration), # Number of time points with migration data
+    tt_migration = tt_migration,       # Time points for migration
+    migration_in_number = migration_in_number,
+    migration_distribution_values = migration_distribution_values
   )
   
   # Run the model with defined parameters and for time steps equal to migration data
@@ -191,17 +163,17 @@ ggplot(
 ggplot(
   data = subset(all_looped, run == "run_1" & state == "S" & time == 5 & age != "All"),
   mapping = aes(
-    x = as.numeric(age),
+    x = as.factor(age),
     y = value,
-    color = as.factor(vaccination) # Color by vaccination compartment
+    fill = as.factor(vaccination) # Color by vaccination compartment
   )
 ) +
-  geom_line() +
+  geom_bar(stat = "identity", position = position_dodge()) +
   theme_bw() +
   labs(
     x = "",
     y = "",
-    color = ""
+    fill = ""
   ) +
   facet_wrap(~n_vacc_comp) +
   labs(
@@ -243,7 +215,15 @@ ggplot(
 
 
 
-
+#Okay, are the parameters for migration_in_number the same?
+#For all columns that are NOT the first vaccination compartment?
+sum(all_params[[1]]$migration_in_number[, , -1, ])
+sum(all_params[[2]]$migration_in_number[, , -1, ])
+sum(all_params[[3]]$migration_in_number[, , -1, ])
+#For all the column that IS the first vaccination compartment
+sum(all_params[[1]]$migration_in_number[, , 1, ])
+sum(all_params[[2]]$migration_in_number[, , 1, ])
+sum(all_params[[3]]$migration_in_number[, , 1, ])
 
 
 
