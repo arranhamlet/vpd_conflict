@@ -1,34 +1,41 @@
+# Install 'pacman' package if not already installed
 if(!require("pacman")) install.packages("pacman")
+
+# Prevent scientific notation in outputs (e.g., 1e+05 becomes 100000)
 options(scipen = 999)
 
-#Load packages
+# Load required packages using pacman (installs if missing)
 pacman::p_load(
-  odin2,
-  rio,
-  here,
-  dust2,
-  tidyverse,
-  reshape2,
-  collapse,
-  janitor,
-  monty,
-  data.table
+  odin2,        # Model definition language for compartmental models
+  rio,          # Simplifies file import/export
+  here,         # Simplifies paths relative to project root
+  dust2,        # For running stochastic simulations with odin2 models
+  tidyverse,    # Collection of data manipulation and visualization packages
+  reshape2,     # For reshaping data (e.g., melt, dcast)
+  collapse,     # Fast data transformation tools
+  janitor,      # Data cleaning tools (e.g., clean column names)
+  monty,        # Custom or niche modeling tools (likely internal use)
+  data.table    # High-performance data frame operations
 )
 
-#Import functions
-invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recursive = F), function(x) source(x)))
+# Source all R scripts from the 'R/functions' directory (custom functions)
+invisible(sapply(
+  list.files("R/functions", full.names = TRUE, pattern = ".R", recursive = FALSE),
+  function(x) source(x)
+))
 
-#Import model - massively paired down version that only looks at migration
+# Import odin2 model from file - a simplified model focusing only on migration
 model <- odin2::odin("models/stochastic_migration_testing.R")
 
-#Load files needed
+# Load demographic input files (WPP = UN World Population Prospects) for Palestine
 migration <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_gen_f01_demographic_indicators_compact.csv"))
 fertility <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_fert_f01_fertility_rates_by_single_age_of_mother.csv"))
 mortality <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_mort_f01_1_deaths_single_age_both_sexes.csv"))
 population_all <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_pop_f01_1_population_single_age_both_sexes.csv"))
 population_female <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_pop_f01_3_population_single_age_female.csv"))
 
-#Run function - add in modifiers to account for Gaza
+# Prepare demographic data for modeling (includes population, migration, etc.)
+# Likely adjusts for Gaza context and prepares arrays for model input
 demog_data <- prepare_demographic_for_model(
   migration = migration, 
   fertility = fertility, 
@@ -36,70 +43,80 @@ demog_data <- prepare_demographic_for_model(
   population_all = population_all, 
   population_female = population_female,
   year_start = 2000,
-  year_end = ""
+  year_end = "" # Possibly uses full range available
 )
 
-#Loop this
+# Run simulations across different numbers of vaccination compartments: 1, 3, 5
 loop_this <- sapply(c(1, 3, 5), function(n_vacc){
   
-  print(n_vacc)
+  print(n_vacc) # Print progress indicator
   
+  # Define model parameters
   params <- list(
-  n_age = 101,
-  n_vacc = n_vacc,
-  n_risk = 1,
-  N0 = generate_array_df(
-    dim1 = 101,
-    dim2 = n_vacc,
-    dim3 = 1,
-    updates = demog_data$N0
-  ) %>%
-    df_to_array,
-  no_migration_changes = 24,
-  tt_migration = 0:23,
-  migration_in_number = generate_array_df(
-    dim1 = 24,
-    dim2 = 101,
-    dim3 = n_vacc,
-    dim4 = 1,
-    updates = demog_data$migration_in_number
-  ) %>%
-    df_to_array,
-  migration_distribution_values = generate_array_df(
-    dim1 = 24,
-    dim2 = 6,
-    dim3 = 101,
-    dim4 = n_vacc,
-    dim5 = 1,
-    updates = demog_data$migration_distribution_values
-  ) %>%
-    df_to_array
+    
+    n_age = 101,            # Age groups (e.g., 0-100)
+    n_vacc = n_vacc,        # Number of vaccination compartments
+    n_risk = 1,             # Only one risk group used here
+    
+    N0 = generate_array_df( # Initial population
+      dim1 = 101,
+      dim2 = n_vacc,
+      dim3 = 1,
+      updates = demog_data$N0
+    ) %>% df_to_array,      # Convert to array format for the model
+    
+    #Migration
+    no_migration_changes = 24, # Number of time points with migration data
+    tt_migration = 0:23,       # Time points for migration
+    
+    migration_in_number = generate_array_df( # Absolute number of migrants
+      dim1 = 24,
+      dim2 = 101,
+      dim3 = n_vacc,
+      dim4 = 1,
+      updates = demog_data$migration_in_number
+    ) %>% df_to_array,
+    
+    migration_distribution_values = generate_array_df( # How migrants are distributed
+      dim1 = 24,
+      dim2 = 6,     # Number of compartments (S, E, I, R, Is, Rc)
+      dim3 = 101,
+      dim4 = n_vacc,
+      dim5 = 1,
+      updates = demog_data$migration_distribution_values
+    ) %>% df_to_array
   )
   
-  #Run model
+  # Run the model with defined parameters and for time steps equal to migration data
   clean_df <- run_model(
     params = params,
     time = length(demog_data$tt_migration),
-    no_runs = 2
+    no_runs = 2  # Number of stochastic simulations
   ) %>%
-    # filter(run == "run_1") %>%
-    mutate(n_vacc_comp = n_vacc)
+    mutate(n_vacc_comp = n_vacc) # Add identifier for vaccination stratification
   
+  # Return model output and parameters for later use
   list(clean_df, params)
   
-}, simplify = F)
+}, simplify = FALSE) # Output is a list (not simplified to matrix)
 
-#Migration only
-all_looped <- data.table::rbindlist(sapply(loop_this, function(x) x[[1]], simplify = F))
+# Combine all simulation results (from each n_vacc run) into one dataframe
+all_looped <- data.table::rbindlist(
+  sapply(loop_this, function(x) x[[1]], simplify = FALSE)
+)
+
+# Extract corresponding parameter sets
 all_params <- sapply(loop_this, function(x) x[[2]], simplify = FALSE)
 
-#Plot
+# === Visualization ===
+
+# Plot 1: Time series of susceptible individuals across vaccination schemes (total population)
 ggplot(
   data = subset(all_looped, run == "run_1" & state == "S" & age == "All"),
   mapping = aes(
     x = time,
     y = value,
-    color = as.factor(n_vacc_comp)
+    color = as.factor(n_vacc_comp) # Color by number of vaccination compartments
   )
 ) +
   geom_line() +
@@ -107,16 +124,16 @@ ggplot(
   labs(
     x = "",
     y = "",
-    color = ""
+    color = "" 
   )
 
-#Look at different ages
+# Plot 2: Snapshot across age groups for susceptible population (non-aggregated by age)
 ggplot(
   data = subset(all_looped, run == "run_1" & state == "S" & age != "All"),
   mapping = aes(
     x = as.numeric(age),
     y = value,
-    color = as.factor(vaccination)
+    color = as.factor(vaccination) # Color by vaccination compartment
   )
 ) +
   geom_line() +
@@ -126,8 +143,4 @@ ggplot(
     y = "",
     color = ""
   ) +
-  facet_wrap(~n_vacc_comp)
-
-
-
-
+  facet_wrap(~n_vacc_comp) # One facet per vaccination stratification
