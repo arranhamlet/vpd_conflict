@@ -111,6 +111,7 @@ all_params <- sapply(loop_this, function(x) x[[2]], simplify = FALSE)
 # === Visualization ===
 
 # Plot 1: Time series of susceptible individuals across vaccination schemes (total population)
+#Boooo, populations are different
 ggplot(
   data = subset(all_looped, run == "run_1" & state == "S" & age == "All"),
   mapping = aes(
@@ -125,9 +126,16 @@ ggplot(
     x = "",
     y = "",
     color = "" 
-  )
+  ) +
+  labs(
+    x = "Time",
+    y = "Population",
+    title = "Population over time for different numbers of vaccination compartments"
+  ) +
+  scale_y_continuous(label = scales::comma)
 
 # Plot 2: Snapshot across age groups for susceptible population (non-aggregated by age)
+# Looks good - all the age profiles are the same, and only those in compartment 1 are there
 ggplot(
   data = subset(all_looped, run == "run_1" & state == "S" & age != "All"),
   mapping = aes(
@@ -143,4 +151,27 @@ ggplot(
     y = "",
     color = ""
   ) +
-  facet_wrap(~n_vacc_comp) # One facet per vaccination stratification
+  facet_wrap(~n_vacc_comp) +
+  labs(
+    x = "Age",
+    y = "Population",
+    title = "Population by age over time for different numbers of vaccination compartments"
+  ) +
+  scale_y_continuous(label = scales::comma)
+
+#Aggregate down across vaccination and compartments
+#Okay, only vaccination 1 and S have values, all looks good
+all_looped %>%
+  group_by(state, vaccination, run, n_vacc_comp) %>%
+  summarise(value = sum(value)) %>%
+  filter(vaccination != "All" & run == "run_1" & value != 0)
+
+
+
+
+
+
+
+
+
+
