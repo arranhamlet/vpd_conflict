@@ -195,10 +195,6 @@ moving_risk_to_Is[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_
 moving_risk_to_Rc[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_risk_from_Rc[i, j, k] else sum(moving_risk_from_Rc[i, j, ]) * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
 
 # Parameters to control movement between risk groups
-# update(migration_oot[, , , ]) <- migration_in_number[i, j, k, l]
-# initial(migration_oot[, , , ]) <- 0
-# dim(migration_oot) <- c(no_migration_changes, n_age, n_vacc, n_risk)       
-  
 migration <- interpolate(tt_migration, migration_in_number, "constant")
 migration_distribution <- interpolate(tt_migration, migration_distribution_values, "constant")
 
@@ -484,7 +480,6 @@ dim(waning_to_Is) <- c(n_age, n_vacc, n_risk)
 dim(waning_from_Rc) <- c(n_age, n_vacc, n_risk)
 dim(waning_to_Rc) <- c(n_age, n_vacc, n_risk)
 
-
 dim(Births) <- n_risk
 dim(reproductive_population) <- n_risk
 dim(birth_rate) <- n_risk
@@ -537,7 +532,3 @@ dim(migration_I) <- c(n_age, n_vacc, n_risk)
 dim(migration_R) <- c(n_age, n_vacc, n_risk)
 dim(migration_Is) <- c(n_age, n_vacc, n_risk)
 dim(migration_Rc) <- c(n_age, n_vacc, n_risk)
-
-#Compare to data
-population_total <- data()
-population_total ~ Poisson(N/100000)
