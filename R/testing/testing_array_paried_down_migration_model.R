@@ -28,12 +28,12 @@ invisible(sapply(
 model <- odin2::odin("models/stochastic_migration_testing.R")
 
 # Run simulations across different numbers of vaccination compartments: 1, 3, 5
-loop_this <- sapply(c(1, 3, 5), function(n_vacc){
+loop_this <- sapply(1:10, function(n_vacc){
   
   print(n_vacc) # Print progress indicator
   n_vacc_comp <- n_vacc
   
-  n_age <- 2
+  n_age <- 3
   n_risk <- 1
   
   tt_migration <- round(seq(0, 24, length.out = 9))
