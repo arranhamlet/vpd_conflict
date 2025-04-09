@@ -44,7 +44,7 @@ loop_this <- sapply(c(1, 3, 5), function(t){
     population_female = population_female,
     year_start = 2000,
     year_end = "",
-    n_vacc = n_vacc
+    n_age = 101
   )
 
   #Set up model
