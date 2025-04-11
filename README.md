@@ -51,3 +51,4 @@ The multi-dimensional nature of the model allows us to account for specific risk
 ![Simple model structure](/figs/model_structure/dimension_explanation.JPG)
 
 This is a visualisation of how the values may change across age, vaccination and risk group.
+# STRIDES
