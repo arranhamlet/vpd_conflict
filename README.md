@@ -1,6 +1,6 @@
 # Overview
 This project is developed to support dynamic, adaptable, and scalable transmission models for vaccine-preventable diseases (VPDs) in crisis settings. This work is designed to inform humanitarian response strategies by providing robust projections of disease outbreaks and intervention impact. The development of the package is supported by Community Jameel and builds on prior work funded by the FCDO for mortality rate modeling in Gaza.
-
+ 
 # Key Features
 
 - Stochastic: Stochastic models are essential in crisis settings where population sizes, vaccination coverage, and exposure risks are often variable and unpredictable.
