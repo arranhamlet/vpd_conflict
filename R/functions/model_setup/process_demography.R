@@ -1,28 +1,50 @@
-#' Prepare Demographic Inputs for Transmission Model
+#' Prepare Demographic Inputs for a Transmission Model
 #'
-#' This function processes demographic data (migration, fertility, mortality, and population)
-#' into structured data frames suitable for input into an age-, vaccination-, and risk-structured
-#' infectious disease transmission model.
+#' This function processes raw demographic data—covering migration, fertility, mortality,
+#' and population counts—into a structured format suitable for use in an age-, vaccination-,
+#' and risk-structured infectious disease transmission model.
 #'
-#' @param migration Data frame of net migration rates by year and country.
-#' @param fertility Data frame of fertility rates by single year of age and year.
-#' @param mortality Data frame of mortality counts by single year of age and year.
-#' @param population_all Data frame of total population counts by age and year.
-#' @param population_female Data frame of female population counts by age and year.
-#' @param iso3 A 3-letter ISO country code to subset the data.
-#' @param year_start First year to include (default: first year in migration data).
-#' @param year_end Final year to include (default: last year in migration data).
-#' @param population_modifier Scalar to multiply population values.
-#' @param fertility_modifier Scalar to multiply fertility rates.
-#' @param death_modifier Scalar to multiply death rates (not used).
-#' @param migration_modifier Scalar to multiply migration rates.
-#' @param n_age Number of age bins to collapse to.
-#' @param n_vacc Number of vaccination strata.
-#' @param n_risk Number of risk strata.
+#' @param migration A data frame of net migration rates by year and country. Must contain columns `iso3`, `year`, and `migration_rate_1000`.
+#' @param fertility A data frame of fertility rates by single year of age (15–49) and year. Must contain columns `iso3`, `year`, and `x15` to `x49`.
+#' @param mortality A data frame of mortality counts by single year of age (0–100) and year. Must contain columns `iso3`, `year`, and `x0` to `x100`.
+#' @param population_all A data frame of total population counts by age (0–100) and year. Must contain columns `iso3`, `year`, and `x0` to `x100`.
+#' @param population_female A data frame of female population counts by age (15–49) and year. Must contain columns `iso3`, `year`, and `x15` to `x49`.
+#' @param iso A 3-letter ISO country code to subset the data.
+#' @param year_start First year to include (default: earliest year in migration data).
+#' @param year_end Final year to include (default: latest year in migration data).
+#' @param population_modifier A scalar to multiply all population values (default: 1).
+#' @param fertility_modifier A scalar to multiply fertility rates (default: 1).
+#' @param death_modifier A scalar to multiply death rates (currently not applied, default: 1).
+#' @param migration_modifier A scalar to multiply migration rates (default: 1).
+#' @param n_age Number of collapsed age bins for output data (e.g., 5-year bins).
+#' @param n_vacc Number of vaccination strata (used for model structure).
+#' @param n_risk Number of risk strata (used for model structure).
 #'
-#' @return A named list with prepared demographic inputs for a transmission model.
+#' @return A named list with the following elements:
+#' \describe{
+#'   \item{N0}{Initial population distribution by age, suitable for model initialization.}
+#'   \item{crude_birth}{Annual fertility rate data frame.}
+#'   \item{crude_death}{Annual mortality rate data frame.}
+#'   \item{tt_migration}{Time index corresponding to migration data.}
+#'   \item{migration_in_number}{Age-specific annual net migration counts.}
+#'   \item{migration_distribution_values}{Uniform migration distribution across strata (constant 1s).}
+#'   \item{population_data}{Collapsed population matrix over time.}
+#'   \item{input_data}{A data frame summarizing input assumptions and configuration.}
+#' }
+#'
+#' @details
+#' This function uses age-collapsing utilities (`collapse_age_bins()`, `split_and_sum()`) and assumes
+#' consistent naming for age columns (e.g., `x0` to `x100`). It performs per-year filtering and
+#' applies modifiers to scale data as needed for model fitting or sensitivity analysis.
+#'
+#' @import data.table
+#' @import dplyr
+#' @importFrom reshape2 melt
+#'
+#' @examples
+#' # processed <- process_demography(mig, fert, mort, pop_all, pop_fem, iso = "KEN", n_age = 10)
+#'
 #' @export
-
 process_demography <- function(
     migration, fertility, mortality, population_all, population_female,
     iso,
@@ -36,13 +58,15 @@ process_demography <- function(
     n_vacc = 1, 
     n_risk = 1
 ) {
-
-  filter_country <- function(dt) dt[iso3 == iso]
-
-  # Convert to data.table - for speed
-  setDT(migration); setDT(fertility); setDT(mortality); setDT(population_all); setDT(population_female)
   
-  # Filter
+  filter_country <- function(dt) dt[iso3 == iso]
+  
+  # Convert to data.table
+  data.table::setDT(migration); data.table::setDT(fertility)
+  data.table::setDT(mortality); data.table::setDT(population_all)
+  data.table::setDT(population_female)
+  
+  # Filter for country
   migration <- filter_country(migration)
   fertility <- filter_country(fertility)
   mortality <- filter_country(mortality)
@@ -64,22 +88,26 @@ process_demography <- function(
   mortality_rate <- mort_mat / pop_all
   mortality_rate[!is.finite(mortality_rate)] <- 1
   mortality_df <- reshape2::melt(t(mortality_rate)) %>%
-    setnames(c("n_age", "time", "value"))
+    data.table::setnames(c("dim1", "time", "value")) %>%
+    dplyr::mutate(dim2 = 1, dim3 = 1)
   
   # Fertility
   fert_mat <- as.matrix(fertility[year %in% years, paste0("x", 15:49), with = FALSE]) * fertility_modifier
   pop_fem <- as.matrix(population_female[year %in% years, paste0("x", 15:49), with = FALSE]) * population_modifier
   denom <- rowSums(pop_fem)
   denom[denom == 0] <- NA
-  fertility_by_year <- data.frame(time = time_all, value = pmin(rowSums((fert_mat / 1000) * pop_fem) / denom, 1))
+  fertility_by_year <- data.frame(
+    time = time_all,
+    value = pmin(rowSums((fert_mat / 1000) * pop_fem) / denom, 1)
+  )
   
   # Migration
   mig_rates <- migration[year %in% years, migration_rate_1000] * migration_modifier
   
-  migration_in_number <- rbindlist(lapply(seq_len(nrow(pop_all)), function(i) {
+  migration_in_number <- data.table::rbindlist(lapply(seq_len(nrow(pop_all)), function(i) {
     mig_vals <- round(pop_all[i, ] * mig_rates[i])
     chunk <- split_and_sum(mig_vals, n_age)
-    data.table(
+    data.frame(
       dim1 = i,
       dim2 = seq_len(n_age),
       dim3 = 1,
@@ -98,19 +126,8 @@ process_demography <- function(
     value = init_chunk
   )
   
-  # Mortality df
-  mortality_df <- rbindlist(lapply(seq_len(nrow(mortality_rate)), function(i) {
-    chunk <- split_and_sum(mortality_rate[i, ], n_age)
-    data.frame(
-      dim1 = i,
-      dim2 = seq_len(n_age),
-      dim3 = 1,
-      value = chunk
-    )
-  }))
-  
   # Total population df (optional)
-  total_population_df <- rbindlist(lapply(seq_len(nrow(pop_all)), function(i) {
+  total_population_df <- data.table::rbindlist(lapply(seq_len(nrow(pop_all)), function(i) {
     chunk <- split_and_sum(round(pop_all[i, ] * 1000), n_age)
     data.frame(
       dim1 = i,
@@ -122,7 +139,7 @@ process_demography <- function(
   }))
   
   # Migration distribution
-  migration_distribution_values <- CJ(
+  migration_distribution_values <- data.table::CJ(
     dim1 = seq_along(time_all),
     dim2 = 1,
     dim3 = 1:n_age,
@@ -139,19 +156,17 @@ process_demography <- function(
     migration_in_number = migration_in_number,
     migration_distribution_values = migration_distribution_values,
     population_data = pop_all,
-    input_data =   data.frame(
+    input_data = data.frame(
       iso = iso,
       year_start = min(years), 
       year_end = max(years),
       population_modifier = population_modifier, 
       fertility_modifier = fertility_modifier, 
       death_modifier = death_modifier,
-      migration_modifier = n_age,
+      migration_modifier = migration_modifier,
       n_age = n_age, 
       n_vacc = n_vacc, 
       n_risk = n_risk
     )
-
   )
-  
 }

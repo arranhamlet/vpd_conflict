@@ -9,9 +9,9 @@
 #' \itemize{
 #'   \item \code{input_data$year_start}: Integer start year.
 #'   \item \code{population_data}: Matrix or data frame of population counts (time x age).
-#'   \item \code{crude_death}: Data frame with mortality values and dimensions \code{dim1}, \code{dim3}.
-#'   \item \code{crude_birth}: Data frame with birth rate values and \code{time}.
-#'   \item \code{migration_in_number}: Data frame with migration counts and \code{dim1}.
+#'   \item \code{crude_death}: Data frame with mortality values and dimensions \code{time}, \code{value}, and optionally \code{dim3}.
+#'   \item \code{crude_birth}: Data frame with birth rate values and column \code{time}.
+#'   \item \code{migration_in_number}: Data frame with migration counts and column \code{dim1}.
 #' }
 #'
 #' @return A `patchwork` grid of ggplot objects showing:
@@ -37,106 +37,104 @@
 plot_demographic_data <- function(
     demographic_data  
 ){
-  
   # Extract base year
   year_start <- demographic_data$input_data$year_start
   
   # Reshape population data to long format
-  population_by_age <- reshape2::melt(demographic_data$population_data) %>%
-    setnames(c("time", "age", "value")) %>%
-    arrange(time, age)
+  demog_data <- demographic_data$population_data
+  population_by_age <- reshape2::melt(demog_data) %>%
+    data.table::setnames(c("time", "age", "value")) %>%
+    dplyr::arrange(time, age)
   
   # Total population over time
   population_total <- population_by_age %>%
-    group_by(time) %>%
-    summarise(value = sum(value), .groups = "drop")
+    dplyr::group_by(time) %>%
+    dplyr::summarise(value = sum(value), .groups = "drop")
   
   # Weighted average mortality (crude death rate)
   demographic_data$crude_death$population <- population_by_age$value
   overall_mortality <- demographic_data$crude_death %>%
-    group_by(dim1, dim3) %>%
-    mutate(
+    dplyr::group_by(time) %>%
+    dplyr::mutate(
       population_weight = population / sum(population),
       weighted_value = value * population_weight
     ) %>%
-    summarise(value = sum(weighted_value), .groups = "drop")
+    dplyr::summarise(value = sum(weighted_value), .groups = "drop")
   
   # Total migration by year
   migration_aggregate <- demographic_data$migration_in_number %>%
-    group_by(dim1) %>%
-    summarise(value = sum(value))
+    dplyr::group_by(dim1) %>%
+    dplyr::summarise(value = sum(value), .groups = "drop")
   
   # Plot: Population over time
-  population_over_time <- ggplot(
+  population_over_time <- ggplot2::ggplot(
     data = population_total,
     mapping = aes(
       x = time + year_start,
       y = value * 1000
     )
   ) +
-    geom_line() +
-    labs(x = "", y = "Population") +
-    scale_y_continuous(label = scales::comma) +
-    theme_bw()
+    ggplot2::geom_line() +
+    ggplot2::labs(x = "", y = "Population") +
+    ggplot2::scale_y_continuous(label = scales::comma) +
+    ggplot2::theme_bw()
   
   # Plot: Age pyramid in the final year
-  age_pyramid_final <- ggplot(
-    data = population_by_age %>%
-      subset(time == max(time)),
+  age_pyramid_final <- ggplot2::ggplot(
+    data = dplyr::filter(population_by_age, time == max(time)),
     mapping = aes(
       x = age,
       y = value / sum(value)
     )
   ) +
-    geom_bar(stat = "identity") +
-    labs(x = "Age", y = "Proportion of\nthe population") +
-    theme_bw()
+    ggplot2::geom_bar(stat = "identity") +
+    ggplot2::labs(x = "Age", y = "Proportion of\nthe population") +
+    ggplot2::theme_bw()
   
   # Plot: Mortality over time
-  mortality_plot <- ggplot(
+  mortality_plot <- ggplot2::ggplot(
     data = overall_mortality,
     mapping = aes(
-      x = dim1 + year_start - 1,
+      x = time + year_start - 1,
       y = value
     )
   ) +
-    geom_line() +
-    labs(x = "", y = "Annual\nmortality") +
-    scale_y_continuous(label = scales::comma) +
-    theme_bw()
+    ggplot2::geom_line() +
+    ggplot2::labs(x = "", y = "Annual\nmortality") +
+    ggplot2::scale_y_continuous(label = scales::comma) +
+    ggplot2::theme_bw()
   
   # Plot: Fertility over time
-  fertility_plot <- ggplot(
+  fertility_plot <- ggplot2::ggplot(
     data = demographic_data$crude_birth,
     mapping = aes(
       x = time + year_start,
       y = value
     )
   ) +
-    geom_line() +
-    labs(x = "", y = "Annual\nfertility") +
-    scale_y_continuous(label = scales::comma) +
-    theme_bw()
+    ggplot2::geom_line() +
+    ggplot2::labs(x = "", y = "Annual\nfertility") +
+    ggplot2::scale_y_continuous(label = scales::comma) +
+    ggplot2::theme_bw()
   
   # Plot: Migration over time
-  migration_plot <- ggplot(
+  migration_plot <- ggplot2::ggplot(
     data = migration_aggregate,
     mapping = aes(
       x = dim1 + year_start - 1,
       y = value
     )
   ) +
-    geom_line() +
-    labs(x = "", y = "Annual\nmigration") +
-    scale_y_continuous(label = scales::comma) +
-    theme_bw() +
-    geom_hline(yintercept = 0, linetype = "dashed")
+    ggplot2::geom_line() +
+    ggplot2::labs(x = "", y = "Annual\nmigration") +
+    ggplot2::scale_y_continuous(label = scales::comma) +
+    ggplot2::theme_bw() +
+    ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
   
   # Assemble and return plots
   population_plots <- population_over_time + age_pyramid_final
   inflow_outflow_plots <- mortality_plot + fertility_plot + migration_plot
   
   population_plots / inflow_outflow_plots + 
-    plot_annotation(title = "Demographics")
-  
+    patchwork::plot_annotation(title = "Demographics")
 }

@@ -18,9 +18,10 @@
 #'
 #' @export
 collapse_age_bins <- function(mat, n_bins) {
-  t(apply(mat, 1, function(row) {
+  go <- t(apply(mat, 1, function(row) {
     group_size <- ceiling(length(row) / n_bins)
     groups <- (seq_along(row) - 1) %/% group_size + 1
     tapply(row, groups, sum)
   }))
+  if(n_bins == 1) t(go) else go
 }

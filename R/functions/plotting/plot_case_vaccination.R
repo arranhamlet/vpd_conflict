@@ -1,17 +1,20 @@
 #' Plot Case Counts and Vaccination Coverage
 #'
-#' This function creates two plots side-by-side for visual comparison:
-#' a bar chart showing disease case counts and a line chart showing vaccination coverage over time.
-#' The plots are faceted by country or region.
+#' This function creates two vertically stacked plots for visual comparison:
+#' \enumerate{
+#'   \item A bar chart showing annual disease case counts, faceted by `name` (typically region or group).
+#'   \item A line chart showing annual vaccination coverage as a percentage, faceted by `iso3` (country code).
+#' }
+#' Missing case values are excluded from the case plot. The final plot includes a title and combines both plots using `patchwork`.
 #'
 #' @param case_data A data frame containing reported disease case counts.
-#'   Must include the columns: `year`, `cases`, `disease_description`, and `name`.
+#'   Must include the columns: \code{year}, \code{cases}, \code{name}, and optionally \code{disease_description}.
 #'
 #' @param vaccination_data A data frame containing vaccination data.
-#'   Must include the columns: `iso3`, `year`, `name`, `fully_vaccinated_persons`, and `total_population`.
+#'   Must include the columns: \code{iso3}, \code{year}, \code{name}, \code{fully_vaccinated_persons}, and \code{total_population}.
 #'
-#' @return A combined ggplot object (using `patchwork`) with case bar plots and vaccination coverage line plots.
-#'   The case plot is faceted by `name`, and the vaccination plot is faceted by `iso3`.
+#' @return A combined ggplot object (using `patchwork`) showing disease case counts and vaccination coverage over time.
+#'   The top plot is faceted by `name`, and the bottom plot by `iso3`.
 #'
 #' @import dplyr
 #' @import ggplot2
@@ -27,62 +30,60 @@ plot_case_vaccination <- function(
     case_data,
     vaccination_data
 ){
-  
   # Aggregate vaccination data by country, year, and name
   vaccination_aggregated <- vaccination_data %>%
-    group_by(iso3, year, name) %>%
-    summarise(
-      fully_vaccinated = sum(fully_vaccinated_persons),
-      total = sum(total_population),
+    dplyr::group_by(iso3, year, name) %>%
+    dplyr::summarise(
+      fully_vaccinated = sum(fully_vaccinated_persons, na.rm = TRUE),
+      total = sum(total_population, na.rm = TRUE),
       .groups = "drop"
     ) %>%
-    mutate(
+    dplyr::mutate(
       coverage = fully_vaccinated / total
     )
   
   # Plot case counts
-  cases <- ggplot(
-    data = case_data %>%
-      filter(!is.na(cases)),
+  cases <- ggplot2::ggplot(
+    data = dplyr::filter(case_data, !is.na(cases)),
     mapping = aes(
       x = year,
       y = cases
     )
   ) +
-    geom_bar(stat = "identity") +
-    theme_bw() +
-    labs(
+    ggplot2::geom_bar(stat = "identity") +
+    ggplot2::theme_bw() +
+    ggplot2::labs(
       x = "",
       y = "Cases",
       fill = ""
     ) +
-    theme(
+    ggplot2::theme(
       legend.position = "top"
     ) +
-    scale_y_continuous(label = scales::comma)
+    ggplot2::scale_y_continuous(label = scales::comma)
   
   # Plot vaccination coverage
-  vaccination <- ggplot(
+  vaccination <- ggplot2::ggplot(
     data = vaccination_aggregated,
     mapping = aes(
       x = year,
       y = coverage * 100
     )
   ) +
-    geom_line() + 
-    theme_bw() +
-    labs(
+    ggplot2::geom_line() + 
+    ggplot2::theme_bw() +
+    ggplot2::labs(
       x = "",
       y = "Vaccination\ncoverage (%)",
       color = ""
     ) +
-    theme(
+    ggplot2::theme(
       legend.position = "none"
     ) +
-    coord_cartesian(ylim = c(0, 100))
+    ggplot2::coord_cartesian(ylim = c(0, 100))
   
   # Combine and return the plots
   cases / vaccination + 
-    plot_layout(guides = 'collect') +
-    plot_annotation(title = "Cases and vaccinations")
+    patchwork::plot_layout(guides = 'collect') +
+    patchwork::plot_annotation(title = "Cases and vaccinations")
 }
