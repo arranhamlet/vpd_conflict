@@ -28,7 +28,7 @@ full_disease_df <- import("data/processed/WHO/reported_cases_data.csv")
 
 #Run processing
 plotted <- model_input_formatter_wrapper(
-  iso = "SDN",    
+  iso = "PSE",    
   disease = "measles",
   vaccine = "measles",
   n_age = 101,
