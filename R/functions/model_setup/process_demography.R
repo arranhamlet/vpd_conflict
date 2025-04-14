@@ -37,26 +37,10 @@ process_demography <- function(
     n_risk = 1
 ) {
 
-  # Helper: collapse row-wise matrix into n_bins columns
-  collapse_age_bins <- function(mat, n_bins) {
-    t(apply(mat, 1, function(row) {
-      group_size <- ceiling(length(row) / n_bins)
-      groups <- (seq_along(row) - 1) %/% group_size + 1
-      tapply(row, groups, sum)
-    }))
-  }
-  
-  split_and_sum <- function(vec, n_bins) {
-    group_size <- ceiling(length(vec) / n_bins)
-    groups <- (seq_along(vec) - 1) %/% group_size + 1
-    tapply(vec, groups, sum)
-  }
-  
   filter_country <- function(dt) dt[iso3 == iso]
 
-  # Convert to data.table
-  setDT(migration); setDT(fertility); setDT(mortality)
-  setDT(population_all); setDT(population_female)
+  # Convert to data.table - for speed
+  setDT(migration); setDT(fertility); setDT(mortality); setDT(population_all); setDT(population_female)
   
   # Filter
   migration <- filter_country(migration)
@@ -79,14 +63,15 @@ process_demography <- function(
   mort_mat <- collapse_age_bins(mort_mat_raw, n_age)
   mortality_rate <- mort_mat / pop_all
   mortality_rate[!is.finite(mortality_rate)] <- 1
-  mortality_vector <- pmin(as.vector(t(mortality_rate)), 1)
+  mortality_df <- reshape2::melt(t(mortality_rate)) %>%
+    setnames(c("n_age", "time", "value"))
   
   # Fertility
   fert_mat <- as.matrix(fertility[year %in% years, paste0("x", 15:49), with = FALSE]) * fertility_modifier
   pop_fem <- as.matrix(population_female[year %in% years, paste0("x", 15:49), with = FALSE]) * population_modifier
   denom <- rowSums(pop_fem)
   denom[denom == 0] <- NA
-  fertility_by_year <- rowSums((fert_mat / 1000) * pop_fem) / denom
+  fertility_by_year <- data.frame(time = time_all, value = pmin(rowSums((fert_mat / 1000) * pop_fem) / denom, 1))
   
   # Migration
   mig_rates <- migration[year %in% years, migration_rate_1000] * migration_modifier
@@ -106,7 +91,7 @@ process_demography <- function(
   # Initial population
   init_vals <- round(pop_all[1, ] * 1000)
   init_chunk <- split_and_sum(init_vals, n_age)
-  N0_df <- data.table(
+  N0_df <- data.frame(
     dim1 = seq_len(n_age),
     dim2 = 1,
     dim3 = 1,
@@ -116,7 +101,7 @@ process_demography <- function(
   # Mortality df
   mortality_df <- rbindlist(lapply(seq_len(nrow(mortality_rate)), function(i) {
     chunk <- split_and_sum(mortality_rate[i, ], n_age)
-    data.table(
+    data.frame(
       dim1 = i,
       dim2 = seq_len(n_age),
       dim3 = 1,
@@ -127,7 +112,7 @@ process_demography <- function(
   # Total population df (optional)
   total_population_df <- rbindlist(lapply(seq_len(nrow(pop_all)), function(i) {
     chunk <- split_and_sum(round(pop_all[i, ] * 1000), n_age)
-    data.table(
+    data.frame(
       dim1 = i,
       dim2 = seq_len(n_age),
       dim3 = 1,
@@ -148,8 +133,8 @@ process_demography <- function(
   # Output
   list(
     N0 = N0_df,
-    crude_birth = pmin(fertility_by_year, 1),
-    crude_death = pmin(mortality_vector, 1),
+    crude_birth = fertility_by_year,
+    crude_death = mortality_df,
     tt_migration = time_all,
     migration_in_number = migration_in_number,
     migration_distribution_values = migration_distribution_values,
