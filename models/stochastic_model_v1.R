@@ -37,18 +37,15 @@ update(total_birth) <- sum(Births)
 update(total_death) <- sum(S_death) + sum(E_death) + sum(I_death) + sum(R_death) + sum(Is_death) + sum(Rc_death)
 update(repro_pop) <- sum(reproductive_population)
 
-#Diagnosing why migration is different 
-update(migint[, , ]) <- migration[i, j, k]
-initial(migint[, , ]) <- 0
-dim(migint) <- c(n_age, n_vacc, n_risk)
+# #Diagnosing why migration is different 
+# update(migint[, , ]) <- migration[i, j, k]
+# initial(migint[, , ]) <- 0
+# dim(migint) <- c(n_age, n_vacc, n_risk)
+# 
+# update(migout[, , , ]) <- migration_in_number[i, j, k, l]
+# initial(migout[, , , ]) <- 0
+# dim(migout)<- c(n_age, n_vacc, n_risk, no_migration_changes)
 
-update(migout[, , , ]) <- migration_in_number[i, j, k, l]
-initial(migout[, , , ]) <- 0
-dim(migout)<- c(no_migration_changes, n_age, n_vacc, n_risk)
-
-# # 
-# update(tt_migration_go) <- sum(tt_migration)
-# initial(tt_migration_go) <- 0
 
 # Entering and exiting compartments ---------------------------------------
 
@@ -202,18 +199,34 @@ migration_distribution <- interpolate(tt_migration, migration_distribution_value
 pos_neg_migration <- if(sum(migration) < 0) -1 else 1
 migration_adjusted[, , ] <- migration[i, j, k] * pos_neg_migration
 
+update(mig_E) <- sum(migration_E)
+update(mig_E_dist) <- sum(migration_distribution[2, , , ])
+initial(mig_E) <- 1
+initial(mig_E_dist) <- 1
+
+update(mig_S) <- sum(migration_S)
+update(mig_S_dist) <- sum(migration_distribution[1, , , ])
+initial(mig_S) <- 1
+initial(mig_S_dist) <- 1
+
+update(mig_I) <- sum(migration_I)
+update(mig_I_dist) <- sum(migration_distribution[3, , , ])
+initial(mig_I) <- 1
+initial(mig_I_dist) <- 1
+
+
 # Moving INTO each compartment with specified distribution
-migration_S[, , ] <- if(sum(migration_adjusted) <= 0 || migration_distribution[1, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted), migration_distribution[1, i, j, k]/sum(migration_distribution))
+migration_S[, , ] <- if(sum(migration_adjusted) <= 0 || migration_distribution[1, i, j, k] == 0) 0 else Binomial(sum(migration_adjusted), migration_distribution[1, i, j, k]/sum(migration_distribution))
 
-migration_E[, , ] <- if(sum(migration_adjusted) - sum(migration_S) <= 0 || migration_distribution[2, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S), migration_distribution[2, i, j, k]/sum(migration_distribution))
+migration_E[, , ] <- if(sum(migration_adjusted) - sum(migration_S) <= 0 || migration_distribution[2, i, j, k] == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S), migration_distribution[2, i, j, k]/sum(migration_distribution))
 
-migration_I[, , ] <- min(if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) <= 0 || migration_distribution[3, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E), migration_distribution[3, i, j, k]/sum(migration_distribution)), sum(migration_adjusted) - sum(migration_S) - sum(migration_E))
+migration_I[, , ] <- if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) <= 0 || migration_distribution[3, i, j, k] == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E), migration_distribution[3, i, j, k]/sum(migration_distribution))
+  
+migration_R[, , ] <- if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) <= 0 || migration_distribution[4, i, j, k] == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I), migration_distribution[4, i, j, k]/sum(migration_distribution))
 
-migration_R[, , ] <- min(if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) <= 0 || migration_distribution[4, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I), migration_distribution[4, i, j, k]/sum(migration_distribution)), sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I))
+migration_Is[, , ] <- if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) <= 0 || migration_distribution[5, i, j, k] == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R), migration_distribution[5, i, j, k]/sum(migration_distribution))
 
-migration_Is[, , ] <- min(if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) <= 0 || migration_distribution[5, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R), migration_distribution[5, i, j, k]/sum(migration_distribution)), sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R))
-
-migration_Rc[, , ] <- min(if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is) <= 0 || migration_distribution[6, i, j, k]/sum(migration_distribution) == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is), migration_distribution[6, i, j, k]/sum(migration_distribution)), sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is))
+migration_Rc[, , ] <- if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is) <= 0 || migration_distribution[6, i, j, k] == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is), migration_distribution[6, i, j, k]/sum(migration_distribution))
 
 
 # User parameter values --------------------------------------------------------
@@ -420,7 +433,7 @@ dim(waning_Rc) <- c(n_age, n_vacc, n_risk)
 dim(waning_rate) <- c(n_age, n_vacc)
 dim(incubated) <- c(n_age, n_vacc, n_risk)
 dim(tt_seeded) <- no_seeded_changes
-dim(seeded) <- c(no_seeded_changes, n_age, n_vacc, n_risk)
+dim(seeded) <- c(n_age, n_vacc, n_risk, no_seeded_changes)
 dim(t_seeded) <- c(n_age, n_vacc, n_risk)
 
 dim(into_I) <- c(n_age, n_vacc, n_risk)
@@ -453,7 +466,7 @@ dim(protection_weight_vacc) <- age_maternal_protection_ends
 dim(protection_weight_rec) <- age_maternal_protection_ends
 
 dim(tt_vaccination_coverage) <- no_vacc_changes
-dim(vaccination_coverage) <- c(no_vacc_changes, n_age, n_vacc, n_risk)
+dim(vaccination_coverage) <- c(n_age, n_vacc, n_risk, no_vacc_changes)
 dim(vaccinating_into_S) <- c(n_age, n_vacc, n_risk)
 dim(vaccinating_out_of_S) <- c(n_age, n_vacc, n_risk)
 dim(vaccinating_into_E) <- c(n_age, n_vacc, n_risk)
@@ -489,8 +502,8 @@ dim(tt_death_changes) <- no_death_changes
 dim(background_death) <- c(n_age, n_risk)
 dim(Npop_background_death) <- c(n_age, n_risk)
 dim(initial_background_death) <- c(n_age, n_risk)
-dim(crude_birth) <- c(no_birth_changes, n_risk)
-dim(crude_death) <- c(no_death_changes, n_age, n_risk)
+dim(crude_birth) <- c(n_risk, no_birth_changes)
+dim(crude_death) <- c(n_age, n_risk, no_death_changes)
 dim(birth_int) <- n_risk
 dim(death_int) <- c(n_age, n_risk)
 dim(S_death) <- c(n_age, n_vacc, n_risk)
@@ -514,16 +527,16 @@ dim(moving_risk_to_Is) <- c(n_age, n_vacc, n_risk)
 dim(moving_risk_from_Rc) <- c(n_age, n_vacc, n_risk)
 dim(moving_risk_to_Rc) <- c(n_age, n_vacc, n_risk)
 dim(tt_moving_risk) <- no_moving_risk_changes
-dim(moving_risk_values) <-  c(no_moving_risk_changes, n_age, n_vacc, n_risk)
-dim(moving_risk_distribution_values) <- c(no_moving_risk_changes, n_age, n_vacc, n_risk)
+dim(moving_risk_values) <-  c(n_age, n_vacc, n_risk, no_moving_risk_changes)
+dim(moving_risk_distribution_values) <- c(n_age, n_vacc, n_risk, no_moving_risk_changes)
 dim(moving_risk_prop) <- c(n_age, n_vacc, n_risk)
 dim(moving_risk_distribution) <- c(n_age, n_vacc, n_risk)
 
 #Dimensions for migration
 dim(tt_migration) <- c(no_migration_changes)
 dim(migration_distribution) <- c(6, n_age, n_vacc, n_risk)
-dim(migration_in_number) <- c(no_migration_changes, n_age, n_vacc, n_risk)
-dim(migration_distribution_values) <- c(no_migration_changes, 6, n_age, n_vacc, n_risk)
+dim(migration_in_number) <- c(n_age, n_vacc, n_risk, no_migration_changes)
+dim(migration_distribution_values) <- c(6, n_age, n_vacc, n_risk, no_migration_changes)
 dim(migration) <- c(n_age, n_vacc, n_risk)
 dim(migration_adjusted) <- c(n_age, n_vacc, n_risk)
 dim(migration_S) <- c(n_age, n_vacc, n_risk)

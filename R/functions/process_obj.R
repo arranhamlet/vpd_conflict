@@ -40,13 +40,13 @@ process_obj <- function(this_obj, present_dimensions, colnames, time_length, x, 
     melted_df <- reshape2::melt(this_obj)
     setnames(melted_df, c(colnames[1:(which(colnames == "time") - 1)], "run", "time", "value"))
     
-    melted_df <- melted_df |>
-      mutate(state = state_name) |>
+    melted_df <- melted_df %>%
+      mutate(state = state_name) %>%
       select(time, state, all_of(colnames[1:(which(colnames == "time") - 1)]), run, value)
     
     # Aggregate by state, time, run
-    aggregate_df <- melted_df |>
-      fgroup_by(state, time, run) |>
+    aggregate_df <- melted_df %>%
+      fgroup_by(state, time, run) %>%
       fsummarise(value = sum(value))
     
     list(melted_df, aggregate_df)
@@ -63,12 +63,12 @@ process_obj <- function(this_obj, present_dimensions, colnames, time_length, x, 
     melted_df <- reshape2::melt(this_obj)
     setnames(melted_df, c(present_dimensions, "value"))
     
-    melted_df <- melted_df |>
-      mutate(state = state_name) |>
+    melted_df <- melted_df %>%
+      mutate(state = state_name) %>%
       select(time, state, all_of(present_dimensions[present_dimensions != "time"]), value)
     
-    aggregate_df <- melted_df |>
-      fgroup_by(state, time) |>
+    aggregate_df <- melted_df %>%
+      fgroup_by(state, time) %>%
       fsummarise(value = sum(value))
     
     list(melted_df, aggregate_df)

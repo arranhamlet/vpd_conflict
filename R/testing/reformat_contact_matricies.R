@@ -13,32 +13,44 @@ pacman::p_load(
   tidymodels
 )
 
-#Load in contact matricies
 contact_matricies <- import("data/raw/contact_matricies/contact_all.rdata")
-age_group <- seq(5, 80, by = 5)
+contact_matrix_raw <- contact_matricies$SDN
 
-melted_df <- reshape2::melt(contact_matricies$AFG) %>%
-  rename(age_one = Var1,
-         age_two = Var2) %>%
-  mutate(age_one = age_group[age_one],
-         age_two = age_group[age_two])
+reformat_contact_matrix <- function(
+    contact_matrix_raw
+    ){
+  
+  #Names
+  age_group <- seq(0, 80, by = 5)
+  
+  #Rename columns
+  row.names(contact_matrix_raw) <- age_group[2:length(age_group)]
+  colnames(contact_matrix_raw) <- age_group[2:length(age_group)]
+  
+  #WPP data is 0-100, create a matrix and fill in values
+  contact_matrix_expanded <- matrix(0, nrow = 101, ncol = 101)
+  
+  for(i in 1:nrow(contact_matrix_expanded)){
+    for(j in 1:ncol(contact_matrix_expanded)){
+      age_group
+    }
+  }
+  
+  
+}
 
-#Regression
-lm_mod <- linear_reg() %>% 
-  set_engine("keras")
+#Load in contact matrices
 
-lm_fit <- lm_mod %>% 
-  fit(value ~ age_one + age_two, data = melted_df)
 
-#Extrapolate model
-map_data <- expand.grid(age_one = 0:80,
-                        age_two = 0:80)
-new_data <- predict(
-  lm_fit,
-  newdata = map_data
-)
+#Expand matrix
 
-map_data$value <- new_data
+
+
+contact_matricies$AFG
+
+
+
+
 
 #Plot
 old_plot <- ggplot(

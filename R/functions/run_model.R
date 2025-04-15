@@ -8,17 +8,17 @@
 #'
 #' @return A data frame containing the unpacked and cleaned model simulation results.
 #' @export
-run_model <- function(params, time = 1000, no_runs = 25) {
+run_model <- function(odin_model, params, time = 1000, no_runs = 25) {
   
   #' Define the dust system and initialize it with given parameters
-  sys <- dust2::dust_system_create(model(), params, n_particles = no_runs)
+  sys <- dust2::dust_system_create(odin_model(), params, n_particles = no_runs)
   
   #' Set the initial state for the dust system
   dust2::dust_system_set_state_initial(sys)
   
   #' Define the time vector for simulation (starting from 0)
   full_time_vector <- 0:(time - 1)
-  
+
   #' Run the dust system simulation over the defined time period
   y <- dust2::dust_system_simulate(sys, full_time_vector)
   
@@ -39,9 +39,7 @@ run_model <- function(params, time = 1000, no_runs = 25) {
       I = c("age", "vaccination", "risk", "time"),
       R = c("age", "vaccination", "risk", "time"),
       Is = c("age", "vaccination", "risk", "time"),
-      Rc = c("age", "vaccination", "risk", "time"),
-      output_migration_interpolate = c("age", "vaccination", "risk", "time"),
-      input_migration_interpolate = c("no_migration_changes", "age", "vaccination", "risk", "time")
+      Rc = c("age", "vaccination", "risk", "time")
     )
   )
 }

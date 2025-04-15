@@ -108,10 +108,10 @@ process_demography <- function(
     mig_vals <- round(pop_all[i, ] * mig_rates[i])
     chunk <- split_and_sum(mig_vals, n_age)
     data.frame(
-      dim1 = i,
-      dim2 = seq_len(n_age),
+      dim1 = seq_len(n_age),
+      dim2 = 1,
       dim3 = 1,
-      dim4 = 1,
+      dim4 = i,
       value = chunk
     )
   }))
@@ -130,21 +130,21 @@ process_demography <- function(
   total_population_df <- data.table::rbindlist(lapply(seq_len(nrow(pop_all)), function(i) {
     chunk <- split_and_sum(round(pop_all[i, ] * 1000), n_age)
     data.frame(
-      dim1 = i,
-      dim2 = seq_len(n_age),
+      dim1 = seq_len(n_age),
+      dim2 = 1,
       dim3 = 1,
-      dim4 = 1,
+      dim1 = i,
       value = chunk
     )
   }))
   
   # Migration distribution
   migration_distribution_values <- data.table::CJ(
-    dim1 = seq_along(time_all),
-    dim2 = 1,
-    dim3 = 1:n_age,
+    dim1 = 1,
+    dim2 = 1:n_age,
+    dim3 = 1,
     dim4 = 1,
-    dim5 = 1
+    dim5 = seq_along(time_all)
   )[, value := 1]
   
   # Output

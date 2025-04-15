@@ -113,18 +113,6 @@ full_df <- do.call(rbind, sapply(loop_dim_size, function(x) x[[1]], simplify = F
 
 # Plot the total values (dim1 == "All") across time, coloured by dimension size
 # I would assume these would all be the same, but they are not
-ggplot(data = subset(full_df, dim1 == "All" & dimension_two_length == 1),
-       mapping = aes(
-         x = time,
-         y = value,
-         color = as.factor(dimension_two_length)
-       )) +
-  geom_line() +
-  theme_bw() +
-  labs(x = "Time",
-       y = "Value",
-       color = "Dimension 2 length")
-
 ggplot(data = subset(full_df, dim1 == "All"),
        mapping = aes(
          x = time,
