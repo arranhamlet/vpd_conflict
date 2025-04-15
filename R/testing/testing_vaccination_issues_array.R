@@ -29,7 +29,7 @@ population_all <- import(here("data", "processed", "WPP", "age_both.csv"))
 population_female <- import(here("data", "processed", "WPP", "age_female.csv"))
 
 #Loop this
-loop_this <- sapply(c(1, 3), function(t){
+loop_this <- sapply(c(1), function(t){
   
   print(t)
   
@@ -144,5 +144,13 @@ ggplot(
   )) +
   facet_wrap(~age) +
   geom_line()
+
+
+
+subset(all_looped, age == "All" & state %in% c("full_migration", "manual_migration") & run == "run_1") %>%
+  spread(value = value, key = state) %>%
+  mutate(migration_difference = full_migration - manual_migration)
+
+
 
 
