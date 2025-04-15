@@ -7,7 +7,8 @@ model_run_demographic_plots <- function(
   
   #Update end year
   clean_model_df <-   clean_model_df %>% 
-    fgroup_by(state, time, age, vaccination, risk) %>%
+    subset(state %in% c("S", "total_pop")) %>%
+    fgroup_by(state, time, age) %>%
     fsummarise(
       value = median(value),
       value_low = quantile(value, 0.025),

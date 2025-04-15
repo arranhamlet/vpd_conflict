@@ -83,7 +83,7 @@ process_demography <- function(
   pop_all <- collapse_age_bins(pop_all_raw, n_age)
   
   # Mortality
-  mort_mat_raw <- as.matrix(mortality[year %in% years, paste0("x", 0:100), with = FALSE])
+  mort_mat_raw <- as.matrix(mortality[year %in% years, paste0("x", 0:100), with = FALSE]) * death_modifier
   mort_mat <- collapse_age_bins(mort_mat_raw, n_age)
   mortality_rate <- pmin(mort_mat / pop_all, 1)
   mortality_rate[!is.finite(mortality_rate)] <- 1

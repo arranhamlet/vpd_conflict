@@ -34,7 +34,7 @@ demog_data <- process_demography(
   mortality = mortality, 
   population_all = population_all, 
   population_female = population_female,
-  year_start = "1980",
+  year_start = "2000",
   year_end = "2022",
   iso = "SDN",
   n_age = 101,
@@ -57,7 +57,7 @@ params <- param_packager(
   N0 = demog_data$N0,
   
   I0 = 0,
-  initial_background_death = 0,
+  initial_background_death = 1,
   aging_rate = 1,
   
   #Changing mortality and birth
@@ -76,7 +76,7 @@ params <- param_packager(
   #Migration
   tt_migration = demog_data$tt_migration,
   migration_in_number = demog_data$migration_in_number,
-  migration_distribution_values = 1
+  migration_distribution_values = demog_data$migration_distribution_values
   
 )
 
@@ -91,13 +91,14 @@ clean_df <- run_model(
 #Generate plots
 saved_plots <- model_run_demographic_plots(
   clean_df,
-  demog_data,
-  end_year = 1990
+  demog_data
 )
 
 saved_plots[[1]]
-saved_plots[[2]]
-saved_plots[[3]]
+
+
+# saved_plots[[2]]
+# saved_plots[[3]]
 
 #Update with Gaza data on population
 pyramid_data <- saved_plots$pyramid_data %>%

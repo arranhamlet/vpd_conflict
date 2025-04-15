@@ -214,33 +214,13 @@ update(mig_I_dist) <- sum(migration_distribution[3, , , ])
 initial(mig_I) <- 1
 initial(mig_I_dist) <- 1
 
-
-# # Moving INTO each compartment with specified distribution
-# migration_S[, , ] <- if(sum(migration_adjusted) <= 0 || migration_distribution[1, i, j, k] == 0) 0 else Binomial(sum(migration_adjusted), migration_distribution[1, i, j, k]/sum(migration_distribution))
-# 
-# migration_E[, , ] <- if(sum(migration_adjusted) - sum(migration_S) <= 0 || migration_distribution[2, i, j, k] == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S), migration_distribution[2, i, j, k]/sum(migration_distribution))
-# 
-# migration_I[, , ] <- if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) <= 0 || migration_distribution[3, i, j, k] == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E), migration_distribution[3, i, j, k]/sum(migration_distribution))
-#   
-# migration_R[, , ] <- if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) <= 0 || migration_distribution[4, i, j, k] == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I), migration_distribution[4, i, j, k]/sum(migration_distribution))
-# 
-# migration_Is[, , ] <- if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) <= 0 || migration_distribution[5, i, j, k] == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R), migration_distribution[5, i, j, k]/sum(migration_distribution))
-# 
-# migration_Rc[, , ] <- if(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is) <= 0 || migration_distribution[6, i, j, k] == 0) 0 else Binomial(sum(migration_adjusted) - sum(migration_S) - sum(migration_E) - sum(migration_I) - sum(migration_R) - sum(migration_Is), migration_distribution[6, i, j, k]/sum(migration_distribution))
-
+# # Moving INTO each compartment with specified distribution - not sampling as we want the exact numbers
 migration_S[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[1, , , ])/sum(migration_distribution)
 migration_E[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[2, , , ])/sum(migration_distribution)
 migration_I[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[3, , , ])/sum(migration_distribution)
 migration_R[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[4, , , ])/sum(migration_distribution)
 migration_Is[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[5, , , k])/sum(migration_distribution)
 migration_Rc[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[6, , , k])/sum(migration_distribution)
-
-update(full_migration) <- sum(migration_adjusted)
-update(manual_migration) <- (sum(migration_S) + sum(migration_E) + sum(migration_I) + sum(migration_R) + sum(migration_Is) + sum(migration_Rc))
-
-initial(full_migration) <- 1
-initial(manual_migration) <- 1
-
 
 # User parameter values --------------------------------------------------------
 
