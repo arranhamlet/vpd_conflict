@@ -63,7 +63,7 @@ plot_demographic_data <- function(
   
   # Total migration by year
   migration_aggregate <- demographic_data$migration_in_number %>%
-    dplyr::group_by(dim1) %>%
+    dplyr::group_by(dim4) %>%
     dplyr::summarise(value = sum(value), .groups = "drop")
   
   # Plot: Population over time
@@ -108,7 +108,7 @@ plot_demographic_data <- function(
   fertility_plot <- ggplot2::ggplot(
     data = demographic_data$crude_birth,
     mapping = aes(
-      x = time + year_start,
+      x = dim2 + year_start,
       y = value
     )
   ) +
@@ -121,7 +121,7 @@ plot_demographic_data <- function(
   migration_plot <- ggplot2::ggplot(
     data = migration_aggregate,
     mapping = aes(
-      x = dim1 + year_start - 1,
+      x = dim4 + year_start - 1,
       y = value
     )
   ) +
@@ -138,3 +138,4 @@ plot_demographic_data <- function(
   population_plots / inflow_outflow_plots + 
     patchwork::plot_annotation(title = "Demographics")
 }
+

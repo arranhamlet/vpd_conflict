@@ -61,6 +61,8 @@ loop_this <- sapply(c(1, 3), function(t){
     N0 = demog_data$N0,
     crude_birth = demog_data$crude_birth,
     crude_death = demog_data$crude_death,
+    simp_birth_death = 0,
+    aging_rate = 1,
     
     tt_migration = demog_data$tt_migration,
     migration_in_number = demog_data$migration_in_number,
@@ -75,7 +77,6 @@ loop_this <- sapply(c(1, 3), function(t){
     time = (demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
     no_runs = 2
   ) %>%
-    # filter(run == "run_1") %>%
     mutate(n_vacc_comp = t)
   
   list(clean_df, params)
@@ -135,41 +136,13 @@ ggplot(data = aggregate_df,
   
 #Check by age
 ggplot(
-  data = subset(all_looped, state == "" & age == 18 & run == "run_1" & age != "All"),
+  data = subset(all_looped, state == "S" & vaccination == 1 & age %in% c(0, 18, 25, 50, 75) & run == "run_1" & age != "All"),
   mapping = aes(
     x = time,
     y = value,
     color = as.factor(n_vacc_comp)
   )) +
-  facet_wrap(~vaccination) +
+  facet_wrap(~age) +
   geom_line()
-
-
-#Check by vaccination
-
-#Check by risk
-
-
-
-
-
-
-
-
-value_expand <- demog_data$migration_in_number
-
-
-generate_array_df(
-  dim1 = max(value_expand$dim1), 
-  dim2 = max(value_expand$dim2), 
-  dim3 = max(value_expand$dim3), 
-  default_value = 0,
-  dim4 = max(value_expand$dim4), 
-  updates = value_expand
-) %>%
-  df_to_array
-
-
-
 
 

@@ -10,43 +10,49 @@ pacman::p_load(
   reshape2,
   collapse,
   janitor,
+  patchwork,
   data.table
 )
 
 #Import functions
-invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recursive = F), function(x) source(x)))
+invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recursive = T), function(x) source(x)))
 
 #Import model
 model <- odin2::odin("models/stochastic_model_v1.R")
 
 #Load files needed
-migration <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_gen_f01_demographic_indicators_compact.csv"))
-fertility <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_fert_f01_fertility_rates_by_single_age_of_mother.csv"))
-mortality <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_mort_f01_1_deaths_single_age_both_sexes.csv"))
-population_all <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_pop_f01_1_population_single_age_both_sexes.csv"))
-population_female <- import(here("data", "raw_data", "WPP_data", "stateofpalestine__wpp2024_pop_f01_3_population_single_age_female.csv"))
+migration <- import(here("data", "processed", "WPP", "migration.csv"))
+fertility <- import(here("data", "processed", "WPP", "fertility.csv"))
+mortality <- import(here("data", "processed", "WPP", "deaths.csv"))
+population_all <- import(here("data", "processed", "WPP", "age_both.csv"))
+population_female <- import(here("data", "processed", "WPP", "age_female.csv"))
 
 #Run function - add in modifiers to account for Gaza
-demog_data <- prepare_demographic_for_model(
+demog_data <- process_demography(
   migration = migration, 
   fertility = fertility, 
   mortality = mortality, 
   population_all = population_all, 
   population_female = population_female,
-  year_start = 1964,
-  year_end = "",
-  population_modifier = 0.4,
-  fertility_modifier = 1.18,
-  death_modifier = 1,
-  migration_modifier = 1
+  year_start = "1980",
+  year_end = "2022",
+  iso = "SDN",
+  n_age = 101,
+  n_vacc = 1, 
+  n_risk = 1
+  # population_modifier = 0.4,
+  # migration_modifier = 0.4,
+  # fertility_modifier = 1.18,
 )
+
+plot_demographic_data(demog_data)
 
 #Set up model
 params <- param_packager(
   
-  n_age = 101,
-  n_vacc = 1,
-  n_risk = 1,
+  n_age = demog_data$input_data$n_age,
+  n_vacc = demog_data$input_data$n_vacc,
+  n_risk = demog_data$input_data$n_risk,
   
   N0 = demog_data$N0,
   
@@ -72,12 +78,11 @@ params <- param_packager(
   migration_in_number = demog_data$migration_in_number,
   migration_distribution_values = 1
   
-  
-  
 )
 
 #Run model
 clean_df <- run_model(
+  odin_model = model,
   params = params,
   time = length(demog_data$tt_migration),
   no_runs = 2
@@ -87,7 +92,7 @@ clean_df <- run_model(
 saved_plots <- model_run_demographic_plots(
   clean_df,
   demog_data,
-  end_year = 2022
+  end_year = 1990
 )
 
 saved_plots[[1]]

@@ -85,7 +85,7 @@ process_demography <- function(
   # Mortality
   mort_mat_raw <- as.matrix(mortality[year %in% years, paste0("x", 0:100), with = FALSE])
   mort_mat <- collapse_age_bins(mort_mat_raw, n_age)
-  mortality_rate <- mort_mat / pop_all
+  mortality_rate <- pmin(mort_mat / pop_all, 1)
   mortality_rate[!is.finite(mortality_rate)] <- 1
   mortality_df <- reshape2::melt(t(mortality_rate)) %>%
     data.table::setnames(c("dim1", "time", "value")) %>%
@@ -97,7 +97,8 @@ process_demography <- function(
   denom <- rowSums(pop_fem)
   denom[denom == 0] <- NA
   fertility_by_year <- data.frame(
-    time = time_all,
+    dim1 = n_risk,
+    dim2 = time_all,
     value = pmin(rowSums((fert_mat / 1000) * pop_fem) / denom, 1)
   )
   

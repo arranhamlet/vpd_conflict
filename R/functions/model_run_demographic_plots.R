@@ -6,24 +6,26 @@ model_run_demographic_plots <- function(
     ){
   
   #Update end year
-  clean_model_df <-   clean_model_df %>% filter(run == "run_1")
-    # fgroup_by(state, time, age, vaccination, risk) %>%
-    # fsummarise(
-    #   value = median(value),
-    #   value_low = quantile(value, 0.025),
-    #   value_high = quantile(value, 0.975)
-    # )
+  clean_model_df <-   clean_model_df %>% 
+    fgroup_by(state, time, age, vaccination, risk) %>%
+    fsummarise(
+      value = median(value),
+      value_low = quantile(value, 0.025),
+      value_high = quantile(value, 0.975)
+    )
 
-  end_year <- if(is.na(end_year)) max(demog_data$years) else end_year
-  
+  years <- seq(demog_data$input_data$year_start, demog_data$input_data$year_end)
+  end_year <- if(is.na(end_year)) max(years) else end_year
+
   #Subset to end year
   full_time_year <- data.frame(model_time = 1:max(clean_model_df$time),
-                               year = demog_data$years)
+                               year = years)
   
   model_data_subset <- clean_model_df %>%
-    filter(time <= full_time_year %>% filter(year == end_year) %>% pull(model_time))
+    filter(time <= full_time_year %>% filter(year == end_year) %>% 
+             pull(model_time))
   
-  total_population_df <- data.frame(year = demog_data$years, value = 1000 * rowSums(demog_data$population_data)) %>%
+  total_population_df <- data.frame(year = years, value = 1000 * rowSums(demog_data$population_data)) %>%
     filter(year <= end_year)
   
   #Five year groupings
@@ -39,7 +41,7 @@ model_run_demographic_plots <- function(
     geom_line(
       data = subset(model_data_subset, state == "total_pop"),
       mapping = aes(
-        x = min(demog_data$years) - 1 + time,
+        x = min(years) - 1 + time,
         y = value,
         color = "Model"
       )) +

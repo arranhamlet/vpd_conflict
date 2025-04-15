@@ -259,10 +259,30 @@ param_packager <- function(
   #Births, deaths, aging
   if(is.null(repro_high)) repro_high <- n_age
   initial_background_death <- check_and_format_input(initial_background_death, n_age, n_risk)
-  crude_birth <- check_and_format_input(crude_birth, n_risk, length(tt_birth_changes))
-  crude_death <- check_and_format_input(crude_death, n_age, n_risk, length(tt_birth_changes))
   no_birth_changes = length(tt_birth_changes)
   no_death_changes = length(tt_death_changes)
+  
+  crude_birth <- if(length(crude_birth) == 1) check_and_format_input(input = crude_birth, dim1 = n_risk, dim2 = no_birth_changes) else {
+    generate_array_df(
+      dim1 = n_risk,
+      dim2 = no_birth_changes, 
+      default_value = 0,
+      updates = crude_birth
+    ) %>%
+      df_to_array
+  } 
+  
+  crude_death <- if(length(crude_death) == 1) check_and_format_input(input = crude_death, dim1 = n_age, dim2 = n_risk, dim3 = no_death_changes) else {
+    generate_array_df(
+      dim1 = n_age,
+      dim2 = n_risk,
+      dim3 = no_death_changes, 
+      default_value = 0,
+      updates = crude_death
+    ) %>%
+      df_to_array
+  } 
+  
   aging_rate <- check_and_format_input(aging_rate, n_age)
   #Final aging rate must be 0
   aging_rate[length(aging_rate)] <- 0
