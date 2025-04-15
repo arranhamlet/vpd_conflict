@@ -5,21 +5,11 @@ model_run_demographic_plots <- function(
     end_year = NA
     ){
   
-  #Update end year
-  clean_model_df <-   clean_model_df %>% 
-    subset(state %in% c("S", "total_pop")) %>%
-    fgroup_by(state, time, age) %>%
-    fsummarise(
-      value = median(value),
-      value_low = quantile(value, 0.025),
-      value_high = quantile(value, 0.975)
-    )
-
   years <- seq(demog_data$input_data$year_start, demog_data$input_data$year_end)
   end_year <- if(is.na(end_year)) max(years) else end_year
 
   #Subset to end year
-  full_time_year <- data.frame(model_time = 1:max(clean_model_df$time),
+  full_time_year <- data.frame(model_time = 0:max(clean_model_df$time),
                                year = years)
   
   model_data_subset <- clean_model_df %>%

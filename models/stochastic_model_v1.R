@@ -13,6 +13,7 @@ initial(R_effective) <- R0[1]
 initial(total_pop) <- sum(N0)
 initial(total_birth) <- 0
 initial(total_death) <- 0
+initial(total_migration) <- 0
 initial(repro_pop) <- 0
 
 # Compartments ------------------------------------------------------------
@@ -35,27 +36,28 @@ update(R_effective) <- t_R0 * sum(S_eff) / N
 update(total_pop) <- N
 update(total_birth) <- sum(Births)
 update(total_death) <- sum(S_death) + sum(E_death) + sum(I_death) + sum(R_death) + sum(Is_death) + sum(Rc_death)
+update(total_migration) <- sum(migration)
 update(repro_pop) <- sum(reproductive_population)
 
-# #Diagnosing why migration is different 
-# update(migint[, , ]) <- migration[i, j, k]
-# initial(migint[, , ]) <- 0
-# dim(migint) <- c(n_age, n_vacc, n_risk)
-# 
-# update(migout[, , , ]) <- migration_in_number[i, j, k, l]
-# initial(migout[, , , ]) <- 0
-# dim(migout)<- c(n_age, n_vacc, n_risk, no_migration_changes)
 
 
 # Entering and exiting compartments ---------------------------------------
 
 #Death
+# S_death[, , ] <- if(S[i, j, k] <= 0) 0 else Binomial(S[i, j, k], max(min(background_death[i, k], 1), 0))
+# E_death[, , ] <- if(E[i, j, k] <= 0) 0 else Binomial(E[i, j, k], max(min(background_death[i, k], 1), 0))
+# I_death[, , ] <- if(I[i, j, k] <= 0) 0 else Binomial(I[i, j, k], max(min(background_death[i, k], 1), 0) + max(alpha, 0))
+# R_death[, , ] <- if(R[i, j, k] <= 0) 0 else Binomial(R[i, j, k], max(min(background_death[i, k], 1), 0))
+# Is_death[, , ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i, j, k], max(min(background_death[i, k], 1), 0) + max(severe_death_rate, 0))
+# Rc_death[, , ] <- if(Rc[i, j, k] <= 0) 0 else Binomial(Rc[i, j, k], max(min(background_death[i, k], 1), 0))
+
 S_death[, , ] <- if(S[i, j, k] <= 0) 0 else Binomial(S[i, j, k], max(min(background_death[i, k], 1), 0))
 E_death[, , ] <- if(E[i, j, k] <= 0) 0 else Binomial(E[i, j, k], max(min(background_death[i, k], 1), 0))
 I_death[, , ] <- if(I[i, j, k] <= 0) 0 else Binomial(I[i, j, k], max(min(background_death[i, k], 1), 0) + max(alpha, 0))
 R_death[, , ] <- if(R[i, j, k] <= 0) 0 else Binomial(R[i, j, k], max(min(background_death[i, k], 1), 0))
 Is_death[, , ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i, j, k], max(min(background_death[i, k], 1), 0) + max(severe_death_rate, 0))
 Rc_death[, , ] <- if(Rc[i, j, k] <= 0) 0 else Binomial(Rc[i, j, k], max(min(background_death[i, k], 1), 0))
+
 
 #S sampling
 lambda_S[, , ] <- if(S[i, j, k] <= 0) 0 else Binomial(S[i, j, k], max(min(lambda[i, j, k], 1), 0))
@@ -199,22 +201,7 @@ migration_distribution <- interpolate(tt_migration, migration_distribution_value
 pos_neg_migration <- if(sum(migration) < 0) -1 else 1
 migration_adjusted[, , ] <- migration[i, j, k] * pos_neg_migration
 
-update(mig_E) <- sum(migration_E)
-update(mig_E_dist) <- sum(migration_distribution[2, , , ])
-initial(mig_E) <- 1
-initial(mig_E_dist) <- 1
-
-update(mig_S) <- sum(migration_S)
-update(mig_S_dist) <- sum(migration_distribution[1, , , ])
-initial(mig_S) <- 1
-initial(mig_S_dist) <- 1
-
-update(mig_I) <- sum(migration_I)
-update(mig_I_dist) <- sum(migration_distribution[3, , , ])
-initial(mig_I) <- 1
-initial(mig_I_dist) <- 1
-
-# # Moving INTO each compartment with specified distribution - not sampling as we want the exact numbers
+# Moving INTO each compartment with specified distribution - not sampling as we want the exact numbers
 migration_S[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[1, , , ])/sum(migration_distribution)
 migration_E[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[2, , , ])/sum(migration_distribution)
 migration_I[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[3, , , ])/sum(migration_distribution)
@@ -538,3 +525,4 @@ dim(migration_I) <- c(n_age, n_vacc, n_risk)
 dim(migration_R) <- c(n_age, n_vacc, n_risk)
 dim(migration_Is) <- c(n_age, n_vacc, n_risk)
 dim(migration_Rc) <- c(n_age, n_vacc, n_risk)
+

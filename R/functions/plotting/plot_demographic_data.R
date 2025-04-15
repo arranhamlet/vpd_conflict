@@ -53,8 +53,9 @@ plot_demographic_data <- function(
   
   # Weighted average mortality (crude death rate)
   demographic_data$crude_death$population <- population_by_age$value
+  
   overall_mortality <- demographic_data$crude_death %>%
-    dplyr::group_by(time) %>%
+    dplyr::group_by(dim3) %>%
     dplyr::mutate(
       population_weight = population / sum(population),
       weighted_value = value * population_weight
@@ -95,7 +96,7 @@ plot_demographic_data <- function(
   mortality_plot <- ggplot2::ggplot(
     data = overall_mortality,
     mapping = aes(
-      x = time + year_start - 1,
+      x = dim3 + year_start - 1,
       y = value
     )
   ) +

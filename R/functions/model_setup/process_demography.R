@@ -88,8 +88,8 @@ process_demography <- function(
   mortality_rate <- pmin(mort_mat / pop_all, 1)
   mortality_rate[!is.finite(mortality_rate)] <- 1
   mortality_df <- reshape2::melt(t(mortality_rate)) %>%
-    data.table::setnames(c("dim1", "time", "value")) %>%
-    dplyr::mutate(dim2 = 1, dim3 = 1)
+    data.table::setnames(c("dim1", "dim3", "value")) %>%
+    dplyr::mutate(dim2 = 1)
   
   # Fertility
   fert_mat <- as.matrix(fertility[year %in% years, paste0("x", 15:49), with = FALSE]) * fertility_modifier
