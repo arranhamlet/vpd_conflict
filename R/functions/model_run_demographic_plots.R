@@ -57,7 +57,7 @@ model_run_demographic_plots <- function(
   age_pyramid_df <- rbind(
     
     data.frame(age = 1:101,
-               value = subset(clean_df,state == "S" & time == full_time_year %>% filter(year == end_year) %>% pull(model_time) & age != "All") %>% mutate(age = as.numeric(age)) %>% pull(value),
+               value = subset(clean_model_df,state == "S" & time == full_time_year %>% filter(year == end_year) %>% pull(model_time) & age != "All") %>% mutate(age = as.numeric(age)) %>% pull(value),
                type = "Model estimate"),
     
     data.frame(age = 1:101,
