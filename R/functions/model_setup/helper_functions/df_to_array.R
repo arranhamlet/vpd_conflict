@@ -42,9 +42,8 @@
 # # 
 
 
-df_to_array <- function(df, version = "new") {
+df_to_array <- function(df) {
 
-  if(version == "new"){
     dim_cols <- grep("^dim\\d+$", names(df), value = TRUE)
     n_dims <- length(dim_cols)
     dim_cols <- paste0("dim", seq_len(n_dims))
@@ -61,23 +60,5 @@ df_to_array <- function(df, version = "new") {
     }
     
     create_array
-  } else {
-      dim_cols <- grep("^dim\\d+$", names(df), value = TRUE)
-      n_dims <- length(dim_cols)
-      dim_cols <- paste0("dim", seq_len(n_dims))
-      dims <- sapply(dim_cols, function(col) max(df[[col]]))
-
-      flat <- numeric(prod(dims))
-
-      for (row in seq_len(nrow(df))) {
-        idx <- as.integer(df[row, dim_cols])
-        rev_idx <- rev(idx)
-        strides <- c(1, cumprod(rev(dims))[-length(dims)])
-        lin_index <- sum((rev_idx - 1) * strides) + 1
-        flat[lin_index] <- df$value[row]
-      }
-
-      array(flat, dim = dims)
-  }
   
 }

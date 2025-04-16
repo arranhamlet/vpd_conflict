@@ -121,7 +121,10 @@ param_packager <- function(
   
   #Fitting parameters
   death_modifier = 1,
-  fertility_modifier = 1
+  fertility_modifier = 1,
+  
+  #Test
+  test = F
   
 ){
   
@@ -374,42 +377,43 @@ param_packager <- function(
   )
   
   # Checks and balances -----------------------------------------------------
-  
-  #These must be above 0 and an integer
-  above_zero_and_an_integer <- export_list[c("n_age", "n_vacc", "n_risk", "age_maternal_protection_ends", "repro_low", "repro_high")]
-  
-  #Check if the sum is above 0 and an integer
-  sum_above_zero_and_an_integer <- export_list[c("N0")]
-  
-  #These must be non-negative and integers
-  non_neg_int <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high", "I0", "seeded", "tt_seeded", "tt_moving_risk", "no_moving_risk_changes", "tt_migration", "no_migration_changes")]
-  
-  #These must be probabilities
-  probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight_vacc", "protection_weight_rec", "aging_rate", "contact_matrix", "waning_rate", "delta", "moving_risk_values", "moving_risk_distribution_values", "migration_distribution_values", "death_modifier", "fertility_modifier")]
-  
-  #Non-negative
-  non_negative <- export_list[c("R0")]
-  
-  #Not above a reference value
-  above_value_age <- export_list[c("repro_low", "repro_high")]
-  
-  #Must be an integer
-  integer <- export_list[c("migration_in_number")]
-  
-  #Run checks
-  a <- check_parameter(above_zero_and_an_integer, check_above_zero = T, check_integer = T)
-  b <- check_parameter(probability, check_probability = T)
-  c <- check_parameter(non_negative, check_non_negative = T)
-  d <- check_parameter(above_value_age, check_above_zero = T, check_not_above_reference_value = n_age)
-  e <- check_parameter(non_neg_int, check_non_negative = T, check_integer = T)
-  f <- check_parameter(sum_above_zero_and_an_integer, check_if_sum_above_zero = T, check_integer = T)
-  g <- check_parameter(integer, check_integer = T)
-  
-  #All tests
-  all_failures <- rbind(a, b, c, d, e, f, g)
-  
-  if(nrow(all_failures) > 0) {
-    warning("The following parameters failed checks:\n", paste(capture.output(print(all_failures, row.names = FALSE)), collapse = "\n"))
+  if(test == T){
+    
+    #These must be above 0 and an integer
+    above_zero_and_an_integer <- export_list[c("n_age", "n_vacc", "n_risk", "age_maternal_protection_ends", "repro_low", "repro_high")]
+    
+    #Check if the sum is above 0 and an integer
+    sum_above_zero_and_an_integer <- export_list[c("N0")]
+    
+    #These must be non-negative and integers
+    non_neg_int <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high", "I0", "seeded", "tt_seeded", "tt_moving_risk", "no_moving_risk_changes", "tt_migration", "no_migration_changes")]
+    
+    #These must be probabilities
+    probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight_vacc", "protection_weight_rec", "aging_rate", "contact_matrix", "waning_rate", "delta", "moving_risk_values", "moving_risk_distribution_values", "migration_distribution_values", "death_modifier", "fertility_modifier")]
+    
+    #Non-negative
+    non_negative <- export_list[c("R0")]
+    
+    #Not above a reference value
+    above_value_age <- export_list[c("repro_low", "repro_high")]
+    
+    #Must be an integer
+    integer <- export_list[c("migration_in_number")]
+    
+    #Run checks
+    a <- check_parameter(above_zero_and_an_integer, check_above_zero = T, check_integer = T)
+    b <- check_parameter(probability, check_probability = T)
+    c <- check_parameter(non_negative, check_non_negative = T)
+    d <- check_parameter(above_value_age, check_above_zero = T, check_not_above_reference_value = n_age)
+    e <- check_parameter(non_neg_int, check_non_negative = T, check_integer = T)
+    f <- check_parameter(sum_above_zero_and_an_integer, check_if_sum_above_zero = T, check_integer = T)
+    g <- check_parameter(integer, check_integer = T)
+    
+    #All tests
+    all_failures <- rbind(a, b, c, d, e, f, g)
+    
+    if(nrow(all_failures) > 0) {
+      warning("The following parameters failed checks:\n", paste(capture.output(print(all_failures, row.names = FALSE)), collapse = "\n"))
+    } else export_list
   } else export_list
-  
 }
