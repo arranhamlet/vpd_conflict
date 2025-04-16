@@ -10,7 +10,9 @@ testing_full_runthrough <- function(
     iso,
     n_age,
     n_vacc, 
-    n_risk  
+    n_risk,
+    length_model_run,
+    no_runs
   
   ){
   
@@ -52,8 +54,8 @@ testing_full_runthrough <- function(
   clean_df <- run_model(
     odin_model = model,
     params = params,
-    time = (demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
-    no_runs = 2
+    time = length_model_run,
+    no_runs = no_runs
   ) %>%
     mutate(n_vacc_comp = n_vacc)
   

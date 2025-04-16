@@ -40,23 +40,12 @@ speedrun <- microbenchmark::microbenchmark(
     year_end = "",
     iso = "PSE",
     n_age = 101,
-    n_vacc = 5, 
-    n_risk = 1
+    n_vacc = 10, 
+    n_risk = 1,
+    length_model_run = 2000,
+    no_runs = 100
   ),
-  testing_full_runthrough(
-    migration, 
-    fertility, 
-    mortality, 
-    population_all, 
-    population_female,
-    year_start = "1980",
-    year_end = "",
-    iso = "PSE",
-    n_age = 101,
-    n_vacc = 100, 
-    n_risk = 1
-  ),
-  times = 25
+  times = 1
 )
 
 speedrun
