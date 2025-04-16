@@ -142,10 +142,7 @@ process_demography <- function(
   # Migration distribution
   migration_distribution_values <- data.table::CJ(
     dim1 = 1,
-    dim2 = 1:n_age,
-    dim3 = 1,
-    dim4 = 1,
-    dim5 = seq_along(time_all)
+    dim2 = seq_along(time_all)
   )[, value := 1]
   
   # Output

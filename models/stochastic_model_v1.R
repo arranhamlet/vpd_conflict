@@ -195,12 +195,12 @@ pos_neg_migration <- if(sum(migration) < 0) -1 else 1
 migration_adjusted[, , ] <- migration[i, j, k] * pos_neg_migration
 
 # Moving INTO each compartment with specified distribution - not sampling as we want the exact numbers
-migration_S[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[1, , , ])/sum(migration_distribution)
-migration_E[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[2, , , ])/sum(migration_distribution)
-migration_I[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[3, , , ])/sum(migration_distribution)
-migration_R[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[4, , , ])/sum(migration_distribution)
-migration_Is[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[5, , , k])/sum(migration_distribution)
-migration_Rc[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[6, , , k])/sum(migration_distribution)
+migration_S[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[1])/sum(migration_distribution)
+migration_E[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[2])/sum(migration_distribution)
+migration_I[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[3])/sum(migration_distribution)
+migration_R[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[4])/sum(migration_distribution)
+migration_Is[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[5])/sum(migration_distribution)
+migration_Rc[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[6])/sum(migration_distribution)
 
 # User parameter values --------------------------------------------------------
 
@@ -507,9 +507,9 @@ dim(moving_risk_distribution) <- c(n_age, n_vacc, n_risk)
 
 #Dimensions for migration
 dim(tt_migration) <- c(no_migration_changes)
-dim(migration_distribution) <- c(6, n_age, n_vacc, n_risk)
+dim(migration_distribution) <- c(6)
 dim(migration_in_number) <- c(n_age, n_vacc, n_risk, no_migration_changes)
-dim(migration_distribution_values) <- c(6, n_age, n_vacc, n_risk, no_migration_changes)
+dim(migration_distribution_values) <- c(6, no_migration_changes)
 dim(migration) <- c(n_age, n_vacc, n_risk)
 dim(migration_adjusted) <- c(n_age, n_vacc, n_risk)
 dim(migration_S) <- c(n_age, n_vacc, n_risk)
