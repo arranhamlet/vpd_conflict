@@ -75,7 +75,9 @@ param_packager <- function(
   vaccination_coverage = 0,
   tt_vaccination_coverage = 0,
   age_vaccination_beta_modifier = 0,
-  waning_rate = 0,
+  #Vaccination waning
+  short_term_waning = 0,
+  long_term_waning = 0,
   
   #R0
   R0 = 0,
@@ -102,7 +104,7 @@ param_packager <- function(
   #Weight given to maternal protection
   protection_weight_vacc = 0,
   protection_weight_rec = 0,
-  
+
   #Age group where maternal protection ends
   age_maternal_protection_ends = 1,
   #Reproductive ages
@@ -224,6 +226,18 @@ param_packager <- function(
     array_from_df(dim1 = n_age, dim2 = n_risk, dim3 = no_death_changes, updates = crude_death)
   }
   
+  short_term_waning <- if (length(short_term_waning) == 1) {
+    array(short_term_waning, dim = c(n_age, n_vacc))
+  } else {
+    array_from_df(dim1 = n_age, dim2 = n_vacc, updates = short_term_waning)
+  }
+  
+  long_term_waning <- if (length(long_term_waning) == 1) {
+    array(long_term_waning, dim = c(n_age, n_vacc))
+  } else {
+    array_from_df(dim1 = n_age, dim2 = n_vacc, updates = long_term_waning)
+  }
+  
   aging_rate <- check_and_format_input(aging_rate, n_age)
   aging_rate[n_age] <- 0
   
@@ -265,7 +279,8 @@ param_packager <- function(
     tt_vaccination_coverage = tt_vaccination_coverage,
     no_vacc_changes = no_vacc_changes,
     age_vaccination_beta_modifier = age_vaccination_beta_modifier,
-    waning_rate = waning_rate,
+    short_term_waning = short_term_waning,
+    long_term_waning = long_term_waning,
     
     #R0
     R0 = R0,
@@ -329,7 +344,7 @@ param_packager <- function(
     non_neg_int <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high", "I0", "seeded", "tt_seeded", "tt_moving_risk", "no_moving_risk_changes", "tt_migration", "no_migration_changes")]
     
     #These must be probabilities
-    probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight_vacc", "protection_weight_rec", "aging_rate", "contact_matrix", "waning_rate", "delta", "moving_risk_values", "moving_risk_distribution_values", "migration_distribution_values", "death_modifier", "fertility_modifier")]
+    probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight_vacc", "protection_weight_rec", "aging_rate", "contact_matrix", "waning_rate", "delta", "moving_risk_values", "moving_risk_distribution_values", "migration_distribution_values", "death_modifier", "fertility_modifier", "short_term_waning", "long_term_waning")]
     
     #Non-negative
     non_negative <- export_list[c("R0")]
