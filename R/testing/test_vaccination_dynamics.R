@@ -53,6 +53,7 @@ vaccination_coverage <- sapply(1:length(tt_vaccination_coverage), function(x){
   
 }, simplify = FALSE)
 
+c(n_age, n_vacc, n_risk, no_vacc_changes)
 
 #Set up model
 params <- param_packager(
