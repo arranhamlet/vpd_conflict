@@ -29,7 +29,7 @@ population_all <- import(here("data", "processed", "WPP", "age_both.csv"))
 population_female <- import(here("data", "processed", "WPP", "age_female.csv"))
 
 #Loop this
-loop_this <- sapply(c(0, 1, 5), function(t){
+loop_this <- sapply(c(0, 1), function(t){
   
   print(t)
   
@@ -49,17 +49,6 @@ loop_this <- sapply(c(0, 1, 5), function(t){
     n_age = 101,
     number_of_vaccines = n_vacc, 
     n_risk = n_risk
-  )
-
-  #Vaccination
-  tt_vaccination_coverage <- c(0, 5, 6)
-  #Vaccination grid
-  vaccination <- expand.grid(
-    dim1 = seq_len(demog_data$input_data$n_age),
-    dim2 = seq_len(demog_data$input_data$n_vacc),
-    dim3 = seq_len(demog_data$input_data$n_risk),
-    dim4 = seq_len(max(tt_vaccination_coverage)),
-    value = 0
   )
 
   #Set up model
@@ -83,7 +72,16 @@ loop_this <- sapply(c(0, 1, 5), function(t){
     
     #Birth ages
     repro_low = 15,
-    repro_high = 49
+    repro_high = 49,
+    
+    tt_vaccination_coverage = c(0, 5, 6),
+    vaccination_coverage = expand.grid(
+      dim1 = seq_len(demog_data$input_data$n_age),
+      dim2 = 1,
+      dim3 = 1,
+      dim4 = 1:3,
+      value = 1
+    )
   )
 
   #Run model
@@ -124,20 +122,17 @@ ggplot(data = subset(all_looped, age == "All" & run == "run_1" & !state %in% c("
   facet_wrap(~state, scales = "free_y") +
   scale_y_continuous(label = scales::comma)
 
-
 #Plot vaccination
-ggplot(data = subset(all_looped, age == 5 & run == "run_1" & state == "S" & n_vacc_comp == 1),
+ggplot(data = subset(all_looped, age == 5 & vaccination == 1 & run == "run_1" & state == "S" & n_vacc_comp == 1),
        mapping = aes(
          x = time,
-         y = round(value, 1),
-         color = as.factor(vaccination)
+         y = value,
+         color = as.factor(vaccination),
+         group == as.factor(vaccination)
        )) +
   geom_line() +
   facet_wrap(~vaccination) +
   scale_y_continuous(label = scales::comma)
-
-vac_in_out <- subset(all_looped, age == "All" & state %in% c("vaccinating_out", "vaccinating_in"))
-
 
 #Plot vaccination
 time_S <- subset(all_looped, age == "All" & state == "S")
@@ -180,5 +175,37 @@ ggplot(
   )) +
   facet_wrap(~age) +
   geom_line()
+
+
+
+
+
+
+
+
+value_1 = expand.grid(
+  dim1 = 1:101,
+  dim2 = 1,
+  dim3 = 1,
+  dim4 = 1:3,
+  value = 0
+)
+
+value_2 = expand.grid(
+  dim1 = 1:101,
+  dim2 = 1,
+  dim3 = 1,
+  dim4 = 1:3,
+  value = 0
+) %>%
+  mutate(
+    value = case_when(
+      dim4 == 2 ~ 0
+    )
+  )
+
+table(value_1 == value_2)
+
+
 
 

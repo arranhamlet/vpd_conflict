@@ -31,7 +31,8 @@ initial(repro_pop) <- 0
 # 
 # update(Rc[, , ]) <- max(Rc[i, j, k] + recovered_Is_to_Rc[i, j, k] - waning_Rc[i, j, k] + aging_into_Rc[i, j, k] - aging_out_of_Rc[i, j, k] - Rc_death[i, j, k] + moving_risk_to_Rc[i, j, k] - moving_risk_from_Rc[i, j, k] + migration_Rc[i, j, k] * pos_neg_migration + vaccinating_into_Rc[i, j, k] - vaccinating_out_of_Rc[i, j, k] + waning_to_Rc_long[i, j, k] + waning_to_Rc_unvaccinated[i, j, k] - waning_from_Rc_short[i, j, k] - waning_from_Rc_long[i, j, k], 0)
 
-update(S[, , ]) <- max(S[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k] - lambda_S[i, j, k] - S_death[i, j, k] + moving_risk_to_S[i, j, k] - moving_risk_from_S[i, j, k] + migration_S[i, j, k] * pos_neg_migration + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k], 0)
+update(S[, , ]) <- max(S[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k] - lambda_S[i, j, k] - S_death[i, j, k] + moving_risk_to_S[i, j, k] - moving_risk_from_S[i, j, k] + migration_S[i, j, k] * pos_neg_migration + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k], 0)#vaccinating_out_of_S[i, j, k], 0) vaccinating_into_S
+
 
 update(E[, , ]) <- max(E[i, j, k] + lambda_S[i, j, k] - incubated[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k] - E_death[i, j, k] + moving_risk_to_E[i, j, k] - moving_risk_from_E[i, j, k] + migration_E[i, j, k] * pos_neg_migration + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k], 0)
 
@@ -104,8 +105,17 @@ aging_into_Rc[2:n_age, , ] <- if(Rc[i - 1, j, k] <= 0) 0 else Binomial(Rc[i - 1,
 aging_out_of_Rc[1:(n_age - 1), , ] <- if(Rc[i, j, k] <= 0) 0 else Binomial(Rc[i, j, k], max(min(aging_rate[i], 1), 0))
 
 # ---------- VACCINATION TRANSITIONS ----------
+
 vaccinating_out_of_S[, , ] <- if(n_vacc == 1 || j > n_vacc - 2 || S[i, j, k] == 0 || vaccination_prop[i, j, k] == 0) 0 else Binomial(S[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
-vaccinating_into_S[, , ] <- if(j == 3) vaccinating_out_of_S[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_S[i, j - 2, k] + vaccinating_out_of_S[i, j - 3, k] else 0
+
+vaccinating_into_S[, , ] <- if(j == 3) vaccinating_out_of_S[i, 1, k] else if(j > 3 && j %% 2 == 1) vaccinating_out_of_S[i, j - 2, k] + vaccinating_out_of_S[i, j - 3, k] else 0
+
+
+
+vacc_flow_balance_full[, , ] <- vaccinating_out_of_S[i, j , k] == vaccinating_into_S[i, j, k]
+dim(vacc_flow_balance_full) <- c(n_age, n_vacc, n_risk)
+update(vacc_flow_balance) <- sum(vacc_flow_balance_full)
+initial(vacc_flow_balance) <- 0
 
 vaccinating_out_of_E[, , ] <- if(n_vacc == 1 || j > n_vacc - 2 || E[i, j, k] == 0 || vaccination_prop[i, j, k] == 0) 0 else Binomial(E[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
 vaccinating_into_E[, , ] <- if(j == 3) vaccinating_out_of_E[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_E[i, j - 2, k] + vaccinating_out_of_E[i, j - 3, k] else 0
@@ -122,11 +132,11 @@ vaccinating_into_Is[, , ] <- if(j == 3) vaccinating_out_of_Is[i, 1, k] else if(j
 vaccinating_out_of_Rc[, , ] <- if(n_vacc == 1 || j > n_vacc - 2 || Rc[i, j, k] == 0 || vaccination_prop[i, j, k] == 0) 0 else Binomial(Rc[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
 vaccinating_into_Rc[, , ] <- if(j == 3) vaccinating_out_of_Rc[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_Rc[i, j - 2, k] + vaccinating_out_of_Rc[i, j - 3, k] else 0
 
-update(out_E) <- sum(vaccinating_out_of_E)
-update(in_E) <- sum(vaccinating_into_S)
+update(out_S) <- sum(vaccinating_out_of_S)
+update(in_S) <- sum(vaccinating_into_S)
 
-initial(out_E) <- 0
-initial(in_E) <- 0
+initial(out_S) <- 0
+initial(in_S) <- 0
 
 # Movement between risk compartments
 # Moving FROM each compartment
