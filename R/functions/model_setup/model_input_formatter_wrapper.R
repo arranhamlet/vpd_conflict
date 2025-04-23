@@ -76,7 +76,7 @@ model_input_formatter_wrapper <- function(
     year_start = year_start,
     year_end = year_end,
     n_age = n_age,
-    n_vacc = n_vacc,
+    number_of_vaccines = n_vacc,
     n_risk = n_risk,
     population_modifier = population_modifier, 
     fertility_modifier = fertility_modifier, 

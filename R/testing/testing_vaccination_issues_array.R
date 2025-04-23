@@ -29,7 +29,7 @@ population_all <- import(here("data", "processed", "WPP", "age_both.csv"))
 population_female <- import(here("data", "processed", "WPP", "age_female.csv"))
 
 #Loop this
-loop_this <- sapply(c(0, 1), function(t){
+loop_this <- sapply(c(0, 1, 2), function(t){
   
   print(t)
   
@@ -45,7 +45,7 @@ loop_this <- sapply(c(0, 1), function(t){
     population_female = population_female,
     year_start = "1985",
     year_end = "2015",
-    iso = "PSE",
+    iso = "ETH",
     n_age = 101,
     number_of_vaccines = n_vacc, 
     n_risk = n_risk
@@ -53,21 +53,14 @@ loop_this <- sapply(c(0, 1), function(t){
 
   #Vaccination
   tt_vaccination_coverage <- c(0, 5, 6)
-  
+  #Vaccination grid
   vaccination <- expand.grid(
     dim1 = seq_len(demog_data$input_data$n_age),
     dim2 = seq_len(demog_data$input_data$n_vacc),
     dim3 = seq_len(demog_data$input_data$n_risk),
     dim4 = seq_len(max(tt_vaccination_coverage)),
-    value = 0
-  ) #%>%
-    # mutate(
-    #   value = case_when(
-    #     dim4 == 1 ~ 0,
-    #     dim4 == 2 ~ 0,
-    #     dim4 == 3 ~ 0.75
-    #   )
-    # )
+    value = 1
+  )
 
   #Set up model
   params <- param_packager(
@@ -88,9 +81,9 @@ loop_this <- sapply(c(0, 1), function(t){
     migration_in_number = demog_data$migration_in_number,
     migration_distribution_values = demog_data$migration_distribution_values,
     
-    vaccination_coverage = vaccination,
-    tt_vaccination_coverage = tt_vaccination_coverage
-    
+    #Birth ages
+    repro_low = 15,
+    repro_high = 49
   )
 
   #Run model
@@ -121,7 +114,7 @@ ggplot(data = subset(all_looped, age == "All" & run == "run_1" & state %in% c("S
   scale_y_continuous(label = scales::comma)
 
 #Plot overall states
-ggplot(data = subset(all_looped, age == "All" & run == "run_1" & !state %in% c("S", "E", "I", "R", "Is", "Rc")),
+ggplot(data = subset(all_looped, age == "All" & run == "run_1" & !state %in% c("S", "E", "I", "R", "Is", "Rc") ),
        mapping = aes(
          x = time,
          y = round(value, 1),
@@ -133,7 +126,7 @@ ggplot(data = subset(all_looped, age == "All" & run == "run_1" & !state %in% c("
 
 
 #Plot vaccination
-ggplot(data = subset(all_looped, age == 18 & run == "run_1" & state == "S"),
+ggplot(data = subset(all_looped, age == 5 & run == "run_1" & state == "S" & n_vacc_comp == 1),
        mapping = aes(
          x = time,
          y = round(value, 1),
