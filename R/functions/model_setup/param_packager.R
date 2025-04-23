@@ -19,7 +19,6 @@
 #' @param vaccination_coverage Time-varying vaccination coverage array.
 #' @param tt_vaccination_coverage Time points for changes in vaccination coverage.
 #' @param age_vaccination_beta_modifier Modifies transmission based on age and vaccination status.
-#' @param waning_rate Time- and group-specific waning rate for vaccination-induced immunity.
 #' @param R0 Basic reproduction number.
 #' @param tt_R0 Time points at which R0 changes.
 #' @param seeded Initial number of seeded infections (can be time-varying).
@@ -172,10 +171,16 @@ param_packager <- function(
     array_from_df(dim1 = n_age, dim2 = n_vacc, dim3 = n_risk, updates = age_vaccination_beta_modifier)
   }
   
-  waning_rate <- if (length(waning_rate) == 1) {
-    array(waning_rate, dim = c(n_age, n_vacc))
+  short_term_waning <- if (length(short_term_waning) == 1) {
+    array(short_term_waning, dim = c(n_age))
   } else {
-    array_from_df(dim1 = n_age, dim2 = n_vacc, updates = waning_rate)
+    array_from_df(dim1 = n_age, updates = short_term_waning)
+  }
+  
+  long_term_waning <- if (length(long_term_waning) == 1) {
+    array(long_term_waning, dim = c(n_age))
+  } else {
+    array_from_df(dim1 = n_age, updates = long_term_waning)
   }
   
   vaccination_coverage <- if (length(vaccination_coverage) == 1) {
@@ -225,19 +230,7 @@ param_packager <- function(
   } else {
     array_from_df(dim1 = n_age, dim2 = n_risk, dim3 = no_death_changes, updates = crude_death)
   }
-  
-  short_term_waning <- if (length(short_term_waning) == 1) {
-    array(short_term_waning, dim = c(n_age, n_vacc))
-  } else {
-    array_from_df(dim1 = n_age, dim2 = n_vacc, updates = short_term_waning)
-  }
-  
-  long_term_waning <- if (length(long_term_waning) == 1) {
-    array(long_term_waning, dim = c(n_age, n_vacc))
-  } else {
-    array_from_df(dim1 = n_age, dim2 = n_vacc, updates = long_term_waning)
-  }
-  
+
   aging_rate <- check_and_format_input(aging_rate, n_age)
   aging_rate[n_age] <- 0
   
@@ -344,7 +337,7 @@ param_packager <- function(
     non_neg_int <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high", "I0", "seeded", "tt_seeded", "tt_moving_risk", "no_moving_risk_changes", "tt_migration", "no_migration_changes")]
     
     #These must be probabilities
-    probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight_vacc", "protection_weight_rec", "aging_rate", "contact_matrix", "waning_rate", "delta", "moving_risk_values", "moving_risk_distribution_values", "migration_distribution_values", "death_modifier", "fertility_modifier", "short_term_waning", "long_term_waning")]
+    probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight_vacc", "protection_weight_rec", "aging_rate", "contact_matrix", "delta", "moving_risk_values", "moving_risk_distribution_values", "migration_distribution_values", "death_modifier", "fertility_modifier", "short_term_waning", "long_term_waning")]
     
     #Non-negative
     non_negative <- export_list[c("R0")]

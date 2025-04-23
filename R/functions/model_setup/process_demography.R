@@ -59,7 +59,7 @@ process_demography <- function(
     n_risk = 1
 ) {
   
-  n_vacc <- if(number_of_vaccines == 1) 1 else number_of_vaccines * 2 + 1
+  n_vacc <- if(number_of_vaccines == 0) 1 else number_of_vaccines * 2 + 1
   
   filter_country <- function(dt) dt[iso3 == iso]
   
