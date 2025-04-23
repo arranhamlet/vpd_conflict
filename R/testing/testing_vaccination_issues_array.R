@@ -29,7 +29,7 @@ population_all <- import(here("data", "processed", "WPP", "age_both.csv"))
 population_female <- import(here("data", "processed", "WPP", "age_female.csv"))
 
 #Loop this
-loop_this <- sapply(c(0, 1, 2), function(t){
+loop_this <- sapply(c(0, 1, 5), function(t){
   
   print(t)
   
@@ -59,7 +59,7 @@ loop_this <- sapply(c(0, 1, 2), function(t){
     dim2 = seq_len(demog_data$input_data$n_vacc),
     dim3 = seq_len(demog_data$input_data$n_risk),
     dim4 = seq_len(max(tt_vaccination_coverage)),
-    value = 1
+    value = 0
   )
 
   #Set up model
