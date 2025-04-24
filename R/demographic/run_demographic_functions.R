@@ -32,7 +32,6 @@ plotted <- model_input_formatter_wrapper(
   disease = "measles",
   vaccine = "measles",
   n_age = 101,
-  
   #Datasets
   migration,
   fertility,
@@ -44,8 +43,6 @@ plotted <- model_input_formatter_wrapper(
 )
 
 plotted$demographic_plots
-
-
 
 #Test speed
 microbenchmark::microbenchmark(

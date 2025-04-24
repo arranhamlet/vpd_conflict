@@ -140,8 +140,8 @@ ggplot(data = vaccination_data %>%
          filter(n_vacc_comp == 1) %>%
          mutate(vaccination = case_when(
            vaccination == 1 ~ "No vaccine protection",
-           vaccination == 2 ~ "Long term protection",
-           vaccination == 3 ~ "Short term protection"
+           vaccination == 2 ~ "Short term protection",
+           vaccination == 3 ~ "Long term protection"
          ),
          vaccination = factor(vaccination, levels = c(
            "No vaccine protection",
@@ -159,7 +159,8 @@ ggplot(data = vaccination_data %>%
   theme_bw() +
   labs(x = "Time",
        y = "Percent of population",
-       color = "") 
+       color = "") +
+  theme(legend.position = "none")
 
 #Plot vaccination
 time_S <- subset(all_looped, age == "All" & state == "S")

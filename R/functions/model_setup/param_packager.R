@@ -15,7 +15,7 @@
 #' @param severe_recovery_rate Recovery rate for severe infections (defaults to `recovery_rate` if `NULL`).
 #' @param prop_severe Proportion of infections that become severe (can be scalar or array).
 #' @param prop_complications Proportion of severe infections that result in complications.
-#' @param delta Waning rate of natural protection.
+#' @param natural_immunity_waning Waning rate of natural protection.
 #' @param vaccination_coverage Time-varying vaccination coverage array.
 #' @param tt_vaccination_coverage Time points for changes in vaccination coverage.
 #' @param age_vaccination_beta_modifier Modifies transmission based on age and vaccination status.
@@ -68,7 +68,7 @@ param_packager <- function(
   #Proportion of severe infections that have complications
   prop_complications = 0,
   #Natural protection waning
-  delta = 0,
+  natural_immunity_waning = 0,
   
   #Vaccination
   vaccination_coverage = 0,
@@ -81,6 +81,7 @@ param_packager <- function(
   #R0
   R0 = 0,
   tt_R0 = 0,
+  cfr = 0,
   
   #Seeding parameters
   seeded = 0,
@@ -265,7 +266,7 @@ param_packager <- function(
     #Proportion of severe infections that have complications
     prop_complications = prop_complications,
     #Natural protection waning
-    delta = delta,
+    natural_immunity_waning = natural_immunity_waning,
     
     #Vaccination
     vaccination_coverage = vaccination_coverage,
@@ -311,7 +312,7 @@ param_packager <- function(
     no_moving_risk_changes = no_moving_risk_changes, 
     moving_risk_values = moving_risk_values,
     moving_risk_distribution_values = moving_risk_distribution_values,
-    
+    cfr,
     #Migration
     tt_migration = tt_migration,
     no_migration_changes = no_migration_changes,
@@ -337,7 +338,7 @@ param_packager <- function(
     non_neg_int <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high", "I0", "seeded", "tt_seeded", "tt_moving_risk", "no_moving_risk_changes", "tt_migration", "no_migration_changes")]
     
     #These must be probabilities
-    probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight_vacc", "protection_weight_rec", "aging_rate", "contact_matrix", "delta", "moving_risk_values", "moving_risk_distribution_values", "migration_distribution_values", "death_modifier", "fertility_modifier", "short_term_waning", "long_term_waning")]
+    probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight_vacc", "protection_weight_rec", "aging_rate", "contact_matrix", "natural_immunity_waning", "moving_risk_values", "moving_risk_distribution_values", "migration_distribution_values", "death_modifier", "fertility_modifier", "short_term_waning", "long_term_waning", "cfr")]
     
     #Non-negative
     non_negative <- export_list[c("R0")]
