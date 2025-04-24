@@ -109,37 +109,42 @@ vaccinating_into_Is[, , ] <- if(j == 3) vaccinating_out_of_Is[i, 1, k] else if(j
 vaccinating_out_of_Rc[, , ] <- if(n_vacc == 1 || j > n_vacc - 2 || Rc[i, j, k] == 0 || vaccination_prop[i, j, k] == 0) 0 else Binomial(Rc[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
 vaccinating_into_Rc[, , ] <- if(j == 3) vaccinating_out_of_Rc[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_Rc[i, j - 2, k] + vaccinating_out_of_Rc[i, j - 3, k] else 0
 
+
+# ---- Waning for S ----
 waning_from_S_short[, , ] <- if(j %% 2 == 1 && j > 1 && S[i, j, k] > 0) Binomial(S[i, j, k], max(min(short_term_waning[i], 1), 0)) else 0
-waning_to_S_long[, , ] <- if(j %% 2 == 0 && j > 1) waning_from_S_short[i, j - 1, k] else 0
+waning_to_S_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_S_short[i, j + 1, k] else 0
 waning_from_S_long[, , ] <- if(j %% 2 == 0 && j > 1 && S[i, j, k] > 0) Binomial(S[i, j, k], max(min(long_term_waning[i], 1), 0)) else 0
 waning_to_S_unvaccinated[, , ] <- if(j == 1) sum(waning_from_S_long[i, 2:n_vacc, k]) else 0
 
+# ---- Waning for E ----
 waning_from_E_short[, , ] <- if(j %% 2 == 1 && j > 1 && E[i, j, k] > 0) Binomial(E[i, j, k], max(min(short_term_waning[i], 1), 0)) else 0
-waning_to_E_long[, , ] <- if(j %% 2 == 0 && j > 1) waning_from_E_short[i, j - 1, k] else 0
+waning_to_E_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_E_short[i, j + 1, k] else 0
 waning_from_E_long[, , ] <- if(j %% 2 == 0 && j > 1 && E[i, j, k] > 0) Binomial(E[i, j, k], max(min(long_term_waning[i], 1), 0)) else 0
 waning_to_E_unvaccinated[, , ] <- if(j == 1) sum(waning_from_E_long[i, 2:n_vacc, k]) else 0
 
+# ---- Waning for I ----
 waning_from_I_short[, , ] <- if(j %% 2 == 1 && j > 1 && I[i, j, k] > 0) Binomial(I[i, j, k], max(min(short_term_waning[i], 1), 0)) else 0
-waning_to_I_long[, , ] <- if(j %% 2 == 0 && j > 1) waning_from_I_short[i, j - 1, k] else 0
+waning_to_I_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_I_short[i, j + 1, k] else 0
 waning_from_I_long[, , ] <- if(j %% 2 == 0 && j > 1 && I[i, j, k] > 0) Binomial(I[i, j, k], max(min(long_term_waning[i], 1), 0)) else 0
 waning_to_I_unvaccinated[, , ] <- if(j == 1) sum(waning_from_I_long[i, 2:n_vacc, k]) else 0
 
+# ---- Waning for R ----
 waning_from_R_short[, , ] <- if(j %% 2 == 1 && j > 1 && R[i, j, k] > 0) Binomial(R[i, j, k], max(min(short_term_waning[i], 1), 0)) else 0
-waning_to_R_long[, , ] <- if(j %% 2 == 0 && j > 1) waning_from_R_short[i, j - 1, k] else 0
+waning_to_R_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_R_short[i, j + 1, k] else 0
 waning_from_R_long[, , ] <- if(j %% 2 == 0 && j > 1 && R[i, j, k] > 0) Binomial(R[i, j, k], max(min(long_term_waning[i], 1), 0)) else 0
 waning_to_R_unvaccinated[, , ] <- if(j == 1) sum(waning_from_R_long[i, 2:n_vacc, k]) else 0
 
+# ---- Waning for Is ----
 waning_from_Is_short[, , ] <- if(j %% 2 == 1 && j > 1 && Is[i, j, k] > 0) Binomial(Is[i, j, k], max(min(short_term_waning[i], 1), 0)) else 0
-waning_to_Is_long[, , ] <- if(j %% 2 == 0 && j > 1) waning_from_Is_short[i, j - 1, k] else 0
+waning_to_Is_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_Is_short[i, j + 1, k] else 0
 waning_from_Is_long[, , ] <- if(j %% 2 == 0 && j > 1 && Is[i, j, k] > 0) Binomial(Is[i, j, k], max(min(long_term_waning[i], 1), 0)) else 0
 waning_to_Is_unvaccinated[, , ] <- if(j == 1) sum(waning_from_Is_long[i, 2:n_vacc, k]) else 0
 
+# ---- Waning for Rc ----
 waning_from_Rc_short[, , ] <- if(j %% 2 == 1 && j > 1 && Rc[i, j, k] > 0) Binomial(Rc[i, j, k], max(min(short_term_waning[i], 1), 0)) else 0
-waning_to_Rc_long[, , ] <- if(j %% 2 == 0 && j > 1) waning_from_Rc_short[i, j - 1, k] else 0
+waning_to_Rc_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_Rc_short[i, j + 1, k] else 0
 waning_from_Rc_long[, , ] <- if(j %% 2 == 0 && j > 1 && Rc[i, j, k] > 0) Binomial(Rc[i, j, k], max(min(long_term_waning[i], 1), 0)) else 0
 waning_to_Rc_unvaccinated[, , ] <- if(j == 1) sum(waning_from_Rc_long[i, 2:n_vacc, k]) else 0
-
-
 
 # Movement between risk compartments
 # Moving FROM each compartment

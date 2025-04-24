@@ -57,24 +57,27 @@ loop_this <- sapply(c(0, 1), function(t){
     n_age = demog_data$input_data$n_age,
     n_vacc = demog_data$input_data$n_vacc,
     n_risk = demog_data$input_data$n_risk,
-    short_term_waning = 0,#1/14,
-    long_term_waning = 0,#1/365,
+    short_term_waning = 1/14,
+    long_term_waning = 1/140,
     
     N0 = demog_data$N0,
-    crude_birth = demog_data$crude_birth,
-    crude_death = demog_data$crude_death,
+    crude_birth = demog_data$crude_birth %>%
+      mutate(value = value/365),
+    crude_death = demog_data$crude_death %>%
+      mutate(value = value/365),
     simp_birth_death = 0,
     aging_rate = 0,
     
-    tt_migration = demog_data$tt_migration,
-    migration_in_number = demog_data$migration_in_number,
+    tt_migration = demog_data$tt_migration * 365,
+    migration_in_number = demog_data$migration_in_number %>%
+      mutate(value = value/365),
     migration_distribution_values = demog_data$migration_distribution_values,
     
     #Birth ages
     repro_low = 15,
     repro_high = 49,
     
-    tt_vaccination_coverage = c(0, 5, 6),
+    tt_vaccination_coverage = c(0, 50, 51),
     vaccination_coverage = 
       data.frame(
         dim1 = 1:101,
@@ -89,8 +92,8 @@ loop_this <- sapply(c(0, 1), function(t){
   clean_df <- run_model(
     odin_model = model,
     params = params,
-    time = (demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
-    no_runs = 2
+    time = 364,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
+    no_runs = 1
   ) %>%
     mutate(n_vacc_comp = t)
   
@@ -102,7 +105,7 @@ all_looped <- data.table::rbindlist(sapply(loop_this, function(x) x[[1]], simpli
 all_params <- sapply(loop_this, function(x) x[[2]], simplify = FALSE)
 
 #Plot overall states
-ggplot(data = subset(all_looped, age == "All" & run == "run_1" & state %in% c("S", "E", "I", "R", "Is", "Rc")),
+ggplot(data = subset(all_looped, age == "All" & state %in% c("S", "E", "I", "R", "Is", "Rc")),
        mapping = aes(
          x = time,
          y = value,
@@ -113,7 +116,7 @@ ggplot(data = subset(all_looped, age == "All" & run == "run_1" & state %in% c("S
   scale_y_continuous(label = scales::comma)
 
 #Plot overall states
-ggplot(data = subset(all_looped, age == "All" & run == "run_1" & !state %in% c("S", "E", "I", "R", "Is", "Rc") ),
+ggplot(data = subset(all_looped, age == "All" & !state %in% c("S", "E", "I", "R", "Is", "Rc") ),
        mapping = aes(
          x = time,
          y = round(value, 1),
@@ -125,7 +128,7 @@ ggplot(data = subset(all_looped, age == "All" & run == "run_1" & !state %in% c("
 
 #Plot vaccination
 vaccination_data <- all_looped %>%
-  filter(vaccination != "All" & state == "S" & run == "run_1") %>%
+  filter(vaccination != "All" & state == "S") %>%
   group_by(time, vaccination, n_vacc_comp) %>%
   summarise(
     value = sum(value)
@@ -134,16 +137,29 @@ vaccination_data <- all_looped %>%
   mutate(percent = value/sum(value))
 
 ggplot(data = vaccination_data %>%
-         filter(n_vacc_comp == 1),
+         filter(n_vacc_comp == 1) %>%
+         mutate(vaccination = case_when(
+           vaccination == 1 ~ "No vaccine protection",
+           vaccination == 2 ~ "Long term protection",
+           vaccination == 3 ~ "Short term protection"
+         ),
+         vaccination = factor(vaccination, levels = c(
+           "No vaccine protection",
+           "Long term protection",
+           "Short term protection"
+         ))),
        mapping = aes(
          x = time,
-         y = percent,
+         y = 100 * percent,
          color = as.factor(vaccination)
        )) +
   geom_line() +
-  facet_wrap(~n_vacc_comp) +
+  facet_wrap(~vaccination) +
   scale_y_continuous(label = scales::comma) +
-  theme_bw()
+  theme_bw() +
+  labs(x = "Time",
+       y = "Percent of population",
+       color = "") 
 
 #Plot vaccination
 time_S <- subset(all_looped, age == "All" & state == "S")
