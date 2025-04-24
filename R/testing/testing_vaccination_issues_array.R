@@ -27,6 +27,7 @@ fertility <- import(here("data", "processed", "WPP", "fertility.csv"))
 mortality <- import(here("data", "processed", "WPP", "deaths.csv"))
 population_all <- import(here("data", "processed", "WPP", "age_both.csv"))
 population_female <- import(here("data", "processed", "WPP", "age_female.csv"))
+contact_matricies <- import("data/raw/contact_matricies/contact_all.rdata")
 
 #Loop this
 loop_this <- sapply(c(0, 1), function(t){
@@ -43,6 +44,7 @@ loop_this <- sapply(c(0, 1), function(t){
     mortality = mortality, 
     population_all = population_all, 
     population_female = population_female,
+    contact_matricies = contact_matricies,
     year_start = "1985",
     year_end = "2015",
     iso = "ETH",
@@ -59,6 +61,8 @@ loop_this <- sapply(c(0, 1), function(t){
     n_risk = demog_data$input_data$n_risk,
     short_term_waning = 1/14,
     long_term_waning = 1/140,
+    
+    contact_matrix = demog_data$contact_matrix,
     
     N0 = demog_data$N0,
     crude_birth = demog_data$crude_birth %>%
@@ -140,13 +144,13 @@ ggplot(data = vaccination_data %>%
          filter(n_vacc_comp == 1) %>%
          mutate(vaccination = case_when(
            vaccination == 1 ~ "No vaccine protection",
-           vaccination == 2 ~ "Short term protection",
-           vaccination == 3 ~ "Long term protection"
+           vaccination == 2 ~ "Long term protection",
+           vaccination == 3 ~ "Short term protection"
          ),
          vaccination = factor(vaccination, levels = c(
            "No vaccine protection",
-           "Long term protection",
-           "Short term protection"
+           "Short term protection",
+           "Long term protection"
          ))),
        mapping = aes(
          x = time,

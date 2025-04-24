@@ -46,7 +46,7 @@
 #'
 #' @export
 process_demography <- function(
-    migration, fertility, mortality, population_all, population_female,
+    migration, fertility, mortality, population_all, population_female, contact_matricies,
     iso,
     year_start = "", 
     year_end = "",
@@ -83,6 +83,17 @@ process_demography <- function(
   # Base population
   pop_all_raw <- as.matrix(population_all[year %in% years, paste0("x", 0:100), with = FALSE]) * population_modifier
   pop_all <- collapse_age_bins(pop_all_raw, n_age)
+  
+  #Contact matricies - take those provided and reformat for the world from Prem et al., 2017
+  all_ages <- 0:100
+  age_groups <- sapply(split(all_ages, sort(all_ages %% n_age)), function(x) min(x))
+  
+  country_contact <- contact_matricies[[which(names(contact_matricies) == iso)]]
+  
+  reformatted_contact_matrix <- reformat_contact_matrix(
+    contact_matrix_raw = country_contact,
+    age_vector = age_groups
+  )
   
   # Mortality
   mort_mat_raw <- as.matrix(mortality[year %in% years, paste0("x", 0:100), with = FALSE]) * death_modifier
@@ -156,6 +167,7 @@ process_demography <- function(
     migration_in_number = migration_in_number,
     migration_distribution_values = migration_distribution_values,
     population_data = pop_all,
+    contact_matrix = reformatted_contact_matrix,
     input_data = data.frame(
       iso = iso,
       year_start = min(years), 
