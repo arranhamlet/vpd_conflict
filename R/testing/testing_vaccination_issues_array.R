@@ -29,7 +29,7 @@ population_all <- import(here("data", "processed", "WPP", "age_both.csv"))
 population_female <- import(here("data", "processed", "WPP", "age_female.csv"))
 
 #Loop this
-loop_this <- sapply(c(0, 1), function(t){
+loop_this <- sapply(c(0, 1, 5), function(t){
   
   print(t)
   
@@ -75,13 +75,14 @@ loop_this <- sapply(c(0, 1), function(t){
     repro_high = 49,
     
     tt_vaccination_coverage = c(0, 5, 6),
-    vaccination_coverage = expand.grid(
-      dim1 = seq_len(demog_data$input_data$n_age),
-      dim2 = 1,
-      dim3 = 1,
-      dim4 = 1:3,
-      value = 1
-    )
+    vaccination_coverage = 
+      data.frame(
+        dim1 = demog_data$input_data$n_age,
+        dim2 = 1,
+        dim3 = 1,
+        dim4 = 2,
+        value = 1
+      )
   )
 
   #Run model
