@@ -29,7 +29,7 @@ population_all <- import(here("data", "processed", "WPP", "age_both.csv"))
 population_female <- import(here("data", "processed", "WPP", "age_female.csv"))
 
 #Loop this
-loop_this <- sapply(c(0, 1, 5), function(t){
+loop_this <- sapply(c(0, 1), function(t){
   
   print(t)
   
@@ -64,7 +64,7 @@ loop_this <- sapply(c(0, 1, 5), function(t){
     crude_birth = demog_data$crude_birth,
     crude_death = demog_data$crude_death,
     simp_birth_death = 0,
-    aging_rate = 1,
+    aging_rate = 0,
     
     tt_migration = demog_data$tt_migration,
     migration_in_number = demog_data$migration_in_number,
@@ -77,7 +77,7 @@ loop_this <- sapply(c(0, 1, 5), function(t){
     tt_vaccination_coverage = c(0, 5, 6),
     vaccination_coverage = 
       data.frame(
-        dim1 = demog_data$input_data$n_age,
+        dim1 = 1:101,
         dim2 = 1,
         dim3 = 1,
         dim4 = 2,
@@ -124,16 +124,26 @@ ggplot(data = subset(all_looped, age == "All" & run == "run_1" & !state %in% c("
   scale_y_continuous(label = scales::comma)
 
 #Plot vaccination
-ggplot(data = subset(all_looped, age == 5 & vaccination == 1 & run == "run_1" & state == "S" & n_vacc_comp == 1),
+vaccination_data <- all_looped %>%
+  filter(vaccination != "All" & state == "S" & run == "run_1") %>%
+  group_by(time, vaccination, n_vacc_comp) %>%
+  summarise(
+    value = sum(value)
+  ) %>%
+  group_by(time, n_vacc_comp) %>%
+  mutate(percent = value/sum(value))
+
+ggplot(data = vaccination_data %>%
+         filter(n_vacc_comp == 1),
        mapping = aes(
          x = time,
-         y = value,
-         color = as.factor(vaccination),
-         group == as.factor(vaccination)
+         y = percent,
+         color = as.factor(vaccination)
        )) +
   geom_line() +
-  facet_wrap(~vaccination) +
-  scale_y_continuous(label = scales::comma)
+  facet_wrap(~n_vacc_comp) +
+  scale_y_continuous(label = scales::comma) +
+  theme_bw()
 
 #Plot vaccination
 time_S <- subset(all_looped, age == "All" & state == "S")
@@ -180,32 +190,6 @@ ggplot(
 
 
 
-
-
-
-
-value_1 = expand.grid(
-  dim1 = 1:101,
-  dim2 = 1,
-  dim3 = 1,
-  dim4 = 1:3,
-  value = 0
-)
-
-value_2 = expand.grid(
-  dim1 = 1:101,
-  dim2 = 1,
-  dim3 = 1,
-  dim4 = 1:3,
-  value = 0
-) %>%
-  mutate(
-    value = case_when(
-      dim4 == 2 ~ 0
-    )
-  )
-
-table(value_1 == value_2)
 
 
 
