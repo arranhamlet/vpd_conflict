@@ -84,24 +84,24 @@ age_vaccination_beta_modifier <- rbind(
 
 #Set up model
 params <- param_packager(
-  
+  # 
   n_age = demog_data$input_data$n_age,
   n_vacc = demog_data$input_data$n_vacc,
   n_risk = demog_data$input_data$n_risk,
-  
-  #Vaccine parameters
-  short_term_waning = 1/14,
-  long_term_waning = 1/(subset(measles_parameters, parameter == "long_term_waning" & grepl("2 dose", description)) %>% pull(value) * 365),
-  
+  # 
+  # #Vaccine parameters
+  # short_term_waning = 1/14,
+  # long_term_waning = 1/(subset(measles_parameters, parameter == "long_term_waning" & grepl("2 dose", description)) %>% pull(value) * 365),
+  # 
   #Disease parameters
-  cfr = median(cfr),
+  # cfr = median(cfr),
   incubation_rate = 1/subset(measles_parameters, parameter == "incubation_period") %>% pull(value),
   recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
-  severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
-  severe_death_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
-  prop_complications = median(prop_complications),
-  prop_severe = median(prop_severe),
-  R0 = 0,
+  # severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
+  # severe_death_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
+  # prop_complications = median(prop_complications),
+  # prop_severe = median(prop_severe),
+  R0 = 25,
   # age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   natural_immunity_waning = 0,
   
@@ -110,21 +110,21 @@ params <- param_packager(
   
   #Demographic parameters
   contact_matrix = demog_data$contact_matrix,
-  N0 = demog_data$N0,
-  crude_birth = demog_data$crude_birth[1, ] %>%
-    mutate(value = value/365),
-  crude_death = demog_data$crude_death[1, ] %>%
-    mutate(value = value/365),
-  simp_birth_death = 0,
-  aging_rate = 1/365,
+  # N0 = demog_data$N0,
+  # crude_birth = demog_data$crude_birth[1, ] %>%
+  #   mutate(value = value/365),
+  # crude_death = demog_data$crude_death[1, ] %>%
+  #   mutate(value = value/365),
+  simp_birth_death = 1,
+  # aging_rate = 1/365,
   # tt_migration = demog_data$tt_migration * 365,
   # migration_in_number = demog_data$migration_in_number %>%
   #   mutate(value = value/365),
   # migration_distribution_values = demog_data$migration_distribution_values,
   # # 
   #Birth ages
-  repro_low = 15,
-  repro_high = 49,
+  # repro_low = 15,
+  # repro_high = 49,
   
 )
 
@@ -141,6 +141,7 @@ ggplot(data = clean_df %>% filter(age == "All" & time > 0),
        mapping = aes(
          x = time,
          y = value,
+         color = run
        )) +
   geom_line() +
   facet_wrap(~state, scales = "free_y") +

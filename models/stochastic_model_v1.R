@@ -20,6 +20,33 @@ initial(repro_pop) <- 0
 
 # Update compartments
 update(S[, , ]) <- max(S[i, j, k] + waning_R[i, j, k] + waning_Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k] - lambda_S[i, j, k] - S_death[i, j, k] + moving_risk_to_S[i, j, k] - moving_risk_from_S[i, j, k] + migration_S[i, j, k] * pos_neg_migration + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k] + waning_to_S_long[i, j, k] + waning_to_S_unvaccinated[i, j, k] - waning_from_S_short[i, j, k] - waning_from_S_long[i, j, k], 0)
+
+update(aging_out_of_So) <- sum(aging_out_of_S)
+initial(aging_out_of_So) <- 0
+
+update(lambda_So) <- sum(lambda_S)
+initial(lambda_So) <- 0
+
+update(S_deatho) <- sum(S_death)
+initial(S_deatho) <- 0
+
+update(moving_risk_from_So) <- sum(moving_risk_from_S)
+initial(moving_risk_from_So) <- 0
+
+update(vaccinating_out_of_So) <- sum(vaccinating_out_of_S)
+initial(vaccinating_out_of_So) <- 0
+
+update(waning_from_S_shorto) <- sum(waning_from_S_short)
+initial(waning_from_S_shorto) <- 0
+
+update(waning_from_S_longo) <- sum(waning_from_S_long)
+initial(waning_from_S_longo) <- 0
+
+update(migration_So) <- sum(migration_S) * pos_neg_migration
+initial(migration_So) <- 0
+
+
+
 # 
 update(E[, , ]) <- max(E[i, j, k] + lambda_S[i, j, k] - incubated[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k] - E_death[i, j, k] + moving_risk_to_E[i, j, k] - moving_risk_from_E[i, j, k] + migration_E[i, j, k] * pos_neg_migration + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k] + waning_to_E_long[i, j, k] + waning_to_E_unvaccinated[i, j, k] - waning_from_E_short[i, j, k] - waning_from_E_long[i, j, k], 0)
 # 
@@ -177,12 +204,17 @@ pos_neg_migration <- if(sum(migration) < 0) -1 else 1
 migration_adjusted[, , ] <- migration[i, j, k] * pos_neg_migration
 
 # Moving INTO each compartment with specified distribution - not sampling as we want the exact numbers
-migration_S[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[1])/sum(migration_distribution)
-migration_E[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[2])/sum(migration_distribution)
-migration_I[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[3])/sum(migration_distribution)
-migration_R[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[4])/sum(migration_distribution)
-migration_Is[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[5])/sum(migration_distribution)
-migration_Rc[, , ] <- migration_adjusted[i, j, k] * sum(migration_distribution[6])/sum(migration_distribution)
+migration_S[, , ] <- if(sum(migration_distribution) == 0 || migration_adjusted[i, j, k] == 0) 0 else migration_adjusted[i, j, k] * sum(migration_distribution[1])/sum(migration_distribution)
+
+migration_E[, , ] <- if(sum(migration_distribution) == 0 || migration_adjusted[i, j, k] == 0) 0 else migration_adjusted[i, j, k] * sum(migration_distribution[2])/sum(migration_distribution)
+
+migration_I[, , ] <- if(sum(migration_distribution) == 0 || migration_adjusted[i, j, k] == 0) 0 else migration_adjusted[i, j, k] * sum(migration_distribution[3])/sum(migration_distribution)
+
+migration_R[, , ] <- if(sum(migration_distribution) == 0 || migration_adjusted[i, j, k] == 0) 0 else migration_adjusted[i, j, k] * sum(migration_distribution[4])/sum(migration_distribution)
+
+migration_Is[, , ] <- if(sum(migration_distribution) == 0 || migration_adjusted[i, j, k] == 0) 0 else migration_adjusted[i, j, k] * sum(migration_distribution[5])/sum(migration_distribution)
+
+migration_Rc[, , ] <- if(sum(migration_distribution) == 0 || migration_adjusted[i, j, k] == 0) 0 else migration_adjusted[i, j, k] * sum(migration_distribution[6])/sum(migration_distribution)
 
 # User parameter values --------------------------------------------------------
 
@@ -304,12 +336,14 @@ beta[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else t_R0 / infectious_perio
 beta_updated[, , ] <- (1 - age_vaccination_beta_modifier[i, j, k]) * beta[i, j, k]
 
 #Update with maternal protection to first groups
-beta_updated[1:age_maternal_protection_ends, , ] <- beta[i, j, k] * age_vaccination_beta_modifier[i, j, k] *
-  (1 - protection_weight_vacc[i] * prop_maternal_vaccinated[k] -
-     protection_weight_rec[i] * prop_maternal_natural[k])
+beta_updated[1:age_maternal_protection_ends, , ] <- beta[i, j, k] * age_vaccination_beta_modifier[i, j, k] * (1 - (protection_weight_vacc[i] * prop_maternal_vaccinated[k] + protection_weight_rec[i] * prop_maternal_natural[k]))
 
 #Calculate the force of infection - using a contact matrix
-lambda[, , ] <- max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
+lambda[, , ] <- if(N <= 0) 0 else max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
+
+update(lambdao) <- sum(lambda)
+initial(lambdao) <- 1
+
 #Calculate Reff in two parts due to Odin
 Reff_contrib[, , ] <- sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (S[i, j, k] / N)
 
