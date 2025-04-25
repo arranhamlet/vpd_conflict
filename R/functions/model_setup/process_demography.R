@@ -111,7 +111,7 @@ process_demography <- function(
   denom[denom == 0] <- NA
   fertility_by_year <- data.frame(
     dim1 = n_risk,
-    dim2 = time_all,
+    dim2 = time_all + 1,
     value = pmin(rowSums((fert_mat / 1000) * pop_fem) / denom, 1)
   )
   

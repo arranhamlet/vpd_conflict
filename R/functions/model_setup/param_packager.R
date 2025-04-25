@@ -69,7 +69,7 @@ param_packager <- function(
   prop_complications = 0,
   #Natural protection waning
   natural_immunity_waning = 0,
-  severe_death_rate  = 0,
+  cfr_severe  = 0,
   #Vaccination
   vaccination_coverage = 0,
   tt_vaccination_coverage = 0,
@@ -81,7 +81,7 @@ param_packager <- function(
   #R0
   R0 = 0,
   tt_R0 = 0,
-  cfr = 0,
+  cfr_normal = 0,
   
   #Seeding parameters
   seeded = 0,
@@ -145,10 +145,15 @@ param_packager <- function(
   }
   
   array_from_df <- function(...) df_to_array(generate_array_df(...))
-  array_from_df_fastest <- function(...) df_to_array_fastest(generate_array_df(...))
   
   no_seeded_changes <- length(tt_seeded)
-  seeded <- check_and_format_input(seeded, n_age, n_vacc, n_risk, no_seeded_changes)
+
+  seeded_dims <- c(n_age, n_vacc, n_risk)
+  seeded <- if (length(seeded) == 1) {
+    array(seeded, dim = seeded_dims)
+  } else {
+    array_from_df(dim1 = n_age, dim2 = n_vacc, dim3 = n_risk, dim4 = no_seeded_changes, updates = seeded)
+  }
   
   N0_dims <- c(n_age, n_vacc, n_risk)
   N0 <- if (length(N0) == 1) {
@@ -267,7 +272,7 @@ param_packager <- function(
     prop_complications = prop_complications,
     #Natural protection waning
     natural_immunity_waning = natural_immunity_waning,
-    severe_death_rate  = severe_death_rate,
+    cfr_severe  = cfr_severe,
     #Vaccination
     vaccination_coverage = vaccination_coverage,
     tt_vaccination_coverage = tt_vaccination_coverage,
@@ -275,7 +280,7 @@ param_packager <- function(
     age_vaccination_beta_modifier = age_vaccination_beta_modifier,
     short_term_waning = short_term_waning,
     long_term_waning = long_term_waning,
-    cfr = cfr,
+    cfr_normal = cfr_normal,
     #R0
     R0 = R0,
     tt_R0 = tt_R0,
@@ -312,7 +317,7 @@ param_packager <- function(
     no_moving_risk_changes = no_moving_risk_changes, 
     moving_risk_values = moving_risk_values,
     moving_risk_distribution_values = moving_risk_distribution_values,
-    cfr,
+    cfr_normal,
     #Migration
     tt_migration = tt_migration,
     no_migration_changes = no_migration_changes,
@@ -338,7 +343,7 @@ param_packager <- function(
     non_neg_int <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high", "I0", "seeded", "tt_seeded", "tt_moving_risk", "no_moving_risk_changes", "tt_migration", "no_migration_changes")]
     
     #These must be probabilities
-    probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight_vacc", "protection_weight_rec", "aging_rate", "contact_matrix", "natural_immunity_waning", "moving_risk_values", "moving_risk_distribution_values", "migration_distribution_values", "death_modifier", "fertility_modifier", "short_term_waning", "long_term_waning", "cfr", "severe_death_rate ")]
+    probability <- export_list[c("incubation_rate", "recovery_rate", "severe_recovery_rate", "prop_severe", "prop_complications", "vaccination_coverage", "age_vaccination_beta_modifier", "initial_background_death", "crude_birth", "crude_death", "protection_weight_vacc", "protection_weight_rec", "aging_rate", "contact_matrix", "natural_immunity_waning", "moving_risk_values", "moving_risk_distribution_values", "migration_distribution_values", "death_modifier", "fertility_modifier", "short_term_waning", "long_term_waning", "cfr_normal", "cfr_severe ")]
     
     #Non-negative
     non_negative <- export_list[c("R0")]

@@ -90,28 +90,32 @@ params <- param_packager(
   n_risk = demog_data$input_data$n_risk,
   # 
   # #Vaccine parameters
-  # short_term_waning = 1/14,
-  # long_term_waning = 1/(subset(measles_parameters, parameter == "long_term_waning" & grepl("2 dose", description)) %>% pull(value) * 365),
+  short_term_waning = 1/14,
+  long_term_waning = 1/(subset(measles_parameters, parameter == "long_term_waning" & grepl("2 dose", description)) %>% pull(value) * 365),
   # 
   #Disease parameters
-  # cfr = median(cfr),
+  cfr_normal = median(cfr),
+  cfr_severe = median(cfr),
   incubation_rate = 1/subset(measles_parameters, parameter == "incubation_period") %>% pull(value),
   recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
-  # severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
-  # severe_death_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
-  # prop_complications = median(prop_complications),
-  # prop_severe = median(prop_severe),
-  R0 = 2,
+  severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
+
+  prop_complications = median(prop_complications),
+  prop_severe = median(prop_severe),
+  R0 = 1,
   # age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   natural_immunity_waning = 0,
   initial_background_death = 0,
   
   #Infectious
-  I0 = 1,
+  I0 = 0,
+  
+  tt_seeded = c(0, 100, 101),
+  seeded = data.frame(dim1 = 1, dim2 = 1, dim3 = 1, dim4 = 2, value = 1),
   
   #Demographic parameters
   contact_matrix = demog_data$contact_matrix,
-  # N0 = demog_data$N0,
+  N0 = demog_data$N0,
   # crude_birth = demog_data$crude_birth[1, ] %>%
   #   mutate(value = value/365),
   # crude_death = demog_data$crude_death[1, ] %>%
@@ -133,8 +137,8 @@ params <- param_packager(
 clean_df <- run_model(
   odin_model = model,
   params = params,
-  time = 500,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
-  no_runs = 25
+  time = 3000,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
+  no_runs = 100
 )
 
 #Subset and aggregate
@@ -159,3 +163,4 @@ ggplot(data = aggregate_df %>% filter(time > 0),
   theme_bw() +
   scale_y_continuous(labels = scales::comma) +
   theme(legend.position = "none")
+

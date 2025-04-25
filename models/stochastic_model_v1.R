@@ -44,9 +44,9 @@ update(repro_pop) <- sum(reproductive_population)
 #Death
 S_death[, , ] <- if(S[i, j, k] <= 0) 0 else Binomial(S[i, j, k], max(min(background_death[i, k], 1), 0))
 E_death[, , ] <- if(E[i, j, k] <= 0) 0 else Binomial(E[i, j, k], max(min(background_death[i, k], 1), 0))
-I_death[, , ] <- if(I[i, j, k] <= 0) 0 else Binomial(I[i, j, k], max(min(background_death[i, k], 1), 0) + max(cfr[i], 0))
+I_death[, , ] <- if(I[i, j, k] <= 0) 0 else Binomial(I[i, j, k], max(min(background_death[i, k], 1), 0) + max(cfr_normal[i], 0))
 R_death[, , ] <- if(R[i, j, k] <= 0) 0 else Binomial(R[i, j, k], max(min(background_death[i, k], 1), 0))
-Is_death[, , ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i, j, k], max(min(background_death[i, k], 1), 0) + max(severe_death_rate, 0))
+Is_death[, , ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i, j, k], max(min(background_death[i, k], 1), 0) + max(cfr_severe, 0))
 Rc_death[, , ] <- if(Rc[i, j, k] <= 0) 0 else Binomial(Rc[i, j, k], max(min(background_death[i, k], 1), 0))
 
 
@@ -211,7 +211,7 @@ incubation_rate <- parameter()
 #Recovery rate
 recovery_rate <- parameter()
 #Disease specific mortality
-cfr <- parameter()
+cfr_normal <- parameter()
 #Waning antibody rate
 natural_immunity_waning <- parameter()
 #Proportion of cases that are severe
@@ -219,7 +219,7 @@ prop_severe <- parameter()
 #Severe case recovery rate
 severe_recovery_rate <- parameter()
 #Severe death rate
-severe_death_rate <- parameter()
+cfr_severe <- parameter()
 #Proportion of cases that have complications
 prop_complications <- parameter()
 
@@ -300,7 +300,7 @@ death_modifier = parameter()
 # Calculated parameters ---------------------------------------------------
 
 #Calculate transmission parameters
-infectious_period[, , ] <- if((severe_recovery_rate + severe_death_rate + background_death[i, k]) <= 0 || (recovery_rate + cfr[i] + background_death[i, k]) <= 0) 0 else (1 - prop_severe[i, j, k]) / (recovery_rate + cfr[i] + background_death[i, k]) + prop_severe[i, j, k] / (severe_recovery_rate + severe_death_rate + background_death[i, k])
+infectious_period[, , ] <- if((severe_recovery_rate + cfr_severe + background_death[i, k]) <= 0 || (recovery_rate + cfr_normal[i] + background_death[i, k]) <= 0) 0 else (1 - prop_severe[i, j, k]) / (recovery_rate + cfr_normal[i] + background_death[i, k]) + prop_severe[i, j, k] / (severe_recovery_rate + cfr_severe + background_death[i, k])
 #Interpolate R0
 t_R0 <- interpolate(tt_R0, R0, "constant")
 #Calculate beta from the R0 and infectious period
@@ -348,6 +348,8 @@ birth_int <- interpolate(tt_birth_changes, crude_birth, "constant")
 #Calculate the number of births
 Births[] <-  if(reproductive_population[i] <= 0) 0 else if(simp_birth_death == 1) Binomial(reproductive_population[i], max(min(fertility_modifier * birth_rate[i]/2, 1), 0)) else Binomial(reproductive_population[i], max(min(fertility_modifier * birth_int[i]/2, 1), 0))
 
+update(birth_prob) <- max(min(fertility_modifier * birth_int[i]/2, 1), 0)
+
 # Mothers who confer vaccine derived maternal antibodies
 vaccinated_mums[] <- if(n_vacc <= 1) 0 else sum(S[repro_low:repro_high, 2:n_vacc, i]) + sum(E[repro_low:repro_high, 2:n_vacc, i]) + sum(I[repro_low:repro_high, 2:n_vacc, i]) + sum(R[repro_low:repro_high, 2:n_vacc, i]) + sum(Is[repro_low:repro_high, 2:n_vacc, i]) + sum(Rc[repro_low:repro_high, 2:n_vacc, i])
 
@@ -382,7 +384,7 @@ dim(prop_complications) <- c(n_age)
 dim(beta_updated) <- c(n_age, n_vacc, n_risk)
 dim(age_vaccination_beta_modifier) <- c(n_age, n_vacc, n_risk)
 dim(prop_severe) <- c(n_age, n_vacc, n_risk)
-dim(cfr) <- c(n_age)
+dim(cfr_normal) <- c(n_age)
 dim(beta) <- c(n_age, n_vacc, n_risk)
 dim(infectious_period) <- c(n_age, n_vacc, n_risk)
 dim(lambda) <- c(n_age, n_vacc, n_risk)
