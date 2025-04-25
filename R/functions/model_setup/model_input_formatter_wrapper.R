@@ -86,6 +86,13 @@ model_input_formatter_wrapper <- function(
     contact_matricies = contact_matricies
   )
   
+  #Filter vaccination and case data to max year in demographic data
+  vaccination_data <- vaccination_data %>% 
+    filter(YEAR <= demographic_data_calculated$input_data$year_end)
+  
+  disease_data <- disease_data %>% 
+    filter(year <= demographic_data_calculated$input_data$year_end)
+  
   # Step 2: Process disease data
   processed_disease <- process_prior_cases(
     disease_data = disease_data,
@@ -119,6 +126,8 @@ model_input_formatter_wrapper <- function(
     patchwork::plot_layout(heights = c(1.5, 2))
   
   # Step 5: Return formatted objects
+  find_maximum_year <- max(c(demographic_data_calculated$year, processed_disease$year, processed_vaccination$year))
+  
   list(
     processed_demographic_data = demographic_data_calculated,
     processed_case_data = processed_disease,

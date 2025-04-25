@@ -148,7 +148,7 @@ param_packager <- function(
   
   no_seeded_changes <- length(tt_seeded)
 
-  seeded_dims <- c(n_age, n_vacc, n_risk)
+  seeded_dims <- c(n_age, n_vacc, n_risk, no_seeded_changes)
   seeded <- if (length(seeded) == 1) {
     array(seeded, dim = seeded_dims)
   } else {

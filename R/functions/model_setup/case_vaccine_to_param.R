@@ -77,9 +77,11 @@ case_vaccine_to_param <- function(
     df = processed_case,
     year_col = "year",
     value_col = "cases"
-  )
+  ) %>%
+    filter(year <= demog_data$input_data$year_end)
 
   case_param_df <- Reduce(rbind, sapply(1:nrow(processed_case_upd), function(x){
+    
     #Subset to the row and work out the timing
     this_row <- processed_case_upd[x, ]
     #Population_distribution
@@ -89,24 +91,32 @@ case_vaccine_to_param <- function(
     set.seed(1)
     
     #Work out case distribution
-    case_distribution <- as.data.frame(table(names(sample(popdist, this_row$cases, prob = popdist, replace = T))))
+    case_distribution_first <- as.data.frame(table(names(sample(popdist, this_row$cases, prob = popdist, replace = T))))
     
-    print(case_distribution)
-    
-    # %>%
-      # mutate(Var1 = as.numeric(as.character(Var1)))
-    
-    #Assign cases dataframe
-    Reduce(rbind, sapply(1:nrow(case_distribution), function(y){
+    if(nrow(case_distribution_first) == 0){
       data.frame(
-        dim1 = case_distribution[y, 1],
+        dim1 = ages + 1,
         dim2 = 1,
         dim3 = 1,
-        value = case_distribution[y, 2]
+        dim4 = x + 1,
+        value = 0
       )
-    }, simplify = FALSE)) %>%
-      mutate(dim4 = x + 1) %>%
-      select(dim1, dim2, dim3, dim4, value)
+    } else {
+      case_distribution <- case_distribution_first %>%
+        mutate(Var1 = as.numeric(as.character(Var1)))
+      
+      #Assign cases dataframe
+      Reduce(rbind, sapply(1:nrow(case_distribution), function(y){
+        data.frame(
+          dim1 = case_distribution[y, 1],
+          dim2 = 1,
+          dim3 = 1,
+          value = case_distribution[y, 2]
+        )
+      }, simplify = FALSE)) %>%
+        mutate(dim4 = x + 1) %>%
+        select(dim1, dim2, dim3, dim4, value)
+    }
     
   }, simplify = FALSE))
   
@@ -118,9 +128,9 @@ case_vaccine_to_param <- function(
              value = 0)
   ) %>% filter(!(duplicated(dim1, dim4) & value == 0))
   
-  list(tt_vaccination = c(0, which(years %in% processed_vaccination$year)),
+  list(tt_vaccination = c(0, which(years %in% processed_vaccination_upd$year)),
        vaccination_coverage = vaccination_param_df,
-       tt_seeded = c(0, which(years %in% processed_case$year)),
+       tt_seeded = c(0, which(years %in% processed_case_upd$year)),
        seeded = case_param_df)
   
 }

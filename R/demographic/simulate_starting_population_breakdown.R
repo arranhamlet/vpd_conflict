@@ -84,8 +84,8 @@ params <- param_packager(
   n_risk = model_data_preprocessed$processed_demographic_data$input_data$n_risk,
   
   # Vaccine parameters
-  short_term_waning = 1/(14 * 365),
-  long_term_waning = 1/(subset(measles_parameters, parameter == "long_term_waning" & grepl("2 dose", description)) %>% pull(value) * 365),
+  short_term_waning = 1/14 * 365,
+  long_term_waning = 1/subset(measles_parameters, parameter == "long_term_waning" & grepl("2 dose", description)) %>% pull(value) * 365,
   age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   
   # Disease parameters - we want to transmission, so set to 0
@@ -94,13 +94,17 @@ params <- param_packager(
   #Disease parameters
   cfr_normal = 0,
   cfr_severe = (subset(measles_parameters, parameter == "cfr") %>% pull(value) %>% median())/100,
-  incubation_rate = 1/(subset(measles_parameters, parameter == "incubation_period") %>% pull(value) * 365),
-  recovery_rate = 1/(subset(measles_parameters, parameter == "recovery_rate") %>% pull(value) * 365),
-  severe_recovery_rate = 1/(subset(measles_parameters, parameter == "recovery_rate") %>% pull(value) * 365),
+  incubation_rate = 1/subset(measles_parameters, parameter == "incubation_period") %>% pull(value) * 365,
+  recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value) * 365,
+  severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value) * 365,
   
   #Seeding previous cases
-  tt_seeded = case_vaccination_ready$tt_seeded,
-  seeded = case_vaccination_ready$seeded,
+  tt_seeded = c(0, 40, 41),#case_vaccination_ready$tt_seeded,
+  seeded = rbind(
+    data.frame(dim1 = 1, dim2 = 1, dim3 = 1, dim4 = 1, value = 0),
+    data.frame(dim1 = 1, dim2 = 1, dim3 = 1, dim4 = 2, value = 100),
+    data.frame(dim1 = 1, dim2 = 1, dim3 = 1, dim4 = 3, value = 0)
+  ), #case_vaccination_ready$seeded,
   #Setting up vaccination
   vaccination_coverage = case_vaccination_ready$vaccination_coverage,
   tt_vaccination_coverage = case_vaccination_ready$tt_vaccination,
@@ -121,7 +125,6 @@ params <- param_packager(
   repro_high = 49,
   
 )
-
 
 #Run model
 clean_df <- run_model(
@@ -151,9 +154,6 @@ ggplot(
   ) +
   scale_y_continuous(label = scales::comma) +
   theme_bw()
-
-
-
 
 #Plot
 ggplot(
