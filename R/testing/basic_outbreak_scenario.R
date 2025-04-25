@@ -101,9 +101,10 @@ params <- param_packager(
   # severe_death_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
   # prop_complications = median(prop_complications),
   # prop_severe = median(prop_severe),
-  R0 = 25,
+  R0 = 2,
   # age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   natural_immunity_waning = 0,
+  initial_background_death = 0,
   
   #Infectious
   I0 = 1,
@@ -132,18 +133,29 @@ params <- param_packager(
 clean_df <- run_model(
   odin_model = model,
   params = params,
-  time = 100,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
+  time = 500,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
   no_runs = 25
 )
 
+#Subset and aggregate
+aggregate_df <- clean_df %>%
+  subset(age == "All") %>%
+  fgroup_by(state, time) %>%
+  fsummarise(value = median(value),
+             value_min = quantile(value, 0.025),
+             value_max = quantile(value, 0.975))
 
-ggplot(data = clean_df %>% filter(age == "All" & time > 0),
+
+ggplot(data = aggregate_df %>% filter(time > 0),
        mapping = aes(
          x = time,
          y = value,
-         color = run
+         ymin = value_min,
+         ymax = value_max
        )) +
   geom_line() +
+  geom_ribbon(alpha = 0.25) +
   facet_wrap(~state, scales = "free_y") +
   theme_bw() +
-  scale_y_continuous(labels = scales::comma)
+  scale_y_continuous(labels = scales::comma) +
+  theme(legend.position = "none")

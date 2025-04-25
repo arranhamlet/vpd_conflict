@@ -73,7 +73,7 @@ param_packager <- function(
   #Vaccination
   vaccination_coverage = 0,
   tt_vaccination_coverage = 0,
-  age_vaccination_beta_modifier = 0,
+  age_vaccination_beta_modifier = 1,
   #Vaccination waning
   short_term_waning = 0,
   long_term_waning = 0,
