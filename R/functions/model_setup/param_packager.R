@@ -155,6 +155,26 @@ param_packager <- function(
     array_from_df(dim1 = n_age, dim2 = n_vacc, dim3 = n_risk, dim4 = no_seeded_changes, updates = seeded)
   }
   
+  cfr_dims <- n_age
+  cfr_normal <- if (length(cfr_normal) == 1) {
+    array(cfr_normal, dim = cfr_dims)
+  } else {
+    array_from_df(dim1 = n_age, updates = cfr_normal)
+  }
+  
+  cfr_severe <- if (length(cfr_severe) == 1) {
+    array(cfr_severe, dim = cfr_dims)
+  } else {
+    array_from_df(dim1 = n_age, updates = cfr_severe)
+  }
+  
+  prop_complications_dims <- n_age
+  prop_complications <- if (length(prop_complications) == 1) {
+    array(prop_complications, dim = prop_complications_dims)
+  } else {
+    array_from_df(dim1 = n_age, updates = prop_complications)
+  }
+
   N0_dims <- c(n_age, n_vacc, n_risk)
   N0 <- if (length(N0) == 1) {
     array(N0, dim = N0_dims)

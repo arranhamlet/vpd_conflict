@@ -96,7 +96,7 @@ model_input_formatter_wrapper <- function(
   )
   
   # Step 3: Process vaccination data
-  processed_vaccination <- process_vaccination(
+  processed_vaccination <- process_vaccination_routine(
     vaccination_data = vaccination_data,
     vaccine = vaccine,
     iso = demographic_data_calculated$input_data$iso,
@@ -105,7 +105,7 @@ model_input_formatter_wrapper <- function(
   )
   
   # Step 4: Generate plots
-  case_vaccination_plots <- plot_case_vaccination(
+  case_vaccination_plots <- plot_case_vaccination_routine(
     case_data = processed_disease,
     vaccination_data = processed_vaccination
   )

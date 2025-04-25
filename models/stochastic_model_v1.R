@@ -46,7 +46,7 @@ S_death[, , ] <- if(S[i, j, k] <= 0) 0 else Binomial(S[i, j, k], max(min(backgro
 E_death[, , ] <- if(E[i, j, k] <= 0) 0 else Binomial(E[i, j, k], max(min(background_death[i, k], 1), 0))
 I_death[, , ] <- if(I[i, j, k] <= 0) 0 else Binomial(I[i, j, k], max(min(background_death[i, k], 1), 0) + max(cfr_normal[i], 0))
 R_death[, , ] <- if(R[i, j, k] <= 0) 0 else Binomial(R[i, j, k], max(min(background_death[i, k], 1), 0))
-Is_death[, , ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i, j, k], max(min(background_death[i, k], 1), 0) + max(cfr_severe, 0))
+Is_death[, , ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i, j, k], max(min(background_death[i, k], 1), 0) + max(cfr_severe[i], 0))
 Rc_death[, , ] <- if(Rc[i, j, k] <= 0) 0 else Binomial(Rc[i, j, k], max(min(background_death[i, k], 1), 0))
 
 
@@ -300,7 +300,7 @@ death_modifier = parameter()
 # Calculated parameters ---------------------------------------------------
 
 #Calculate transmission parameters
-infectious_period[, , ] <- if((severe_recovery_rate + cfr_severe + background_death[i, k]) <= 0 || (recovery_rate + cfr_normal[i] + background_death[i, k]) <= 0) 0 else (1 - prop_severe[i, j, k]) / (recovery_rate + cfr_normal[i] + background_death[i, k]) + prop_severe[i, j, k] / (severe_recovery_rate + cfr_severe + background_death[i, k])
+infectious_period[, , ] <- if((severe_recovery_rate + cfr_severe[i] + background_death[i, k]) <= 0 || (recovery_rate + cfr_normal[i] + background_death[i, k]) <= 0) 0 else (1 - prop_severe[i, j, k]) / (recovery_rate + cfr_normal[i] + background_death[i, k]) + prop_severe[i, j, k] / (severe_recovery_rate + cfr_severe[i] + background_death[i, k])
 #Interpolate R0
 t_R0 <- interpolate(tt_R0, R0, "constant")
 #Calculate beta from the R0 and infectious period
@@ -383,6 +383,7 @@ dim(beta_updated) <- c(n_age, n_vacc, n_risk)
 dim(age_vaccination_beta_modifier) <- c(n_age, n_vacc, n_risk)
 dim(prop_severe) <- c(n_age, n_vacc, n_risk)
 dim(cfr_normal) <- c(n_age)
+dim(cfr_severe) <- c(n_age)
 dim(beta) <- c(n_age, n_vacc, n_risk)
 dim(infectious_period) <- c(n_age, n_vacc, n_risk)
 dim(lambda) <- c(n_age, n_vacc, n_risk)

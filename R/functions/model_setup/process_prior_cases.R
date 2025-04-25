@@ -25,7 +25,7 @@ process_prior_cases <- function(
   # Subset to country and year range
   years <- get_years(disease_data$year, year_start, year_end)
   
-  filtered <- disease_data[iso3 == iso & year %in% years]
+  filtered <- disease_data[iso3 == iso & year %in% years & !is.na(cases) & cases != 0]
   
   # Subset disease
   if (disease != "All") {
