@@ -116,17 +116,17 @@ params <- param_packager(
   #Demographic parameters
   contact_matrix = demog_data$contact_matrix,
   N0 = demog_data$N0,
-  # crude_birth = demog_data$crude_birth[1, ] %>%
-  #   mutate(value = value/365),
-  # crude_death = demog_data$crude_death[1, ] %>%
-  #   mutate(value = value/365),
-  simp_birth_death = 1,
-  # aging_rate = 1/365,
-  # tt_migration = demog_data$tt_migration * 365,
-  # migration_in_number = demog_data$migration_in_number %>%
-  #   mutate(value = value/365),
-  # migration_distribution_values = demog_data$migration_distribution_values,
-  # # 
+  crude_birth = demog_data$crude_birth[1, ] %>%
+    mutate(value = value/365),
+  crude_death = demog_data$crude_death[1, ] %>%
+    mutate(value = value/365),
+  simp_birth_death = 0,
+  aging_rate = 1/365,
+  tt_migration = demog_data$tt_migration * 365,
+  migration_in_number = demog_data$migration_in_number %>%
+    mutate(value = value/365),
+  migration_distribution_values = demog_data$migration_distribution_values,
+  #
   #Birth ages
   # repro_low = 15,
   # repro_high = 49,
@@ -138,7 +138,7 @@ clean_df <- run_model(
   odin_model = model,
   params = params,
   time = 3000,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
-  no_runs = 100
+  no_runs = 10
 )
 
 #Subset and aggregate

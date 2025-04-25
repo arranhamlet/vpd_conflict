@@ -63,6 +63,11 @@ process_demography <- function(
   
   filter_country <- function(dt) dt[iso3 == iso]
   
+  # Time window
+  years <- get_years(migration$year, start = year_start, end = year_end)
+  time_run_for <- length(years)
+  time_all <- 0:(time_run_for - 1)
+  
   # Convert to data.table
   data.table::setDT(migration); data.table::setDT(fertility)
   data.table::setDT(mortality); data.table::setDT(population_all)
@@ -74,11 +79,6 @@ process_demography <- function(
   mortality <- filter_country(mortality)
   population_all <- filter_country(population_all)
   population_female <- filter_country(population_female)
-  
-  # Time window
-  years <- get_years(migration$year, year_start, year_end)
-  time_run_for <- length(years)
-  time_all <- 0:(time_run_for - 1)
   
   # Base population
   pop_all_raw <- as.matrix(population_all[year %in% years, paste0("x", 0:100), with = FALSE]) * population_modifier

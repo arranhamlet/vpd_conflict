@@ -54,10 +54,11 @@ model_input_formatter_wrapper <- function(
   disease,
   vaccination_data,
   vaccine,
+  contact_matricies,
   year_start = "",
   year_end = "",
   n_age = 1,
-  n_vacc = 1,
+  number_of_vaccines = 1,
   n_risk = 1,
   population_modifier = 1, 
   fertility_modifier = 1, 
@@ -76,12 +77,13 @@ model_input_formatter_wrapper <- function(
     year_start = year_start,
     year_end = year_end,
     n_age = n_age,
-    number_of_vaccines = n_vacc,
+    number_of_vaccines = number_of_vaccines,
     n_risk = n_risk,
     population_modifier = population_modifier, 
     fertility_modifier = fertility_modifier, 
     death_modifier = death_modifier,
-    migration_modifier = migration_modifier
+    migration_modifier = migration_modifier,
+    contact_matricies = contact_matricies
   )
   
   # Step 2: Process disease data
