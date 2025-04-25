@@ -169,7 +169,7 @@ moving_risk_to_Is[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_
 moving_risk_to_Rc[, , ] <- if(sum(moving_risk_distribution[i, j,]) == 0) moving_risk_from_Rc[i, j, k] else sum(moving_risk_from_Rc[i, j, ]) * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
 
 # Parameters to control movement between risk groups
-migration <- interpolate(tt_migration, migration_in_number, "linear")
+migration <- interpolate(tt_migration, migration_in_number, "constant")
 migration_distribution <- interpolate(tt_migration, migration_distribution_values, "constant")
 
 #Positive or negative flow
@@ -311,10 +311,7 @@ beta_updated[1:age_maternal_protection_ends, , ] <- beta[i, j, k] * age_vaccinat
 #Calculate the force of infection - using a contact matrix
 lambda[, , ] <- max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
 #Calculate Reff in two parts due to Odin
-S_eff[, , ] <- S[i, j, k] * age_vaccination_beta_modifier[i, j, k]
-
-Reff_contrib[, , ] <- (beta_updated[i, j, k] * contact_matrix[i, ]) * S[i, j, k] / N
-
+Reff_contrib[, , ] <- sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (S[i, j, k] / N)
 
 t_seeded <- interpolate(tt_seeded, seeded, "constant")
 
@@ -323,7 +320,7 @@ N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
 Npop_age_risk[, ] <- sum(S[i, , j]) + sum(E[i, , j]) + sum(I[i, , j]) + sum(R[i, , j]) + sum(Is[i, , j]) + sum(Rc[i, , j])
 
 #Calculate death rates
-Npop_background_death[, ] <- Binomial(Npop_age_risk[i, j], max(min(background_death[i, j], 1), 0))
+Npop_background_death[, ] <- if(Npop_age_risk[i, j] == 0) 0 else Binomial(Npop_age_risk[i, j], max(min(background_death[i, j], 1), 0))
 #Interpolate changes in death rate
 death_int <- interpolate(tt_death_changes, crude_death, "constant")
 #Select background death rate to use
@@ -385,7 +382,7 @@ dim(infectious_period) <- c(n_age, n_vacc, n_risk)
 dim(lambda) <- c(n_age, n_vacc, n_risk)
 dim(tt_R0) <- no_R0_changes
 dim(R0) <- no_R0_changes
-dim(S_eff) <- c(n_age, n_vacc, n_risk)
+dim(Reff_contrib) <- c(n_age, n_vacc, n_risk)
 dim(contact_matrix) <- c(n_age, n_age)
 dim(lambda_S) <- c(n_age, n_vacc, n_risk)
 dim(waning_R) <- c(n_age, n_vacc, n_risk)

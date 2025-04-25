@@ -31,6 +31,7 @@ contact_matricies <- import(here("data", "raw", "contact_matricies", "contact_al
 
 measles_parameters <- import(here("data", "processed", "model_parameters", "Measles_SEIR_Parameters.csv"))
 
+#Set up model and run
 #Run function
 demog_data <- process_demography(
   migration = migration, 
@@ -42,8 +43,8 @@ demog_data <- process_demography(
   year_start = "2010",
   year_end = "2020",
   iso = "PSE",
-  n_age = 101,
-  number_of_vaccines = 2, 
+  n_age = 1,
+  number_of_vaccines = 0, 
   n_risk = 1
 )
 
@@ -68,17 +69,17 @@ prop_complications[66:101] <- subset(measles_parameters, parameter == "prop_comp
 
 age_vaccination_beta_modifier <- rbind(
   expand.grid(
-  dim1 = 1:101,
-  dim2 = 2:3,
-  dim3 = 1,
-  value = 1 - subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
-), 
-expand.grid(
-  dim1 = 1:101,
-  dim2 = 4:5,
-  dim3 = 1,
-  value = 1 - subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("2 dose", description)) %>% pull(value)/100
-)
+    dim1 = 1:101,
+    dim2 = 2:3,
+    dim3 = 1,
+    value = 1 - subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
+  ), 
+  expand.grid(
+    dim1 = 1:101,
+    dim2 = 4:5,
+    dim3 = 1,
+    value = 1 - subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("2 dose", description)) %>% pull(value)/100
+  )
 )
 
 #Set up model
@@ -93,49 +94,49 @@ params <- param_packager(
   long_term_waning = 1/(subset(measles_parameters, parameter == "long_term_waning" & grepl("2 dose", description)) %>% pull(value) * 365),
   
   #Disease parameters
-  cfr = cfr,
+  cfr = median(cfr),
   incubation_rate = 1/subset(measles_parameters, parameter == "incubation_period") %>% pull(value),
   recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
   severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
   severe_death_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
-  prop_complications = prop_complications,
-  prop_severe = prop_severe,
-  R0 = 0.01,
-  age_vaccination_beta_modifier = age_vaccination_beta_modifier,
+  prop_complications = median(prop_complications),
+  prop_severe = median(prop_severe),
+  R0 = 0,
+  # age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   natural_immunity_waning = 0,
   
   #Infectious
-  I0 = data.frame(dim1 = 18, dim2 = 1, dim3 = 1, value = 1),
+  I0 = 1,
   
   #Demographic parameters
   contact_matrix = demog_data$contact_matrix,
   N0 = demog_data$N0,
-  crude_birth = demog_data$crude_birth %>%
+  crude_birth = demog_data$crude_birth[1, ] %>%
     mutate(value = value/365),
-  crude_death = demog_data$crude_death %>%
+  crude_death = demog_data$crude_death[1, ] %>%
     mutate(value = value/365),
   simp_birth_death = 0,
   aging_rate = 1/365,
-    tt_migration = demog_data$tt_migration * 365,
-  migration_in_number = demog_data$migration_in_number %>%
-    mutate(value = value/365),
-  migration_distribution_values = demog_data$migration_distribution_values,
-  
+  # tt_migration = demog_data$tt_migration * 365,
+  # migration_in_number = demog_data$migration_in_number %>%
+  #   mutate(value = value/365),
+  # migration_distribution_values = demog_data$migration_distribution_values,
+  # # 
   #Birth ages
   repro_low = 15,
   repro_high = 49,
-
+  
 )
 
 #Run model
 clean_df <- run_model(
   odin_model = model,
   params = params,
-  time = 50,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
-  no_runs = 1
+  time = 100,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
+  no_runs = 25
 )
 
-#Plotting
+
 ggplot(data = clean_df %>% filter(age == "All" & time > 0),
        mapping = aes(
          x = time,
@@ -145,9 +146,3 @@ ggplot(data = clean_df %>% filter(age == "All" & time > 0),
   facet_wrap(~state, scales = "free_y") +
   theme_bw() +
   scale_y_continuous(labels = scales::comma)
-
-
-
-
-
-  

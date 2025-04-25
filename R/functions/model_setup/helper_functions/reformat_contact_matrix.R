@@ -37,5 +37,5 @@ reformat_contact_matrix <- function(contact_matrix_raw, age_vector) {
     }
   }
   
-  return(new_age_matrix)
+  new_age_matrix/sum(new_age_matrix)
 }
