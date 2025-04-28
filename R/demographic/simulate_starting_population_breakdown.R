@@ -99,12 +99,8 @@ params <- param_packager(
   severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value) * 365,
   
   #Seeding previous cases
-  tt_seeded = c(0, 40, 41),#case_vaccination_ready$tt_seeded,
-  seeded = rbind(
-    data.frame(dim1 = 1, dim2 = 1, dim3 = 1, dim4 = 1, value = 0),
-    data.frame(dim1 = 1, dim2 = 1, dim3 = 1, dim4 = 2, value = 100),
-    data.frame(dim1 = 1, dim2 = 1, dim3 = 1, dim4 = 3, value = 0)
-  ), #case_vaccination_ready$seeded,
+  tt_seeded = case_vaccination_ready$tt_seeded,
+  seeded = case_vaccination_ready$seeded,
   #Setting up vaccination
   vaccination_coverage = case_vaccination_ready$vaccination_coverage,
   tt_vaccination_coverage = case_vaccination_ready$tt_vaccination,
@@ -115,7 +111,7 @@ params <- param_packager(
   crude_birth = model_data_preprocessed$processed_demographic_data$crude_birth,
   crude_death = model_data_preprocessed$processed_demographic_data$crude_death,
   simp_birth_death = 0,
-  aging_rate = 1,
+  aging_rate = 0,
   tt_migration = model_data_preprocessed$processed_demographic_data$tt_migration,
   migration_in_number = model_data_preprocessed$processed_demographic_data$migration_in_number,
   migration_distribution_values = model_data_preprocessed$processed_demographic_data$migration_distribution_values,
@@ -158,7 +154,25 @@ ggplot(
 #Plot
 ggplot(
   data = clean_df %>%
-    filter(state == "I" & age == "All" & time > 0),
+    filter(state %in% c(as.character(unique(clean_df$state)[13:25]))),
+  mapping = aes(
+    x = time + year_start,
+    y = value
+  )
+) +
+  geom_line() +
+  labs(
+    x = "Year",
+    y = "Population"
+  ) +
+  scale_y_continuous(label = scales::comma) +
+  theme_bw() +
+  facet_wrap(~state, scales = "free_y")
+
+#Plot
+ggplot(
+  data = clean_df %>%
+    filter(state %in% c("S", "E", "I", "R", "Is", "Rc") & age == "All" & time > 0),
   mapping = aes(
     x = time ,
     y = value

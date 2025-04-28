@@ -24,6 +24,37 @@ update(S[, , ]) <- max(S[i, j, k] + waning_R[i, j, k] + waning_Rc[i, j, k] + agi
 update(E[, , ]) <- max(E[i, j, k] + lambda_S[i, j, k] - incubated[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k] - E_death[i, j, k] + moving_risk_to_E[i, j, k] - moving_risk_from_E[i, j, k] + migration_E[i, j, k] * pos_neg_migration + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k] + waning_to_E_long[i, j, k] + waning_to_E_unvaccinated[i, j, k] - waning_from_E_short[i, j, k] - waning_from_E_long[i, j, k], 0)
 # 
 update(I[, , ]) <- max(I[i, j, k] + into_I[i, j, k] + aging_into_I[i, j, k] - aging_out_of_I[i, j, k] - recovered_I_to_R[i, j, k] - I_death[i, j, k] + t_seeded[i, j, k] + moving_risk_to_I[i, j, k] - moving_risk_from_I[i, j, k] + migration_I[i, j, k] * pos_neg_migration + vaccinating_into_I[i, j, k] - vaccinating_out_of_I[i, j, k] + waning_to_I_long[i, j, k] + waning_to_I_unvaccinated[i, j, k] - waning_from_I_short[i, j, k] - waning_from_I_long[i, j, k], 0)
+
+update(into_Io) <- sum(into_I)
+
+update(aging_into_Io) <- sum(aging_into_I)
+update(aging_out_of_Io) <- sum(aging_out_of_I)
+update(I_deatho) <- sum(I_death)
+update(moving_risk_from_Io) <- sum(moving_risk_from_I)
+update(vaccinating_out_of_Io) <- sum(vaccinating_out_of_I)
+
+initial(aging_into_Io) <- 0
+initial(aging_out_of_Io) <- 0
+initial(I_deatho) <- 0
+initial(moving_risk_from_Io) <- 0
+initial(vaccinating_out_of_Io) <- 0
+
+
+update(recovered_I_to_Ro) <- sum(recovered_I_to_R)
+update(moving_risk_to_Io) <- sum(moving_risk_to_I)
+update(migration_Io) <- sum(migration_I)
+update(vaccinating_into_Io) <- sum(vaccinating_into_I)
+update(waning_to_I_longo) <- sum(waning_to_I_long)
+update(waning_to_I_unvaccinatedo) <- sum(waning_to_I_unvaccinated)
+
+initial(into_Io) <- 0
+initial(recovered_I_to_Ro) <- 0
+initial(moving_risk_to_Io) <- 0
+initial(migration_Io) <- 0
+initial(vaccinating_into_Io) <- 0
+initial(waning_to_I_longo) <- 0
+initial(waning_to_I_unvaccinatedo) <- 0
+
 # 
 update(R[, , ]) <- max(R[i, j, k] + recovered_I_to_R[i, j, k] + recovered_Is_to_R[i, j, k] - waning_R[i, j, k] + aging_into_R[i, j, k] - aging_out_of_R[i, j, k] - R_death[i, j, k] + moving_risk_to_R[i, j, k] - moving_risk_from_R[i, j, k] + migration_R[i, j, k] * pos_neg_migration + vaccinating_into_R[i, j, k] - vaccinating_out_of_R[i, j, k] + waning_to_R_long[i, j, k] + waning_to_R_unvaccinated[i, j, k] - waning_from_R_short[i, j, k] - waning_from_R_long[i, j, k], 0)
 # 
@@ -320,6 +351,9 @@ infectious_weight[, , ] <- if(sum(I) + sum(Is) <= 0) 0 else(I[i, j, k] + Is[i, j
 dim(infectious_weight) <- c(n_age, n_vacc, n_risk)
 
 t_seeded <- interpolate(tt_seeded, seeded, "constant")
+
+update(t_seededo) <- sum(t_seeded)
+initial(t_seededo) <- 0
 
 #Calculate populations
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
