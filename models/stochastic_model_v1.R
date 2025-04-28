@@ -20,6 +20,9 @@ initial(repro_pop) <- 0
 
 # Update compartments
 update(S[, , ]) <- max(S[i, j, k] + waning_R[i, j, k] + waning_Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k] - lambda_S[i, j, k] - S_death[i, j, k] + moving_risk_to_S[i, j, k] - moving_risk_from_S[i, j, k] + migration_S[i, j, k] * pos_neg_migration + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k] + waning_to_S_long[i, j, k] + waning_to_S_unvaccinated[i, j, k] - waning_from_S_short[i, j, k] - waning_from_S_long[i, j, k], 0)
+
+
+
 #
 update(E[, , ]) <- max(E[i, j, k] + lambda_S[i, j, k] - incubated[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k] - E_death[i, j, k] + moving_risk_to_E[i, j, k] - moving_risk_from_E[i, j, k] + migration_E[i, j, k] * pos_neg_migration + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k] + waning_to_E_long[i, j, k] + waning_to_E_unvaccinated[i, j, k] - waning_from_E_short[i, j, k] - waning_from_E_long[i, j, k], 0)
 # 
@@ -74,6 +77,9 @@ total_S_in[, , ] <- if(pos_neg_migration == 1) waning_R[i, j, k] + waning_Rc[i, 
 total_S_out[, , ] <- if(pos_neg_migration == 1) lambda_S[i, j, k] + S_death[i, j, k] else lambda_S[i, j, k] + S_death[i, j, k] + migration_S[i, j, k] 
 # total_S_shuffle_internally[, , ] <- aging_into_S[i, j, k] - aging_out_of_S[i, j, k] + moving_risk_to_S[i, j, k] - moving_risk_from_S[i, j, k] + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k] + waning_to_S_long[i, j, k] + waning_to_S_unvaccinated[i, j, k] - waning_from_S_short[i, j, k] - waning_from_S_long[i, j, k]
 S_left[, , ] <- S[i, j, k] + total_S_in[i, j, k] - total_S_out[i, j, k]
+
+update(S_lefto) <- sum(S_left)
+initial(S_lefto) <- 1
 
 total_E_in[, , ] <- if(pos_neg_migration == 1) lambda_S[i, j, k] + migration_E[i, j, k] else lambda_S[i, j, k]
 total_E_out[, , ] <- if(pos_neg_migration == 1) incubated[i, j, k] + E_death[i, j, k] else incubated[i, j, k] + E_death[i, j, k] + migration_E[i, j, k] 
@@ -177,37 +183,37 @@ vaccinating_into_Rc[, , ] <- if(j == 3) vaccinating_out_of_Rc[i, 1, k] else if(j
 # ---- Waning for S ----
 waning_from_S_short[, , ] <- if(j %% 2 == 1 && j > 1 && S_left[i, j, k] > 0) Binomial(S_left[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
 waning_to_S_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_S_short[i, j + 1, k] else 0
-waning_from_S_long[, , ] <- if(j %% 2 == 0 && j > 1 && S[i, j, k] > 0) Binomial(S[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
+waning_from_S_long[, , ] <- if(j %% 2 == 0 && j > 1 && S_left[i, j, k] > 0) Binomial(S_left[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
 waning_to_S_unvaccinated[, , ] <- if(j == 1) sum(waning_from_S_long[i, 2:n_vacc, k]) else 0
 
 # ---- Waning for E ----
 waning_from_E_short[, , ] <- if(j %% 2 == 1 && j > 1 && E_left[i, j, k] > 0) Binomial(E_left[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
 waning_to_E_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_E_short[i, j + 1, k] else 0
-waning_from_E_long[, , ] <- if(j %% 2 == 0 && j > 1 && E[i, j, k] > 0) Binomial(E[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
+waning_from_E_long[, , ] <- if(j %% 2 == 0 && j > 1 && E_left[i, j, k] > 0) Binomial(E_left[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
 waning_to_E_unvaccinated[, , ] <- if(j == 1) sum(waning_from_E_long[i, 2:n_vacc, k]) else 0
 
 # ---- Waning for I ----
 waning_from_I_short[, , ] <- if(j %% 2 == 1 && j > 1 && I_left[i, j, k] > 0) Binomial(I_left[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
 waning_to_I_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_I_short[i, j + 1, k] else 0
-waning_from_I_long[, , ] <- if(j %% 2 == 0 && j > 1 && I[i, j, k] > 0) Binomial(I[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
+waning_from_I_long[, , ] <- if(j %% 2 == 0 && j > 1 && I_left[i, j, k] > 0) Binomial(I_left[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
 waning_to_I_unvaccinated[, , ] <- if(j == 1) sum(waning_from_I_long[i, 2:n_vacc, k]) else 0
 
 # ---- Waning for R ----
 waning_from_R_short[, , ] <- if(j %% 2 == 1 && j > 1 && R_left[i, j, k] > 0) Binomial(R_left[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
 waning_to_R_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_R_short[i, j + 1, k] else 0
-waning_from_R_long[, , ] <- if(j %% 2 == 0 && j > 1 && R[i, j, k] > 0) Binomial(R[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
+waning_from_R_long[, , ] <- if(j %% 2 == 0 && j > 1 && R_left[i, j, k] > 0) Binomial(R_left[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
 waning_to_R_unvaccinated[, , ] <- if(j == 1) sum(waning_from_R_long[i, 2:n_vacc, k]) else 0
 
 # ---- Waning for Is ----
 waning_from_Is_short[, , ] <- if(j %% 2 == 1 && j > 1 && Is_left[i, j, k] > 0) Binomial(Is_left[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
 waning_to_Is_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_Is_short[i, j + 1, k] else 0
-waning_from_Is_long[, , ] <- if(j %% 2 == 0 && j > 1 && Is[i, j, k] > 0) Binomial(Is[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
+waning_from_Is_long[, , ] <- if(j %% 2 == 0 && j > 1 && Is_left[i, j, k] > 0) Binomial(Is_left[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
 waning_to_Is_unvaccinated[, , ] <- if(j == 1) sum(waning_from_Is_long[i, 2:n_vacc, k]) else 0
 
 # ---- Waning for Rc ----
 waning_from_Rc_short[, , ] <- if(j %% 2 == 1 && j > 1 && Rc_left[i, j, k] > 0) Binomial(Rc_left[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
 waning_to_Rc_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_Rc_short[i, j + 1, k] else 0
-waning_from_Rc_long[, , ] <- if(j %% 2 == 0 && j > 1 && Rc[i, j, k] > 0) Binomial(Rc[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
+waning_from_Rc_long[, , ] <- if(j %% 2 == 0 && j > 1 && Rc_left[i, j, k] > 0) Binomial(Rc_left[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
 waning_to_Rc_unvaccinated[, , ] <- if(j == 1) sum(waning_from_Rc_long[i, 2:n_vacc, k]) else 0
 
 # Movement between risk compartments

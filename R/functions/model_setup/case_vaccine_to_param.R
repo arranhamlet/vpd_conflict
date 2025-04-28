@@ -13,7 +13,7 @@ case_vaccine_to_param <- function(
   
   ages <- 0:(n_age - 1)
   years <- demog_data$input_data$year_start:demog_data$input_data$year_end
-  
+
   #Subset schedule
   schedule_subset <- vaccination_schedule %>%
     filter(grepl(unique(processed_case$disease_description), Disease)) %>%
@@ -40,23 +40,35 @@ case_vaccine_to_param <- function(
     year_col = "year",
     value_col = "coverage"
   ) %>%
-    distinct(antigen, antigen_description, dose_order, year, coverage)
+    group_by(antigen, antigen_description, dose_order, year) %>%
+    summarise(coverage = max(coverage), .groups = "drop") %>%
+    arrange(year)
   
+  vaccination_years <- unique(processed_vaccination_upd$year)
   vaccination_param_df <- Reduce(rbind, sapply(1:nrow(processed_vaccination_upd), function(x){
+    
     #Subset to the row and work out the timing
     this_row <- processed_vaccination_upd[x, ]
     dose_to_use <- paste(unlist(strsplit(this_row$antigen_description, " ")), collapse = "|")
     timing <- dose_timing[which(grepl(dose_to_use, dose_timing$key, ignore.case = T)), ]
     
+    target_vaccination <- if (this_row$dose_order == 1) {
+      1
+    } else {
+      ((2 * this_row$dose_order - 2):(2 * this_row$dose_order - 1))
+    }
+    
     #Create dataframe
     #Need to create a dataframe of here and then a dataframe 1 after with a value of 0 to turn off the interpolation
-    data.frame(
-      dim1 = which(ages == timing$value),
-      dim2 = 1 + this_row$dose_order * 2,
-      dim3 = 1,
-      dim4 = x + 1,
-      value = this_row$coverage/100
-    )
+    Reduce(rbind, sapply(target_vaccination, function(e){
+      data.frame(
+        dim1 = which(ages == timing$value),
+        dim2 = e,
+        dim3 = 1,
+        dim4 = which(this_row$year == vaccination_years),
+        value = this_row$coverage/100
+      )
+    }, simplify = FALSE))
 
   }, simplify = FALSE))
   

@@ -144,8 +144,6 @@ param_packager <- function(
     repro_high
   }
   
-  array_from_df <- function(...) df_to_array(generate_array_df(...))
-  
   no_seeded_changes <- length(tt_seeded)
 
   seeded_dims <- c(n_age, n_vacc, n_risk, no_seeded_changes)

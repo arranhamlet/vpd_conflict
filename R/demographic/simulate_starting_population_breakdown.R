@@ -28,6 +28,7 @@ population_all <- import(here("data", "processed", "WPP", "age_both.csv"))
 population_female <- import(here("data", "processed", "WPP", "age_female.csv"))
 contact_matricies <- import(here("data", "raw", "contact_matricies", "contact_all.rdata"))
 
+vimc_vaccination_data <- import("data/processed/vaccination/coverage_table.csv")
 routine_vaccination_data <- import("data/raw/WHO/coverage-data_updated.xlsx")
 full_disease_df <- import("data/processed/WHO/reported_cases_data.csv")
 vaccination_schedule <- import("data/processed/WHO/WHO_vaccination_schedule.xlsx")
@@ -84,8 +85,8 @@ params <- param_packager(
   n_risk = model_data_preprocessed$processed_demographic_data$input_data$n_risk,
   
   # Vaccine parameters
-  short_term_waning = 1/14 * 365,
-  long_term_waning = 1/subset(measles_parameters, parameter == "long_term_waning" & grepl("2 dose", description)) %>% pull(value) * 365,
+  short_term_waning = 0,#1/(14/365),
+  long_term_waning = 0,#1/subset(measles_parameters, parameter == "long_term_waning" & grepl("2 dose", description)) %>% pull(value),
   age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   
   # Disease parameters - we want to transmission, so set to 0
@@ -102,9 +103,12 @@ params <- param_packager(
   tt_seeded = case_vaccination_ready$tt_seeded,
   seeded = case_vaccination_ready$seeded,
   #Setting up vaccination
-  vaccination_coverage = case_vaccination_ready$vaccination_coverage,
-  tt_vaccination_coverage = case_vaccination_ready$tt_vaccination,
-  
+  vaccination_coverage = case_vaccination_ready$vaccination_coverage,#rbind(
+    # data.frame(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, value = 0),
+    # data.frame(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 2, value = 1),
+    # data.frame(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 3, value = 0)),#,
+  tt_vaccination_coverage = case_vaccination_ready$tt_vaccination, #c(0, 40, 41),#
+
   #Demographic parameters
   contact_matrix = model_data_preprocessed$processed_demographic_data$contact_matrix,
   N0 = model_data_preprocessed$processed_demographic_data$N0,
@@ -151,23 +155,6 @@ ggplot(
   scale_y_continuous(label = scales::comma) +
   theme_bw()
 
-#Plot
-ggplot(
-  data = clean_df %>%
-    filter(state %in% c(as.character(unique(clean_df$state)[13:25]))),
-  mapping = aes(
-    x = time + year_start,
-    y = value
-  )
-) +
-  geom_line() +
-  labs(
-    x = "Year",
-    y = "Population"
-  ) +
-  scale_y_continuous(label = scales::comma) +
-  theme_bw() +
-  facet_wrap(~state, scales = "free_y")
 
 #Plot
 ggplot(
@@ -204,18 +191,52 @@ vacc_agg <- clean_df %>%
 
 
 ggplot(
-  data = clean_df %>%
-    filter(age == "All" & time > 0),
+  data = vacc_agg,
   mapping = aes(
     x = time + year_start,
-    y = value
+    y = coverage,
+    color = vaccination
   )
 ) +
   geom_line() +
   labs(
     x = "Year",
-    y = "Population"
+    y = "Vaccination coverage (%)"
   ) +
   scale_y_continuous(label = scales::comma) +
   theme_bw() +
-  facet_wrap(~state, scales = "free_y")
+  facet_wrap(~vaccination) +
+  theme(legend.position = "none")
+
+#For select ages
+vacc_age <- subset(clean_df, state == "S" & age %in% c(1, 2, 18, 30, 60)) %>%
+  group_by(time, age) %>%
+  mutate(
+    coverage = value/sum(value, na.rm = T),
+    coverage = case_when(
+      is.nan(coverage) ~ 0,
+      !is.nan(coverage) ~ coverage
+    )
+  )
+
+ggplot(
+  data = vacc_age,
+  mapping = aes(
+    x = time ,
+    y = coverage,
+    color = vaccination
+  )
+) +
+  geom_line() +
+  labs(
+    x = "Year",
+    y = "Vaccination coverage (%)"
+  ) +
+  scale_y_continuous(label = scales::comma) +
+  theme_bw() +
+  facet_wrap(vaccination~age) +
+  theme(legend.position = "none")
+
+
+
+
