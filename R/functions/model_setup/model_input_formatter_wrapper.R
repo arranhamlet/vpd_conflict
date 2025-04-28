@@ -52,7 +52,8 @@ model_input_formatter_wrapper <- function(
   iso,
   disease_data,
   disease,
-  vaccination_data,
+  vaccination_data_routine,
+  vaccination_data_sia,
   vaccine,
   contact_matricies,
   year_start = "",
@@ -87,7 +88,7 @@ model_input_formatter_wrapper <- function(
   )
   
   #Filter vaccination and case data to max year in demographic data
-  vaccination_data <- vaccination_data %>% 
+  vaccination_data_routine <- vaccination_data_routine %>% 
     filter(YEAR <= demographic_data_calculated$input_data$year_end)
   
   disease_data <- disease_data %>% 
@@ -102,16 +103,25 @@ model_input_formatter_wrapper <- function(
     year_end = demographic_data_calculated$input_data$year_end
   )
   
-  # Step 3: Process vaccination data
+  # Step 3: Process routine vaccination data
   processed_vaccination <- process_vaccination_routine(
-    vaccination_data = vaccination_data,
+    vaccination_data = vaccination_data_routine,
     vaccine = vaccine,
     iso = demographic_data_calculated$input_data$iso,
     year_start = demographic_data_calculated$input_data$year_start,
     year_end = demographic_data_calculated$input_data$year_end
   )
   
-  # Step 4: Generate plots
+  # Step 4: Process supplemental immunization activities
+  processed_vaccination_sia <- process_vaccination_sia(
+    vaccination_data = vaccination_data_sia,
+    vaccine = vaccine,
+    iso = demographic_data_calculated$input_data$iso,
+    year_start = demographic_data_calculated$input_data$year_start,
+    year_end = demographic_data_calculated$input_data$year_end
+  )
+
+  # Step 5: Generate plots
   case_vaccination_plots <- plot_case_vaccination_routine(
     case_data = processed_disease,
     vaccination_data = processed_vaccination
@@ -125,13 +135,14 @@ model_input_formatter_wrapper <- function(
     patchwork::wrap_elements(demographic_plots) +
     patchwork::plot_layout(heights = c(1.5, 2))
   
-  # Step 5: Return formatted objects
+  # Step 6: Return formatted objects
   find_maximum_year <- max(c(demographic_data_calculated$year, processed_disease$year, processed_vaccination$year))
   
   list(
     processed_demographic_data = demographic_data_calculated,
     processed_case_data = processed_disease,
     processed_vaccination_data = processed_vaccination,
+    processed_vaccination_sia = processed_vaccination_sia,
     demographic_plots = plotting
   )
 }
