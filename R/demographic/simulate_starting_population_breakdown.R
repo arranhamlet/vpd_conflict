@@ -115,7 +115,7 @@ params <- param_packager(
   crude_birth = model_data_preprocessed$processed_demographic_data$crude_birth,
   crude_death = model_data_preprocessed$processed_demographic_data$crude_death,
   simp_birth_death = 0,
-  aging_rate = 0,
+  aging_rate = 1,
   tt_migration = model_data_preprocessed$processed_demographic_data$tt_migration,
   migration_in_number = model_data_preprocessed$processed_demographic_data$migration_in_number,
   migration_distribution_values = model_data_preprocessed$processed_demographic_data$migration_distribution_values,
@@ -133,7 +133,6 @@ clean_df <- run_model(
   time = (model_data_preprocessed$processed_demographic_data$input_data$year_end - model_data_preprocessed$processed_demographic_data$input_data$year_start) + 1,
   no_runs = 1
 )
-
 
 #Plot total population
 year_start <- model_data_preprocessed$processed_demographic_data$input_data$year_start
