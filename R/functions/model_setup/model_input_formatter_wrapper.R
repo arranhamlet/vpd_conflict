@@ -54,6 +54,7 @@ model_input_formatter_wrapper <- function(
   disease,
   vaccination_data_routine,
   vaccination_data_sia,
+  VIMC_vaccination,
   vaccine,
   contact_matricies,
   year_start = "",
@@ -104,6 +105,14 @@ model_input_formatter_wrapper <- function(
   )
   
   # Step 3: Process routine vaccination data
+  processed_vaccination_vimc <- process_vaccination_vimc(
+    vaccination_data = VIMC_vaccination,
+    vaccine = vaccine,
+    iso = demographic_data_calculated$input_data$iso,
+    year_start = demographic_data_calculated$input_data$year_start,
+    year_end = demographic_data_calculated$input_data$year_end
+  )
+  
   processed_vaccination <- process_vaccination_routine(
     vaccination_data = vaccination_data_routine,
     vaccine = vaccine,
@@ -143,6 +152,7 @@ model_input_formatter_wrapper <- function(
     processed_case_data = processed_disease,
     processed_vaccination_data = processed_vaccination,
     processed_vaccination_sia = processed_vaccination_sia,
+    processed_vaccination_vimc = processed_vaccination_vimc,
     demographic_plots = plotting
   )
 }

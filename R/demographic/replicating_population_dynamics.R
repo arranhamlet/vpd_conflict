@@ -26,8 +26,9 @@ fertility <- import(here("data", "processed", "WPP", "fertility.csv"))
 mortality <- import(here("data", "processed", "WPP", "deaths.csv"))
 population_all <- import(here("data", "processed", "WPP", "age_both.csv"))
 population_female <- import(here("data", "processed", "WPP", "age_female.csv"))
+contact_matricies <- import(here("data", "raw", "contact_matricies", "contact_all.rdata"))
 
-random_iso <- sample(unique(migration$iso3), 8)
+random_iso <- c(sample(unique(migration$iso3), 7), "GBR")
 
 all_plot_together <- sapply(random_iso, function(x){
   
@@ -42,6 +43,7 @@ all_plot_together <- sapply(random_iso, function(x){
     year_end = "",
     iso = x,
     n_age = 101,
+    contact_matricies = contact_matricies
   )
 
   #Set up model
@@ -53,6 +55,7 @@ all_plot_together <- sapply(random_iso, function(x){
     
     N0 = demog_data$N0,
     
+    contact_matrix = demog_data$contact_matrix,
     I0 = 0,
     initial_background_death = 1,
     aging_rate = 1,

@@ -88,7 +88,7 @@ process_demography <- function(
   all_ages <- 0:100
   age_groups <- sapply(split(all_ages, sort(all_ages %% n_age)), function(x) min(x))
   
-  country_contact <- contact_matricies[[which(names(contact_matricies) == iso)]]
+  country_contact <- if(!any(names(contact_matricies) == iso)) Reduce("+", contact_matricies)/length(contact_matricies) else contact_matricies[[which(names(contact_matricies) == iso)]]
   
   reformatted_contact_matrix <- reformat_contact_matrix(
     contact_matrix_raw = country_contact,

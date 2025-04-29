@@ -33,6 +33,7 @@ full_disease_df <- import("data/processed/WHO/reported_cases_data.csv")
 vaccination_schedule <- import("data/processed/WHO/WHO_vaccination_schedule.xlsx")
 measles_parameters <- import(here("data", "processed", "model_parameters", "Measles_SEIR_Parameters.csv"))
 sia_vaccination <- import("data/processed/vaccination/sia_vimc.rds")
+VIMC_vaccination <- import("C:/Users/ah1114/Documents/Imperial/VPD_conflict/generic_vpd_models/data/processed/vaccination/coverage_table.rds")
 
 #Run processing
 model_data_preprocessed <- model_input_formatter_wrapper(
@@ -51,10 +52,19 @@ model_data_preprocessed <- model_input_formatter_wrapper(
   disease_data = full_disease_df,
   vaccination_data_routine = routine_vaccination_data,
   vaccination_data_sia = sia_vaccination,
-  year_start = 1980
+  VIMC_vaccination = VIMC_vaccination,
+  year_start = 1970
 )
 
 #Take pre-processed case and vaccination data and get it ready for params
+case_vaccination_ready <- case_vaccine_to_param_vimc(
+  demog_data = model_data_preprocessed$processed_demographic_data,
+  processed_vaccination_vimc = model_data_preprocessed$processed_vaccination_vimc,
+  processed_case = model_data_preprocessed$processed_case_data,
+  vaccination_schedule = vaccination_schedule,
+  setting = "high"
+)
+
 case_vaccination_ready <- case_vaccine_to_param(
   demog_data = model_data_preprocessed$processed_demographic_data,
   processed_vaccination = model_data_preprocessed$processed_vaccination_data,
@@ -89,7 +99,7 @@ params <- param_packager(
   
   # Vaccine parameters
   short_term_waning = 1/(14/365),
-  long_term_waning = 1/subset(measles_parameters, parameter == "long_term_waning" & grepl("2 dose", description)) %>% pull(value),
+  long_term_waning = 0, #1/subset(measles_parameters, parameter == "long_term_waning" & grepl("2 dose", description)) %>% pull(value),
   age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   
   # Disease parameters - we want to transmission, so set to 0
@@ -115,6 +125,9 @@ params <- param_packager(
   #Demographic parameters
   contact_matrix = model_data_preprocessed$processed_demographic_data$contact_matrix,
   N0 = model_data_preprocessed$processed_demographic_data$N0,
+  #List of when birth_death_changes
+  tt_birth_changes = model_data_preprocessed$processed_demographic_data$tt_migration,
+  tt_death_changes = model_data_preprocessed$processed_demographic_data$tt_migration,
   crude_birth = model_data_preprocessed$processed_demographic_data$crude_birth,
   crude_death = model_data_preprocessed$processed_demographic_data$crude_death,
   simp_birth_death = 0,
@@ -126,7 +139,7 @@ params <- param_packager(
   #Birth ages
   repro_low = 15,
   repro_high = 49,
-  
+
 )
 
 #Run model
@@ -211,8 +224,10 @@ ggplot(
   theme(legend.position = "none")
 
 #For select ages
-vacc_age <- subset(clean_df, state == "S" & age %in% c(1, 2, 18, 30, 60)) %>%
-  group_by(time, age) %>%
+vacc_age <- subset(clean_df, state %in% c("S", "E", "I", "R", "Is", "Rc")) %>%
+  ungroup() %>%
+  group_by(time, age, vaccination) %>%
+  summarise(value = sum(value)) %>%
   mutate(
     coverage = value/sum(value, na.rm = T),
     coverage = case_when(
@@ -221,12 +236,13 @@ vacc_age <- subset(clean_df, state == "S" & age %in% c(1, 2, 18, 30, 60)) %>%
     )
   )
 
+#Plot
 ggplot(
-  data = subset(vacc_age, vaccination == 1),
+  data = subset(vacc_age, vaccination == 1 & age %in% c(1, 2, 12, 18, 30, 60)),
   mapping = aes(
-    x = time ,
+    x = time + year_start,
     y = 1 - coverage,
-    color = age
+    color = as.factor(as.numeric(age))
   )
 ) +
   geom_line() +
@@ -236,7 +252,35 @@ ggplot(
   ) +
   scale_y_continuous(label = scales::comma, limits = c(0, 1)) +
   theme_bw() +
-  theme(legend.position = "none")
+  theme(legend.position = "bottom")
+
+
+ggplot(
+  data = vacc_age %>%
+    subset(time == max(time) &
+             age != "All") %>%
+    mutate(vaccination = case_when(
+      vaccination == 1 ~ "Unvaccinated",
+      vaccination %in% 2:3 ~ "1 dose",
+      vaccination %in% 4:5 ~ "2 doses",
+    ),
+    vaccination = factor(vaccination, levels = c("Unvaccinated", "1 dose", "2 doses"))),
+  mapping = aes(
+    x = as.numeric(age),
+    y = value,
+    fill = vaccination
+  )
+) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  labs(
+    x = "Age",
+    y = "Population",
+    fill = "",
+    title = "Measles vaccination coverage (2024)"
+  ) +
+  scale_y_continuous(labels = scales::comma)
+
 
 
 
