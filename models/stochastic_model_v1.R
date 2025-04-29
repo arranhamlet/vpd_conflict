@@ -380,8 +380,6 @@ death_modifier = parameter()
 
 #Switch between constant lambda (for calculating historical exposure)
 use_constant_lambda <- parameter(0)  # 0 = normal, 1 = constant force of infection
-lambda_const_base[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else (t_R0 / infectious_period[i, j, k]) * (1 - age_vaccination_beta_modifier[i, j, k])
-dim(lambda_const_base) <- c(n_age, n_vacc, n_risk)
 
 #Calculate transmission parameters
 infectious_period[, , ] <- if((severe_recovery_rate + cfr_severe[i] + background_death[i, k]) <= 0 || (recovery_rate + cfr_normal[i] + background_death[i, k]) <= 0) 0 else (1 - prop_severe[i, j, k]) / (recovery_rate + cfr_normal[i] + background_death[i, k]) + prop_severe[i, j, k] / (severe_recovery_rate + cfr_severe[i] + background_death[i, k])
@@ -389,12 +387,24 @@ infectious_period[, , ] <- if((severe_recovery_rate + cfr_severe[i] + background
 t_R0 <- interpolate(tt_R0, R0, "constant")
 #Calculate beta from the R0 and infectious period
 beta[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else t_R0 / infectious_period[i, j, k]
+
 #Update with vaccination and age mediation
 beta_updated[, , ] <- if(i <= age_maternal_protection_ends) beta[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k]) * (1 - (protection_weight_vacc[i] * prop_maternal_vaccinated[k] + protection_weight_rec[i] * prop_maternal_natural[k])) else (1 - age_vaccination_beta_modifier[i, j, k]) * beta[i, j, k]
 
 #Calculate the force of infection - using a contact matrix
-# lambda[, , ] <- if(N <= 0) 0 else max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
-lambda[, , ] <- if(N <= 0) 0 else if(use_constant_lambda == 1) max(0, lambda_const[i, j, k]) else max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
+initial(Reff_constant) <- 0
+update(Reff_constant) <- max(0, t_R0 * sum(S_effective) / N)
+
+S_effective[, , ] <- S[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k])
+dim(S_effective) <- c(n_age, n_vacc, n_risk)
+
+lambda[, , ] <- if(N <= 0) 0 else if(use_constant_lambda == 1) max(0, min(Reff_constant / infectious_period[i, j, k], 1)) else max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
+
+update(lambdao) <- lambda[1, 1, 1]
+initial(lambdao) <- 0
+
+update(infectious_periodo) <- infectious_period[1, 1, 1]
+initial(infectious_periodo) <- 0
 
 #Calculate Reff in multiple stages
 Reff_contrib[, , ] <- (sum(contact_matrix[i, ]) * infectious_weight[i, j, k] * infectious_period[i, j, k] * sum(beta_updated[, j, k]) * (S[i, j, k] / N))

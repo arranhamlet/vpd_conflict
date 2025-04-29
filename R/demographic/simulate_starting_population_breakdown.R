@@ -79,13 +79,13 @@ age_vaccination_beta_modifier <- rbind(
     dim1 = 1:101,
     dim2 = 2:3,
     dim3 = 1,
-    value = 1 - subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
+    value = subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
   ), 
   expand.grid(
     dim1 = 1:101,
     dim2 = 4:5,
     dim3 = 1,
-    value = 1 - subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("2 dose", description)) %>% pull(value)/100
+    value = subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("2 dose", description)) %>% pull(value)/100
   )
 )
 
@@ -102,8 +102,9 @@ params <- param_packager(
   long_term_waning = 0, #1/subset(measles_parameters, parameter == "long_term_waning" & grepl("2 dose", description)) %>% pull(value),
   age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   
-  # Disease parameters - we want to transmission, so set to 0
-  R0 = 0,
+  # Disease parameters 
+  R0 = 1,
+  use_constant_lambda = 1,
   
   #Disease parameters
   cfr_normal = 0,
@@ -113,8 +114,8 @@ params <- param_packager(
   severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value) * 365,
   
   #Seeding previous cases
-  tt_seeded = case_vaccination_ready$tt_seeded,
-  seeded = case_vaccination_ready$seeded,
+  # tt_seeded = case_vaccination_ready$tt_seeded,
+  # seeded = case_vaccination_ready$seeded,
   #Setting up vaccination
   vaccination_coverage = case_vaccination_ready$vaccination_coverage,#rbind(
     # data.frame(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, value = 0),
@@ -170,11 +171,27 @@ ggplot(
   scale_y_continuous(label = scales::comma) +
   theme_bw()
 
+ggplot(
+  data = clean_df %>%
+    filter(state == "infectious_periodo" & age == "All" & time >= 5),
+  mapping = aes(
+    x = time + year_start,
+    y = value
+  )
+) +
+  geom_line() +
+  labs(
+    x = "Year",
+    y = "Cases"
+  ) +
+  scale_y_continuous(label = scales::comma) +
+  theme_bw()
+
 
 #Plot
 ggplot(
   data = clean_df %>%
-    filter(state %in% c("S", "E", "I", "R", "Is", "Rc") & age == "All" & time > 0),
+    filter(state %in% c("S", "E", "I", "R", "Is", "Rc") & age == "All" & time > 5),
   mapping = aes(
     x = time + year_start,
     y = value
@@ -189,6 +206,22 @@ ggplot(
   theme_bw() +
   facet_wrap(~state, scales = "free_y")
 
+ggplot(
+  data = clean_df %>%
+    filter(state %in% c("lambdao") & age == "All" & time > 3),
+  mapping = aes(
+    x = time + year_start,
+    y = value
+  )
+) +
+  geom_bar(stat = "identity") +
+  labs(
+    x = "Year",
+    y = "Population"
+  ) +
+  scale_y_continuous(label = scales::comma) +
+  theme_bw() +
+  facet_wrap(~state, scales = "free_y")
 
 
 #Plot
