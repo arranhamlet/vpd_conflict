@@ -391,40 +391,65 @@ beta[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else t_R0 / infectious_perio
 #Update with vaccination and age mediation
 beta_updated[, , ] <- if(i <= age_maternal_protection_ends) beta[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k]) * (1 - (protection_weight_vacc[i] * prop_maternal_vaccinated[k] + protection_weight_rec[i] * prop_maternal_natural[k])) else (1 - age_vaccination_beta_modifier[i, j, k]) * beta[i, j, k]
 
-# Effective susceptible population (adjusted for vaccine protection)
+# Effective susceptible population
 S_eff[, , ] <- S[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k])
 dim(S_eff) <- c(n_age, n_vacc, n_risk)
 
-# Total population per stratum i, j, k
-N_strat[, , ] <- S[i, j, k] + E[i, j, k] + I[i, j, k] + Is[i, j, k] + R[i, j, k] + Rc[i, j, k]
-dim(N_strat) <- c(n_age, n_vacc, n_risk)
+# Susceptibility-weighted beta
+beta_s_weighted[, , ] <- beta_updated[i, j, k] * S_eff[i, j, k]
+dim(beta_s_weighted) <- c(n_age, n_vacc, n_risk)
 
-# Effective Re per i, j, k
-Re_stratified[, , ] <- if(N_strat[i, j, k] <= 0) 0 else t_R0 * S_eff[i, j, k] / N_strat[i, j, k]
-dim(Re_stratified) <- c(n_age, n_vacc, n_risk)
+# Sum over vacc and risk strata to get total per age group
+beta_s_sum_age[] <- sum(beta_s_weighted[i, , ])
+dim(beta_s_sum_age) <- n_age
 
-# Lambda per i, j, k
-lambda_stratified[, , ] <- if(Re_stratified[i, j, k] < 1) 0 else max((Re_stratified[i, j, k] - 1) / life_expectancy, 0)
-dim(lambda_stratified) <- c(n_age, n_vacc, n_risk)
+# Total population per age group
+N_popage[] <- sum(S[i, , ]) + sum(E[i, , ]) + sum(I[i, , ]) + sum(R[i, , ]) + sum(Is[i, , ]) + sum(Rc[i, , ])
+dim(N_popage) <- n_age
 
-#Calculate lambda contribution
-lambda_contribution[, , , ] <- contact_matrix[i, j] * lambda_stratified[j, k, l]
-dim(lambda_contribution) <- c(n_age, n_age, n_vacc, n_risk)
+# Adjust contact matrix for source population size (i.e., divide by N_popage[j])
+contact_per_capita[, ] <- if (N_popage[j] <= 0) 0 else contact_matrix[i, j] / N_popage[j]
+dim(contact_per_capita) <- c(n_age, n_age)
 
-# Aggregate to get final FOI per i, j, k
-lambda_contacted[, , ] <- sum(lambda_contribution[i, , j, k])
-dim(lambda_contacted) <- c(n_age, n_vacc, n_risk)
+# Unscaled Reff: total transmission contribution to each age group
+Reff_product[, ] <- contact_per_capita[i, j] * beta_s_sum_age[j]
+dim(Reff_product) <- c(n_age, n_age)
+
+Reff_unscl[] <- sum(Reff_product[i, ])
+dim(Reff_unscl) <- n_age
+
+# Total contacts per age group
+contact_sum[] <- sum(contact_matrix[i, ])
+dim(contact_sum) <- n_age
+
+# Average population-level Reff (unscaled)
+Reff_scaled_contact[] <- Reff_unscl[i] * contact_sum[i]
+dim(Reff_scaled_contact) <- n_age
+
+Reff_raw <- if (sum(contact_sum) <= 0) 1 else  sum(Reff_scaled_contact) / sum(contact_sum)
+
+# Scaling factor to match supplied R0
+Reff_scaling <- if (Reff_raw <= 0) 1 else t_R0 / Reff_raw
+
+# Final lambda_total calculation
+lambda_product[, ] <- contact_per_capita[i, j] * beta_s_sum_age[j]
+dim(lambda_product) <- c(n_age, n_age)
+
+lambda_total[] <- Reff_scaling * sum(lambda_product[i, ])
+dim(lambda_total) <- n_age
+
+update(Reff_susceptibility) <- Reff_raw
+initial(Reff_susceptibility) <- 1
 
 #Calculate Reff in multiple stages
 Reff_contrib[, , ] <- (sum(contact_matrix[i, ]) * infectious_weight[i, j, k] * infectious_period[i, j, k] * sum(beta_updated[, j, k]) * (S[i, j, k] / N))
 
 # Weight each infectious period by prevalence
 infectious_weight[, , ] <- if(sum(I) + sum(Is) <= 0) 0 else(I[i, j, k] + Is[i, j, k]) / (sum(I) + sum(Is))
-
 dim(infectious_weight) <- c(n_age, n_vacc, n_risk)
 
 # Age-specific FOI
-lambda[, , ] <- if(N <= 0) 0 else if(use_constant_lambda == 1) lambda_contacted[i, j, k] else max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
+lambda[, , ] <- if(N <= 0) 0 else if(use_constant_lambda == 1) lambda_total[i] else max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
 
 update(lambdao) <- lambda[1, 1, 1]
 initial(lambdao) <- 0
@@ -437,7 +462,7 @@ t_seeded <- interpolate(tt_seeded, seeded, "constant")
 update(t_seededo) <- sum(t_seeded)
 initial(t_seededo) <- 0
 
-update(Re_ageo) <- Re_stratified[1, 1, 1]
+update(Re_ageo) <- Reff_scaling
 initial(Re_ageo) <- 0
 
 #Calculate populations
@@ -449,7 +474,7 @@ Npop_age_risk[, ] <- sum(S[i, , j]) + sum(E[i, , j]) + sum(I[i, , j]) + sum(R[i,
 Npop_background_death[, ] <- if(Npop_age_risk[i, j] <= 0) 0 else Binomial(Npop_age_risk[i, j], max(min(background_death[i, j], 1), 0))
 #Interpolate changes in death rate
 death_int <- interpolate(tt_death_changes, crude_death, "constant")
-life_expectancy <- parameter()
+# life_expectancy <- parameter()
 
 #Select background death rate to use
 background_death[, ]<- if(simp_birth_death == 1) max(min(initial_background_death[i, j] * death_modifier, 1), 0) else max(min(death_int[i, j] * death_modifier, 1), 0)

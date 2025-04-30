@@ -35,6 +35,10 @@ measles_parameters <- import(here("data", "processed", "model_parameters", "Meas
 sia_vaccination <- import("data/processed/vaccination/sia_vimc.rds")
 VIMC_vaccination <- import("C:/Users/ah1114/Documents/Imperial/VPD_conflict/generic_vpd_models/data/processed/vaccination/coverage_table.rds")
 
+measles_cases <- import(here("data", "raw", "cases", "UK_measles_cases_1940_2023.xlsx")) %>%
+  clean_names() %>%
+  select(1:3)
+
 #Run processing
 model_data_preprocessed <- model_input_formatter_wrapper(
   iso = "GBR",    
@@ -53,7 +57,7 @@ model_data_preprocessed <- model_input_formatter_wrapper(
   vaccination_data_routine = routine_vaccination_data,
   vaccination_data_sia = sia_vaccination,
   VIMC_vaccination = VIMC_vaccination,
-  year_start = 1970
+  year_start = 1950
 )
 
 #Take pre-processed case and vaccination data and get it ready for params
@@ -103,7 +107,7 @@ params <- param_packager(
   age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   
   # Disease parameters 
-  R0 = 8,
+  R0 = 12,
   use_constant_lambda = 1,
   
   #Disease parameters
@@ -176,7 +180,7 @@ ggplot(
 
 ggplot(
   data = clean_df %>%
-    filter(state == "Re_ageo" & age == "All"),
+    filter(state == "Reff_raw" & age == "All"),
   mapping = aes(
     x = time + year_start,
     y = value
@@ -185,7 +189,7 @@ ggplot(
   geom_line() +
   labs(
     x = "Year",
-    y = "Cases"
+    y = "Re"
   ) +
   scale_y_continuous(label = scales::comma) +
   theme_bw()
@@ -220,7 +224,7 @@ ggplot(
   geom_bar(stat = "identity") +
   labs(
     x = "Year",
-    y = "Population"
+    y = "Lambda"
   ) +
   scale_y_continuous(label = scales::comma) +
   theme_bw() +
@@ -259,24 +263,6 @@ vacc_agg <- clean_df %>%
   mutate(coverage = value/sum(value, na.rm = T))
 
 
-ggplot(
-  data = vacc_agg,
-  mapping = aes(
-    x = time + year_start,
-    y = coverage,
-    color = vaccination
-  )
-) +
-  geom_line() +
-  labs(
-    x = "Year",
-    y = "Vaccination coverage (%)"
-  ) +
-  scale_y_continuous(label = scales::comma) +
-  theme_bw() +
-  facet_wrap(~vaccination) +
-  theme(legend.position = "none")
-
 #For select ages
 vacc_age <- subset(clean_df, state %in% c("S", "E", "I", "R", "Is", "Rc")) %>%
   ungroup() %>%
@@ -289,26 +275,6 @@ vacc_age <- subset(clean_df, state %in% c("S", "E", "I", "R", "Is", "Rc")) %>%
       !is.nan(coverage) ~ coverage
     )
   )
-
-#Plot
-ggplot(
-  data = subset(vacc_age, vaccination == 1 & age %in% c(1, 2, 12, 18, 30, 60)),
-  mapping = aes(
-    x = time + year_start,
-    y = 1 - coverage,
-    color = as.factor(as.numeric(age))
-  )
-) +
-  geom_line() +
-  labs(
-    x = "Year",
-    y = "Vaccination coverage (%)"
-  ) +
-  scale_y_continuous(label = scales::comma, limits = c(0, 1)) +
-  theme_bw() +
-  theme(legend.position = "bottom")
-
-
 vaccine_by_age <- ggplot(
   data = vacc_age %>%
     subset(time == max(time) &
