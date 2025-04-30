@@ -99,6 +99,8 @@ process_demography <- function(
     reformatted_contact_matrix,
     pop = pop_all[nrow(pop_all), ]
   )
+
+  contact_matrix_sym <- project_to_symmetric_doubly_stochastic(contact_matrix_sym)
   
   # Mortality
   mort_mat_raw <- as.matrix(mortality[year %in% years, paste0("x", 0:100), with = FALSE]) * death_modifier

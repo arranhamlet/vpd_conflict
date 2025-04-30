@@ -378,9 +378,6 @@ death_modifier = parameter()
 
 # Calculated parameters ---------------------------------------------------
 
-#Switch between constant lambda (for calculating historical exposure)
-use_constant_lambda <- parameter(0)  # 0 = normal, 1 = constant force of infection
-
 #Calculate transmission parameters
 infectious_period[, , ] <- if((severe_recovery_rate + cfr_severe[i] + background_death[i, k]) <= 0 || (recovery_rate + cfr_normal[i] + background_death[i, k]) <= 0) 0 else (1 - prop_severe[i, j, k]) / (recovery_rate + cfr_normal[i] + background_death[i, k]) + prop_severe[i, j, k] / (severe_recovery_rate + cfr_severe[i] + background_death[i, k])
 #Interpolate R0
@@ -391,84 +388,18 @@ beta[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else t_R0 / infectious_perio
 #Update with vaccination and age mediation
 beta_updated[, , ] <- if(i <= age_maternal_protection_ends) beta[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k]) * (1 - (protection_weight_vacc[i] * prop_maternal_vaccinated[k] + protection_weight_rec[i] * prop_maternal_natural[k])) else (1 - age_vaccination_beta_modifier[i, j, k]) * beta[i, j, k]
 
-# Effective susceptible population
-S_eff[, , ] <- S[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k])
-dim(S_eff) <- c(n_age, n_vacc, n_risk)
-
-# Susceptibility-weighted beta
-beta_s_weighted[, , ] <- beta_updated[i, j, k] * S_eff[i, j, k]
-dim(beta_s_weighted) <- c(n_age, n_vacc, n_risk)
-
-# Sum over vacc and risk strata to get total per age group
-beta_s_sum_age[] <- sum(beta_s_weighted[i, , ])
-dim(beta_s_sum_age) <- n_age
-
-# Total population per age group
-N_popage[] <- sum(S[i, , ]) + sum(E[i, , ]) + sum(I[i, , ]) + sum(R[i, , ]) + sum(Is[i, , ]) + sum(Rc[i, , ])
-dim(N_popage) <- n_age
-
-# Adjust contact matrix for source population size (i.e., divide by N_popage[j])
-contact_per_capita[, ] <- if (N_popage[j] <= 0) 0 else contact_matrix[i, j] / N_popage[j]
-dim(contact_per_capita) <- c(n_age, n_age)
-
-# Unscaled Reff: total transmission contribution to each age group
-Reff_product[, ] <- contact_per_capita[i, j] * beta_s_sum_age[j]
-dim(Reff_product) <- c(n_age, n_age)
-
-Reff_unscl[] <- sum(Reff_product[i, ])
-dim(Reff_unscl) <- n_age
-
-# Total contacts per age group
-contact_sum[] <- sum(contact_matrix[i, ])
-dim(contact_sum) <- n_age
-
-# Average population-level Reff (unscaled)
-Reff_scaled_contact[] <- Reff_unscl[i] * contact_sum[i]
-dim(Reff_scaled_contact) <- n_age
-
-Reff_raw <- if (sum(contact_sum) <= 0) 1 else  sum(Reff_scaled_contact) / sum(contact_sum)
-
-# Scaling factor to match supplied R0
-Reff_scaling <- if (Reff_raw <= 0) 1 else t_R0 / Reff_raw
-
-# Final lambda_total calculation
-lambda_product[, ] <- contact_per_capita[i, j] * beta_s_sum_age[j]
-dim(lambda_product) <- c(n_age, n_age)
-
-lambda_total[] <- Reff_scaling * sum(lambda_product[i, ])
-dim(lambda_total) <- n_age
-
-update(Reff_susceptibility) <- Reff_raw
-initial(Reff_susceptibility) <- 1
-
-#Calculate Reff in multiple stages
-Reff_contrib[, , ] <- (sum(contact_matrix[i, ]) * infectious_weight[i, j, k] * infectious_period[i, j, k] * sum(beta_updated[, j, k]) * (S[i, j, k] / N))
-
-# Weight each infectious period by prevalence
-infectious_weight[, , ] <- if(sum(I) + sum(Is) <= 0) 0 else(I[i, j, k] + Is[i, j, k]) / (sum(I) + sum(Is))
-dim(infectious_weight) <- c(n_age, n_vacc, n_risk)
-
 # Age-specific FOI
-lambda[, , ] <- if(N <= 0) 0 else if(use_constant_lambda == 1) lambda_total[i] else max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
+lambda[, , ] <- if(N <= 0) 0 else max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
 
-update(lambdao) <- lambda[1, 1, 1]
-initial(lambdao) <- 0
+#Calculate Reff
+Reff_contrib[, , ] <- (sum(contact_matrix[i, ]) * infectious_period[i, j, k] * sum(beta_updated[, j, k]) * (S[i, j, k] / N))
 
-update(infectious_periodo) <- infectious_period[1, 1, 1]
-initial(infectious_periodo) <- 0
-
+#Seeding
 t_seeded <- interpolate(tt_seeded, seeded, "constant")
-
-update(t_seededo) <- sum(t_seeded)
-initial(t_seededo) <- 0
-
-update(Re_ageo) <- Reff_scaling
-initial(Re_ageo) <- 0
 
 #Calculate populations
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
 Npop_age_risk[, ] <- sum(S[i, , j]) + sum(E[i, , j]) + sum(I[i, , j]) + sum(R[i, , j]) + sum(Is[i, , j]) + sum(Rc[i, , j])
-
 
 #Calculate death rates
 Npop_background_death[, ] <- if(Npop_age_risk[i, j] <= 0) 0 else Binomial(Npop_age_risk[i, j], max(min(background_death[i, j], 1), 0))
