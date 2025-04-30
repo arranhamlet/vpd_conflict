@@ -80,7 +80,7 @@ age_vaccination_beta_modifier <- rbind(
     dim2 = 2:3,
     dim3 = 1,
     value = subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
-  ), 
+  ),
   expand.grid(
     dim1 = 1:101,
     dim2 = 4:5,
@@ -103,7 +103,7 @@ params <- param_packager(
   age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   
   # Disease parameters 
-  R0 = 1,
+  R0 = 8,
   use_constant_lambda = 1,
   
   #Disease parameters
@@ -140,6 +140,9 @@ params <- param_packager(
   #Birth ages
   repro_low = 15,
   repro_high = 49,
+  age_maternal_protection_ends = 1,
+  protection_weight_vacc = .5,
+  protection_weight_rec = .5,
 
 )
 
@@ -173,7 +176,7 @@ ggplot(
 
 ggplot(
   data = clean_df %>%
-    filter(state == "infectious_periodo" & age == "All" & time >= 5),
+    filter(state == "Re_ageo" & age == "All"),
   mapping = aes(
     x = time + year_start,
     y = value
@@ -209,6 +212,24 @@ ggplot(
 ggplot(
   data = clean_df %>%
     filter(state %in% c("lambdao") & age == "All" & time > 3),
+  mapping = aes(
+    x = time + year_start,
+    y = value
+  )
+) +
+  geom_bar(stat = "identity") +
+  labs(
+    x = "Year",
+    y = "Population"
+  ) +
+  scale_y_continuous(label = scales::comma) +
+  theme_bw() +
+  facet_wrap(~state, scales = "free_y")
+
+
+ggplot(
+  data = clean_df %>%
+    filter(state %in% c("S") & age == "All" & time > 3),
   mapping = aes(
     x = time + year_start,
     y = value
@@ -288,7 +309,7 @@ ggplot(
   theme(legend.position = "bottom")
 
 
-ggplot(
+vaccine_by_age <- ggplot(
   data = vacc_age %>%
     subset(time == max(time) &
              age != "All") %>%
@@ -316,5 +337,53 @@ ggplot(
 
 
 
+#Okay more complicated plot, combine vaccination and R to create graph of those immune
+susceptibility_data <- subset(clean_df, state %in% c("S", "E", "I", "R", "Is", "Rc") & age != "All") %>%
+  mutate(
+    status = case_when(
+      state == "S" & vaccination == 1 ~ "Susceptible",
+      state == "S" & vaccination > 1 ~ "Vaccine protected",
+      state %in% c("S", "E", "I", "R", "Is", "Rc") & vaccination == 1 ~ "Exposure protected",
+      state %in% c("S", "E", "I", "R", "Is", "Rc") & vaccination > 1 ~ "Vaccine and exposure protected"
+      
+    ),
+    status = factor(status, levels = c("Susceptible", "Vaccine protected", "Exposure protected", 
+                                       "Vaccine and exposure protected"))
+  ) %>%
+  group_by(
+    time, age, status
+  ) %>%
+  summarise(
+    value = sum(value),
+    .groups = "keep"
+  ) %>%
+  mutate(
+    coverage = value/sum(value, na.rm = T),
+    coverage = case_when(
+      is.nan(coverage) ~ 0,
+      !is.nan(coverage) ~ coverage
+    )
+  )
 
 
+
+protection_by_age <- ggplot(
+  data = susceptibility_data %>%
+    subset(time == max(time)),
+  mapping = aes(
+    x = as.numeric(age),
+    y = value,
+    fill = status
+  )
+) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  labs(
+    x = "Age",
+    y = "Population",
+    fill = "",
+    title = "Measles susceptibility (2024)"
+  ) +
+  scale_y_continuous(labels = scales::comma)
+
+vaccine_by_age / protection_by_age

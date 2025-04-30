@@ -391,20 +391,29 @@ beta[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else t_R0 / infectious_perio
 #Update with vaccination and age mediation
 beta_updated[, , ] <- if(i <= age_maternal_protection_ends) beta[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k]) * (1 - (protection_weight_vacc[i] * prop_maternal_vaccinated[k] + protection_weight_rec[i] * prop_maternal_natural[k])) else (1 - age_vaccination_beta_modifier[i, j, k]) * beta[i, j, k]
 
-#Calculate the force of infection - using a contact matrix
-initial(Reff_constant) <- 0
-update(Reff_constant) <- max(0, t_R0 * sum(S_effective) / N)
+# Effective susceptible population (adjusted for vaccine protection)
+S_eff[, , ] <- S[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k])
+dim(S_eff) <- c(n_age, n_vacc, n_risk)
 
-S_effective[, , ] <- S[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k])
-dim(S_effective) <- c(n_age, n_vacc, n_risk)
+# Total population per stratum i, j, k
+N_strat[, , ] <- S[i, j, k] + E[i, j, k] + I[i, j, k] + Is[i, j, k] + R[i, j, k] + Rc[i, j, k]
+dim(N_strat) <- c(n_age, n_vacc, n_risk)
 
-lambda[, , ] <- if(N <= 0) 0 else if(use_constant_lambda == 1) max(0, min(Reff_constant / infectious_period[i, j, k], 1)) else max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
+# Effective Re per i, j, k
+Re_stratified[, , ] <- if(N_strat[i, j, k] <= 0) 0 else t_R0 * S_eff[i, j, k] / N_strat[i, j, k]
+dim(Re_stratified) <- c(n_age, n_vacc, n_risk)
 
-update(lambdao) <- lambda[1, 1, 1]
-initial(lambdao) <- 0
+# Lambda per i, j, k
+lambda_stratified[, , ] <- if(Re_stratified[i, j, k] < 1) 0 else max((Re_stratified[i, j, k] - 1) / life_expectancy, 0)
+dim(lambda_stratified) <- c(n_age, n_vacc, n_risk)
 
-update(infectious_periodo) <- infectious_period[1, 1, 1]
-initial(infectious_periodo) <- 0
+#Calculate lambda contribution
+lambda_contribution[, , , ] <- contact_matrix[i, j] * lambda_stratified[j, k, l]
+dim(lambda_contribution) <- c(n_age, n_age, n_vacc, n_risk)
+
+# Aggregate to get final FOI per i, j, k
+lambda_contacted[, , ] <- sum(lambda_contribution[i, , j, k])
+dim(lambda_contacted) <- c(n_age, n_vacc, n_risk)
 
 #Calculate Reff in multiple stages
 Reff_contrib[, , ] <- (sum(contact_matrix[i, ]) * infectious_weight[i, j, k] * infectious_period[i, j, k] * sum(beta_updated[, j, k]) * (S[i, j, k] / N))
@@ -414,19 +423,34 @@ infectious_weight[, , ] <- if(sum(I) + sum(Is) <= 0) 0 else(I[i, j, k] + Is[i, j
 
 dim(infectious_weight) <- c(n_age, n_vacc, n_risk)
 
+# Age-specific FOI
+lambda[, , ] <- if(N <= 0) 0 else if(use_constant_lambda == 1) lambda_contacted[i, j, k] else max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
+
+update(lambdao) <- lambda[1, 1, 1]
+initial(lambdao) <- 0
+
+update(infectious_periodo) <- infectious_period[1, 1, 1]
+initial(infectious_periodo) <- 0
+
 t_seeded <- interpolate(tt_seeded, seeded, "constant")
 
 update(t_seededo) <- sum(t_seeded)
 initial(t_seededo) <- 0
 
+update(Re_ageo) <- Re_stratified[1, 1, 1]
+initial(Re_ageo) <- 0
+
 #Calculate populations
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
 Npop_age_risk[, ] <- sum(S[i, , j]) + sum(E[i, , j]) + sum(I[i, , j]) + sum(R[i, , j]) + sum(Is[i, , j]) + sum(Rc[i, , j])
+
 
 #Calculate death rates
 Npop_background_death[, ] <- if(Npop_age_risk[i, j] <= 0) 0 else Binomial(Npop_age_risk[i, j], max(min(background_death[i, j], 1), 0))
 #Interpolate changes in death rate
 death_int <- interpolate(tt_death_changes, crude_death, "constant")
+life_expectancy <- parameter()
+
 #Select background death rate to use
 background_death[, ]<- if(simp_birth_death == 1) max(min(initial_background_death[i, j] * death_modifier, 1), 0) else max(min(death_int[i, j] * death_modifier, 1), 0)
 
