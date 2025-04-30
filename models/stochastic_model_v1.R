@@ -9,7 +9,6 @@ initial(Is[, , ]) <- 0
 initial(Rc[, , ]) <- 0
 
 #Additional outputs
-initial(R_effective) <- R0[1]
 initial(total_pop) <- sum(N0)
 initial(total_birth) <- 0
 initial(total_death) <- 0
@@ -32,7 +31,6 @@ update(Is[, , ]) <- max(Is[i, j, k] + into_Is[i, j, k] - recovered_from_Is[i, j,
 update(Rc[, , ]) <- max(Rc[i, j, k] + recovered_Is_to_Rc[i, j, k] - waning_Rc[i, j, k] + aging_into_Rc[i, j, k] - aging_out_of_Rc[i, j, k] - Rc_death[i, j, k] + moving_risk_to_Rc[i, j, k] - moving_risk_from_Rc[i, j, k] + migration_Rc[i, j, k] * pos_neg_migration + vaccinating_into_Rc[i, j, k] - vaccinating_out_of_Rc[i, j, k] + waning_to_Rc_long[i, j, k] + waning_to_Rc_unvaccinated[i, j, k] - waning_from_Rc_short[i, j, k] - waning_from_Rc_long[i, j, k], 0)
 
 #Additional outputs
-update(R_effective) <- sum(Reff_contrib) 
 update(total_pop) <- N
 update(total_birth) <- sum(Births)
 update(total_death) <- sum(S_death) + sum(E_death) + sum(I_death) + sum(R_death) + sum(Is_death) + sum(Rc_death)
@@ -388,13 +386,24 @@ beta[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else t_R0 / infectious_perio
 #Update with vaccination and age mediation
 beta_updated[, , ] <- if(i <= age_maternal_protection_ends) beta[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k]) * (1 - (protection_weight_vacc[i] * prop_maternal_vaccinated[k] + protection_weight_rec[i] * prop_maternal_natural[k])) else (1 - age_vaccination_beta_modifier[i, j, k]) * beta[i, j, k]
 
+# Age-specific FOI
+
+
 # user_specified_FOI <- parameter()
+
 lambda[, , ] <- if(N <= 0) 0 else max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
 
-#Calculate Reff
-Reff_full[, , , ] <- contact_matrix[i, j] * infectious_period[i, k, l] * beta_updated[i, k, l] * (S[i, k, l]/N)
-dim(Reff_full) <- c(n_age, n_age, n_vacc, n_risk)
-Reff_contrib[, , ] <- sum(Reff_full[i, , j, k])
+
+I_total[] <- sum(beta_updated[i, j, k] * infectious_period[i, j, k] * (I[i, j, k] + Is[i, j, k]))
+dim(I_total) <- n_age
+
+init_reff_calc[, , ] <- beta_updated[i, j, k] * sum(contact_matrix[i, ]) * infectious_period[i, j, k]
+dim(init_reff_calc) <- c(n_age, n_vacc, n_risk)
+
+Reff_contrib[i, j, k] <- if(N <= 0) 0 else S[i, j, k] / N * init_reff_calc[i, j, k] * (I[i, j, k] + Is[i, j, k]) / N
+
+
+
 
 #Seeding
 t_seeded <- interpolate(tt_seeded, seeded, "constant")

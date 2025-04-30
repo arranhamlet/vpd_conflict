@@ -43,7 +43,7 @@ demog_data <- process_demography(
   year_start = "2010",
   year_end = "2020",
   iso = "PSE",
-  n_age = 1,
+  n_age = 101,
   number_of_vaccines = 0, 
   n_risk = 1
 )
@@ -82,6 +82,13 @@ age_vaccination_beta_modifier <- rbind(
   )
 )
 
+#Initial FOI
+initial_FOI <- calculate_foi_from_R0(
+  R0 = 12,
+  contact_matrix = demog_data$contact_matrix,
+  S = demog_data$N0[, 4]
+)
+
 #Set up model
 params <- param_packager(
   # 
@@ -99,7 +106,7 @@ params <- param_packager(
   incubation_rate = 1/subset(measles_parameters, parameter == "incubation_period") %>% pull(value),
   recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
   severe_recovery_rate = 0,#1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
-
+  
   prop_complications = 0,#median(prop_complications),
   prop_severe = 0,#median(prop_severe),
   R0 = 2,
@@ -109,6 +116,8 @@ params <- param_packager(
   
   #Infectious
   I0 = 0,
+  # user_specified_foi = 1,
+  # initial_FOI = initial_FOI,
   
   tt_seeded = c(0, 10, 11),
   seeded = data.frame(dim1 = 1, dim2 = 1, dim3 = 1, dim4 = 2, value = 1),
@@ -138,7 +147,7 @@ clean_df <- run_model(
   odin_model = model,
   params = params,
   time = 500,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
-  no_runs = 5
+  no_runs = 10
 )
 
 #Subset and aggregate

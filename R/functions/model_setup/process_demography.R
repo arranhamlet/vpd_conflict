@@ -95,13 +95,13 @@ process_demography <- function(
     age_vector = age_groups
   )
   
-  contact_matrix_sym <- symmetrize_contact_matrix(
-    reformatted_contact_matrix,
-    pop = pop_all[nrow(pop_all), ]
-  )
+  # reformatted_contact_matrix <- symmetrize_contact_matrix(
+  #   reformatted_contact_matrix,
+  #   pop = pop_all[nrow(pop_all), ]
+  # )
+  # 
+  # reformatted_contact_matrix <- project_to_symmetric_doubly_stochastic(reformatted_contact_matrix)
 
-  contact_matrix_sym <- project_to_symmetric_doubly_stochastic(contact_matrix_sym)
-  
   # Mortality
   mort_mat_raw <- as.matrix(mortality[year %in% years, paste0("x", 0:100), with = FALSE]) * death_modifier
   mort_mat <- collapse_age_bins(mort_mat_raw, n_age)
@@ -174,7 +174,7 @@ process_demography <- function(
     migration_in_number = migration_in_number,
     migration_distribution_values = migration_distribution_values,
     population_data = pop_all,
-    contact_matrix = contact_matrix_sym,
+    contact_matrix = reformatted_contact_matrix,
     input_data = data.frame(
       iso = iso,
       year_start = min(years), 
