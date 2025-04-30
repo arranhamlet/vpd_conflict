@@ -94,15 +94,15 @@ params <- param_packager(
   long_term_waning = 1/(subset(measles_parameters, parameter == "long_term_waning" & grepl("2 dose", description)) %>% pull(value) * 365),
   # 
   #Disease parameters
-  cfr_normal = median(cfr),
-  cfr_severe = median(cfr),
+  cfr_normal = 0,#median(cfr),
+  cfr_severe = 0,#median(cfr),
   incubation_rate = 1/subset(measles_parameters, parameter == "incubation_period") %>% pull(value),
   recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
-  severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
+  severe_recovery_rate = 0,#1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
 
-  prop_complications = median(prop_complications),
-  prop_severe = median(prop_severe),
-  R0 = 1,
+  prop_complications = 0,#median(prop_complications),
+  prop_severe = 0,#median(prop_severe),
+  R0 = 2,
   # age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   natural_immunity_waning = 0,
   initial_background_death = 0,
@@ -110,7 +110,7 @@ params <- param_packager(
   #Infectious
   I0 = 0,
   
-  tt_seeded = c(0, 100, 101),
+  tt_seeded = c(0, 10, 11),
   seeded = data.frame(dim1 = 1, dim2 = 1, dim3 = 1, dim4 = 2, value = 1),
   
   #Demographic parameters
@@ -137,8 +137,8 @@ params <- param_packager(
 clean_df <- run_model(
   odin_model = model,
   params = params,
-  time = 3000,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
-  no_runs = 10
+  time = 500,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
+  no_runs = 5
 )
 
 #Subset and aggregate

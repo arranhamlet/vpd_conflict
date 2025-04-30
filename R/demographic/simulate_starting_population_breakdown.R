@@ -107,7 +107,7 @@ params <- param_packager(
   age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   
   # Disease parameters 
-  R0 = 0,
+  R0 = 6,
 
   #Disease parameters
   cfr_normal = 0,
@@ -117,8 +117,9 @@ params <- param_packager(
   severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value) * 365,
   
   #Seeding previous cases
-  tt_seeded = case_vaccination_ready$tt_seeded,
-  seeded = case_vaccination_ready$seeded,
+  I0 = 1,
+  # tt_seeded = case_vaccination_ready$tt_seeded,
+  # seeded = case_vaccination_ready$seeded,
   #Setting up vaccination
   vaccination_coverage = case_vaccination_ready$vaccination_coverage,#rbind(
     # data.frame(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, value = 0),
@@ -179,7 +180,7 @@ ggplot(
 
 ggplot(
   data = clean_df %>%
-    filter(state == "Reff_susceptibility" & age == "All"),
+    filter(state == "R_effective" & age == "All"),
   mapping = aes(
     x = time + year_start,
     y = value

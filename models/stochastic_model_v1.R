@@ -388,11 +388,13 @@ beta[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else t_R0 / infectious_perio
 #Update with vaccination and age mediation
 beta_updated[, , ] <- if(i <= age_maternal_protection_ends) beta[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k]) * (1 - (protection_weight_vacc[i] * prop_maternal_vaccinated[k] + protection_weight_rec[i] * prop_maternal_natural[k])) else (1 - age_vaccination_beta_modifier[i, j, k]) * beta[i, j, k]
 
-# Age-specific FOI
+# user_specified_FOI <- parameter()
 lambda[, , ] <- if(N <= 0) 0 else max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
 
 #Calculate Reff
-Reff_contrib[, , ] <- (sum(contact_matrix[i, ]) * infectious_period[i, j, k] * sum(beta_updated[, j, k]) * (S[i, j, k] / N))
+Reff_full[, , , ] <- contact_matrix[i, j] * infectious_period[i, k, l] * beta_updated[i, k, l] * (S[i, k, l]/N)
+dim(Reff_full) <- c(n_age, n_age, n_vacc, n_risk)
+Reff_contrib[, , ] <- sum(Reff_full[i, , j, k])
 
 #Seeding
 t_seeded <- interpolate(tt_seeded, seeded, "constant")

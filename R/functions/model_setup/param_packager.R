@@ -107,7 +107,7 @@ param_packager <- function(
   protection_weight_rec = 0,
 
   #Age group where maternal protection ends
-  age_maternal_protection_ends = 0,
+  age_maternal_protection_ends = 1,
   #Reproductive ages
   repro_low = 1,
   repro_high = NULL,
@@ -324,8 +324,7 @@ param_packager <- function(
     #Crude birth rate if simp_birth_death != 1
     crude_birth = crude_birth,
     crude_death = crude_death,
-    life_expectancy = round(lifespan_from_mx(crude_death)[[2]], 0),
-    
+
     #Weight given to maternal protection
     protection_weight_vacc = protection_weight_vacc,
     protection_weight_rec = protection_weight_rec,
