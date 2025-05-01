@@ -175,8 +175,6 @@ ggplot(data = aggregate_df %>% filter(time > 0),
   theme(legend.position = "none")
 
 
-
-
 #Age prop matrix
 reff_age_sum <- clean_df %>% 
   subset(time > 0 & age != "All" & vaccination == "All" & risk == "All" & state %in% c("Reff_age", "Reff_age_prop")) %>%
