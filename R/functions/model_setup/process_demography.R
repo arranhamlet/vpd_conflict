@@ -95,12 +95,12 @@ process_demography <- function(
     age_vector = age_groups
   )
   
-  # reformatted_contact_matrix <- symmetrize_contact_matrix(
-  #   reformatted_contact_matrix,
-  #   pop = pop_all[nrow(pop_all), ]
-  # )
-  # 
-  # reformatted_contact_matrix <- project_to_symmetric_doubly_stochastic(reformatted_contact_matrix)
+  reformatted_contact_matrix <- symmetrize_contact_matrix(
+    reformatted_contact_matrix,
+    pop = pop_all[nrow(pop_all), ]
+  )
+
+  reformatted_contact_matrix <- project_to_symmetric_doubly_stochastic(reformatted_contact_matrix)
 
   # Mortality
   mort_mat_raw <- as.matrix(mortality[year %in% years, paste0("x", 0:100), with = FALSE]) * death_modifier

@@ -386,22 +386,17 @@ beta[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else t_R0 / infectious_perio
 #Update with vaccination and age mediation
 beta_updated[, , ] <- if(i <= age_maternal_protection_ends) beta[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k]) * (1 - (protection_weight_vacc[i] * prop_maternal_vaccinated[k] + protection_weight_rec[i] * prop_maternal_natural[k])) else (1 - age_vaccination_beta_modifier[i, j, k]) * beta[i, j, k]
 
-# Age-specific FOI
-
-
-# user_specified_FOI <- parameter()
-
 lambda[, , ] <- if(N <= 0) 0 else max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
 
+Reff_contrib[, , ] <- (sum(contact_matrix[i, ]) * infectious_weight[i, j, k] * infectious_period[i, j, k] * sum(beta_updated[, j, k]) * (S[i, j, k] / N))
 
-I_total[] <- sum(beta_updated[i, j, k] * infectious_period[i, j, k] * (I[i, j, k] + Is[i, j, k]))
-dim(I_total) <- n_age
+infectious_weight[, , ] <- if(sum(I) + sum(Is) <= 0) 0 else(I[i, j, k] + Is[i, j, k]) / (sum(I) + sum(Is))
+dim(infectious_weight) <- c(n_age, n_vacc, n_risk)
 
-init_reff_calc[, , ] <- beta_updated[i, j, k] * sum(contact_matrix[i, ]) * infectious_period[i, j, k]
-dim(init_reff_calc) <- c(n_age, n_vacc, n_risk)
+dim(Reff_contrib) <- c(n_age, n_vacc, n_risk)
 
-Reff_contrib[i, j, k] <- if(N <= 0) 0 else S[i, j, k] / N * init_reff_calc[i, j, k] * (I[i, j, k] + Is[i, j, k]) / N
-
+update(Reff_contribo) <- Reff_contrib[2, 1, 1]
+initial(Reff_contribo) <- R0[1]
 
 
 
@@ -478,7 +473,7 @@ dim(infectious_period) <- c(n_age, n_vacc, n_risk)
 dim(lambda) <- c(n_age, n_vacc, n_risk)
 dim(tt_R0) <- no_R0_changes
 dim(R0) <- no_R0_changes
-dim(Reff_contrib) <- c(n_age, n_vacc, n_risk)
+# dim(Reff_contrib) <- c(n_age, n_vacc, n_risk)
 dim(contact_matrix) <- c(n_age, n_age)
 dim(lambda_S) <- c(n_age, n_vacc, n_risk)
 dim(waning_R) <- c(n_age, n_vacc, n_risk)

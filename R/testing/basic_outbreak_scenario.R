@@ -109,7 +109,7 @@ params <- param_packager(
   
   prop_complications = 0,#median(prop_complications),
   prop_severe = 0,#median(prop_severe),
-  R0 = 2,
+  R0 = 1,
   # age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   natural_immunity_waning = 0,
   initial_background_death = 0,
