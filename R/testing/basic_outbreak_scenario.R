@@ -84,7 +84,7 @@ age_vaccination_beta_modifier <- rbind(
 
 #Initial FOI
 initial_FOI <- calculate_foi_from_R0(
-  R0 = 12,
+  R0 = 2,
   contact_matrix = demog_data$contact_matrix,
   S = demog_data$N0[, 4]
 )
@@ -116,11 +116,11 @@ params <- param_packager(
   
   #Infectious
   I0 = 0,
-  user_specified_foi = 0,
+  user_specified_foi = 1,
   initial_FOI = initial_FOI,
   
-  tt_seeded = c(0, 10, 11),
-  seeded = data.frame(dim1 = 1, dim2 = 1, dim3 = 1, dim4 = 2, value = 10),
+  # tt_seeded = c(0, 10, 11),
+  # seeded = data.frame(dim1 = 1, dim2 = 1, dim3 = 1, dim4 = 2, value = 10),
   
   #Demographic parameters
   contact_matrix = demog_data$contact_matrix,
@@ -182,15 +182,16 @@ reff_age_sum <- clean_df %>%
   fsummarise(value = median(value))
 
 categorize_age <- function(age_vector) {
-  # Define age breaks and labels
-  breaks <- c(seq(0, 80, by = 5), Inf)
-  labels <- c(paste(seq(0, 75, by = 5), seq(4, 79, by = 5), sep = "-"), "80+")
+  # Define breaks and labels up to 100+
+  breaks <- c(seq(0, 100, by = 5), Inf)
+  labels <- c(paste(seq(0, 95, by = 5), seq(4, 99, by = 5), sep = "-"), "100+")
   
   # Cut ages into categories
   age_cat <- cut(age_vector, breaks = breaks, labels = labels, right = FALSE, include.lowest = TRUE)
   
   return(age_cat)
 }
+
 
 reff_age_agg <- reff_age_sum %>%
   mutate(age_cat = categorize_age(as.numeric(age))) %>%
@@ -217,3 +218,15 @@ ggplot(data = reff_age_agg,
        y = "Time") +
   scale_fill_viridis_c()
 
+
+ggplot(data = reff_age_agg,
+       mapping = aes(
+         x = time,
+         y = age_cat,
+         fill = value/5
+       )) +
+  geom_tile() +
+  theme_bw() +
+  labs(x = "Age",
+       y = "Time") +
+  scale_fill_viridis_c()

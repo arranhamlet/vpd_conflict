@@ -93,6 +93,13 @@ age_vaccination_beta_modifier <- rbind(
   )
 )
 
+#Okay we are going to be using a constant FOI
+initial_FOI <- calculate_foi_from_R0(
+  R0 = 12,
+  contact_matrix = model_data_preprocessed$processed_demographic_data$contact_matrix,
+  S = model_data_preprocessed$processed_demographic_data$N0[, 4]
+)
+
 #Set up model
 params <- param_packager(
   
@@ -107,7 +114,9 @@ params <- param_packager(
   age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   
   # Disease parameters 
-  R0 = 6,
+  R0 = 12,
+  user_specified_foi = 1,
+  initial_FOI = initial_FOI,
 
   #Disease parameters
   cfr_normal = 0,
@@ -117,9 +126,10 @@ params <- param_packager(
   severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value) * 365,
   
   #Seeding previous cases
+  foi_turn_off_when_vaccinating = 0,
   I0 = 1,
-  # tt_seeded = case_vaccination_ready$tt_seeded,
-  # seeded = case_vaccination_ready$seeded,
+  tt_seeded = case_vaccination_ready$tt_seeded,
+  seeded = case_vaccination_ready$seeded,
   #Setting up vaccination
   vaccination_coverage = case_vaccination_ready$vaccination_coverage,#rbind(
     # data.frame(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, value = 0),
@@ -154,7 +164,7 @@ params <- param_packager(
 clean_df <- run_model(
   odin_model = model,
   params = params,
-  time = (model_data_preprocessed$processed_demographic_data$input_data$year_end - model_data_preprocessed$processed_demographic_data$input_data$year_start) + 1,
+  time = 50 + (model_data_preprocessed$processed_demographic_data$input_data$year_end - model_data_preprocessed$processed_demographic_data$input_data$year_start) + 1,
   no_runs = 1
 )
 
@@ -180,7 +190,7 @@ ggplot(
 
 ggplot(
   data = clean_df %>%
-    filter(state == "R_effective" & age == "All"),
+    filter(state == "Reff" & age == "All"),
   mapping = aes(
     x = time + year_start,
     y = value
