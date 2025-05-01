@@ -376,12 +376,6 @@ death_modifier = parameter()
 #Calculate transmission parameters
 infectious_period[, , ] <- if((severe_recovery_rate + cfr_severe[i] + background_death[i, k]) <= 0 || (recovery_rate + cfr_normal[i] + background_death[i, k]) <= 0) 0 else (1 - prop_severe[i, j, k]) / (recovery_rate + cfr_normal[i] + background_death[i, k]) + prop_severe[i, j, k] / (severe_recovery_rate + cfr_severe[i] + background_death[i, k])
 
-update(inf_2_pt1) <- (1 - prop_severe[2, 1, 1]) / (recovery_rate + cfr_normal[2] + background_death[2, 1])
-update(inf_2_pt2) <- (prop_severe[2, 1, 1]) / (severe_recovery_rate + cfr_severe[2] + background_death[2, 1])
-
-initial(inf_2_pt1) <- 0
-initial(inf_2_pt2) <- 0
-
 #Interpolate R0
 t_R0 <- interpolate(tt_R0, R0, "constant")
 #Calculate beta from the R0 and infectious period
@@ -394,42 +388,40 @@ user_specified_foi <- parameter(0)
 initial_FOI <- parameter()
 dim(initial_FOI) <- n_age
 
-lambda[, , ] <- if(N <= 0) 0 else if(user_specified_foi == 1) sum(ngm)/R0[1] * initial_FOI[i] else max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
+
+# Step 1: Infectious contribution by age
+inf_weighted[, , ] <- beta_updated[i, j, k] * (I[i, j, k] + Is[i, j, k])
+dim(inf_weighted) <- c(n_age, n_vacc, n_risk)
+
+infectious_source[] <- sum(inf_weighted[i, , ])
+dim(infectious_source) <- n_age
+
+# Step 2: Age-specific contact-weighted force of infection
+lambda_contact[, ] <- contact_matrix[i, j] * infectious_source[j]
+dim(lambda_contact) <- c(n_age, n_age)
+
+lambda_raw[] <- sum(lambda_contact[i, ]) / Npop_age[i]
+dim(lambda_raw) <- n_age
+
+# Step 3: Expand to full lambda by copying across j, k
+lambda[, , ] <- if(N <= 0) 0 else if(user_specified_foi == 1) ngm[i]/R0[1] * initial_FOI[i] else max(0, lambda_raw[i])
 
 # Calculate next-generation matrix elements
 ngm_unfolded[, , , ] <- S[i, k, l] * beta_updated[i, k, l] * infectious_period[i, k, l] * contact_matrix[i, j]
 dim(ngm_unfolded) <- c(n_age, n_age, n_vacc, n_risk)
 
-update(S2) <- S[2, 1, 1]
-update(beta_updated2) <- beta_updated[2, 1, 1]
-update(infectious_period2) <- infectious_period[2, 1, 1]
-update(contact_matrix2) <- sum(contact_matrix[2, ])
-initial(S2) <- 0
-initial(beta_updated2) <- 0
-initial(infectious_period2) <- 0
-initial(contact_matrix2) <- 0
-update(ngm2) <- ngm[2]
-initial(ngm2) <- 0
-
-update(beta2) <- beta[2, 1, 1]
-initial(beta2) <- 0
-
-ngm[] <- sum(ngm_unfolded[i, , , ])/Npop_age[i]
+ngm[] <- if(Npop_age[i] <= 0) 0 else sum(ngm_unfolded[i, , , ])/Npop_age[i]
 dim(ngm) <- c(n_age)
 
 # Step 2: Collapse across i and j
-update(Reff) <- sum(ngm)
+update(Reff) <- if(n_age <= 0) 0 else sum(ngm)/n_age
 initial(Reff) <- R0[1]
 
 update(Reff_age[]) <- ngm[i]
 initial(Reff_age[]) <- 0
 dim(Reff_age) <- n_age
 
-update(Reff_age_prop[]) <- ngm[i]/sum(ngm)
-initial(Reff_age_prop[]) <- 0
-dim(Reff_age_prop) <- n_age
-
-update(lambdao) <- sum(lambda)
+update(lambdao) <- lambda[1, 1, 1]
 initial(lambdao) <- 0
 
 #Seeding
@@ -449,9 +441,6 @@ death_int <- interpolate(tt_death_changes, crude_death, "constant")
 
 #Select background death rate to use
 background_death[, ]<- if(simp_birth_death == 1) max(min(initial_background_death[i, j] * death_modifier, 1), 0) else max(min(death_int[i, j] * death_modifier, 1), 0)
-
-update(background_death2) <- background_death[2, 1]
-initial(background_death2) <- 0
 
 #Calculate birth rates
 #Reproductive population
