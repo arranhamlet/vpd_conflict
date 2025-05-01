@@ -109,7 +109,7 @@ params <- param_packager(
   
   prop_complications = 0,#median(prop_complications),
   prop_severe = 0,#median(prop_severe),
-  R0 = 1,
+  R0 = 1.5,
   # age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   natural_immunity_waning = 0,
   initial_background_death = 0,
@@ -120,7 +120,7 @@ params <- param_packager(
   # initial_FOI = initial_FOI,
   
   tt_seeded = c(0, 10, 11),
-  seeded = data.frame(dim1 = 1, dim2 = 1, dim3 = 1, dim4 = 2, value = 1),
+  seeded = data.frame(dim1 = 1, dim2 = 1, dim3 = 1, dim4 = 2, value = 10),
   
   #Demographic parameters
   contact_matrix = demog_data$contact_matrix,

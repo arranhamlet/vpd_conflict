@@ -388,17 +388,20 @@ beta_updated[, , ] <- if(i <= age_maternal_protection_ends) beta[i, j, k] * (1 -
 
 lambda[, , ] <- if(N <= 0) 0 else max(0, sum(contact_matrix[i, ]) * sum(beta_updated[, j, k]) * (sum(I[, j, k]) + sum(Is[, j, k])) / N)
 
-Reff_contrib[, , ] <- (sum(contact_matrix[i, ]) * infectious_weight[i, j, k] * infectious_period[i, j, k] * sum(beta_updated[, j, k]) * (S[i, j, k] / N))
 
-infectious_weight[, , ] <- if(sum(I) + sum(Is) <= 0) 0 else(I[i, j, k] + Is[i, j, k]) / (sum(I) + sum(Is))
-dim(infectious_weight) <- c(n_age, n_vacc, n_risk)
+# Step 1: Calculate next-generation matrix elements
+ngm_unfolded[, , , ] <- S[i, k, l] * beta_updated[i, k, l] * infectious_period[i, k, l] * contact_matrix[i, j]
+dim(ngm_unfolded) <- c(n_age, n_age, n_vacc, n_risk)
 
-dim(Reff_contrib) <- c(n_age, n_vacc, n_risk)
+ngm[] <- sum(ngm_unfolded[i, , , ])/Npop_age[i]
+dim(ngm) <- c(n_age)
 
-update(Reff_contribo) <- Reff_contrib[2, 1, 1]
-initial(Reff_contribo) <- R0[1]
+# Step 2: Collapse across i and j
+update(Reff) <- sum(ngm)
+initial(Reff) <- R0[1]
 
-
+update(lambdao) <- lambda[2, 1, 1]
+initial(lambdao) <- 0
 
 #Seeding
 t_seeded <- interpolate(tt_seeded, seeded, "constant")
@@ -406,6 +409,8 @@ t_seeded <- interpolate(tt_seeded, seeded, "constant")
 #Calculate populations
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
 Npop_age_risk[, ] <- sum(S[i, , j]) + sum(E[i, , j]) + sum(I[i, , j]) + sum(R[i, , j]) + sum(Is[i, , j]) + sum(Rc[i, , j])
+Npop_age[] <- sum(S[i, , ]) + sum(E[i, , ]) + sum(I[i, , ]) + sum(R[i, , ]) + sum(Is[i, , ]) + sum(Rc[i, , ])
+dim(Npop_age) <- n_age
 
 #Calculate death rates
 Npop_background_death[, ] <- if(Npop_age_risk[i, j] <= 0) 0 else Binomial(Npop_age_risk[i, j], max(min(background_death[i, j], 1), 0))
