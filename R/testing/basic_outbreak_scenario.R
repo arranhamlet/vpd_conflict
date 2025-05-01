@@ -109,7 +109,7 @@ params <- param_packager(
   
   prop_complications = 0,#median(prop_complications),
   prop_severe = 0,#median(prop_severe),
-  R0 = 1.5,
+  R0 = 2,
   # age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   natural_immunity_waning = 0,
   initial_background_death = 0,
@@ -146,8 +146,8 @@ params <- param_packager(
 clean_df <- run_model(
   odin_model = model,
   params = params,
-  time = 500,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
-  no_runs = 10
+  time = 1000,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
+  no_runs = 4
 )
 
 #Subset and aggregate

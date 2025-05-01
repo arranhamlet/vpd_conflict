@@ -403,6 +403,12 @@ initial(Reff) <- R0[1]
 update(lambdao) <- lambda[2, 1, 1]
 initial(lambdao) <- 0
 
+update(beta_updatedo) <- sum(beta_updated)
+update(infectious_periodo) <- sum(infectious_period)
+initial(beta_updatedo) <- 0
+initial(infectious_periodo) <- 0
+
+
 #Seeding
 t_seeded <- interpolate(tt_seeded, seeded, "constant")
 
