@@ -177,20 +177,43 @@ ggplot(data = aggregate_df %>% filter(time > 0),
 
 #Age prop matrix
 reff_age_sum <- clean_df %>% 
-  subset(time > 0 & age != "All" & vaccination == "All" & risk == "All" & state %in% c("Reff_age", "Reff_age_prop")) %>%
+  subset(time > 0 & age != "All" & vaccination == "All" & risk == "All" & state %in% c("Reff_age")) %>%
   fgroup_by(state, time, age) %>%
   fsummarise(value = median(value))
 
+categorize_age <- function(age_vector) {
+  # Define age breaks and labels
+  breaks <- c(seq(0, 80, by = 5), Inf)
+  labels <- c(paste(seq(0, 75, by = 5), seq(4, 79, by = 5), sep = "-"), "80+")
+  
+  # Cut ages into categories
+  age_cat <- cut(age_vector, breaks = breaks, labels = labels, right = FALSE, include.lowest = TRUE)
+  
+  return(age_cat)
+}
 
+reff_age_agg <- reff_age_sum %>%
+  mutate(age_cat = categorize_age(as.numeric(age))) %>%
+  fgroup_by(time, age_cat) %>%
+  fsummarise(value = sum(value)) %>%
+  ungroup() %>%
+  group_by(time) %>%
+  mutate(
+    prop = value/sum(value),
+    prop = ifelse(is.nan(prop), 0, prop)
+  )
+  
 
-ggplot(data = subset(reff_age_sum, state == "Reff_age" & age %in% c(1, 10, 18, 50)),
+#Plot heatmap of whats going on
+ggplot(data = reff_age_agg,
        mapping = aes(
          x = time,
-         y = value,
-         color = age
+         y = age_cat,
+         fill = prop
        )) +
-  geom_line() +
+  geom_tile() +
   theme_bw() +
-  scale_y_continuous(labels = scales::comma) +
-  facet_wrap(~age)
+  labs(x = "Age",
+       y = "Time") +
+  scale_fill_viridis_c()
 
