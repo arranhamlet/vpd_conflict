@@ -109,15 +109,15 @@ params <- param_packager(
   
   prop_complications = 0,#median(prop_complications),
   prop_severe = 0,#median(prop_severe),
-  R0 = 2,
+  R0 = 12,
   # age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   natural_immunity_waning = 0,
   initial_background_death = 0,
   
   #Infectious
   I0 = 0,
-  # user_specified_foi = 1,
-  # initial_FOI = initial_FOI,
+  user_specified_foi = 0,
+  initial_FOI = initial_FOI,
   
   tt_seeded = c(0, 10, 11),
   seeded = data.frame(dim1 = 1, dim2 = 1, dim3 = 1, dim4 = 2, value = 10),
@@ -127,7 +127,8 @@ params <- param_packager(
   N0 = demog_data$N0,
   crude_birth = demog_data$crude_birth[1, ] %>%
     mutate(value = value/365),
-  crude_death = demog_data$crude_death[1, ] %>%
+  crude_death = demog_data$crude_death %>%
+    subset(dim3 == 1) %>%
     mutate(value = value/365),
   simp_birth_death = 0,
   aging_rate = 1/365,
@@ -146,7 +147,7 @@ params <- param_packager(
 clean_df <- run_model(
   odin_model = model,
   params = params,
-  time = 1000,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
+  time = 3000,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
   no_runs = 4
 )
 
@@ -172,4 +173,26 @@ ggplot(data = aggregate_df %>% filter(time > 0),
   theme_bw() +
   scale_y_continuous(labels = scales::comma) +
   theme(legend.position = "none")
+
+
+
+
+#Age prop matrix
+reff_age_sum <- clean_df %>% 
+  subset(time > 0 & age != "All" & vaccination == "All" & risk == "All" & state %in% c("Reff_age", "Reff_age_prop")) %>%
+  fgroup_by(state, time, age) %>%
+  fsummarise(value = median(value))
+
+
+
+ggplot(data = subset(reff_age_sum, state == "Reff_age" & age %in% c(1, 10, 18, 50)),
+       mapping = aes(
+         x = time,
+         y = value,
+         color = age
+       )) +
+  geom_line() +
+  theme_bw() +
+  scale_y_continuous(labels = scales::comma) +
+  facet_wrap(~age)
 

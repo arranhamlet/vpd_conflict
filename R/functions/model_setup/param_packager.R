@@ -171,7 +171,7 @@ param_packager <- function(
   initial_FOI <- if (length(initial_FOI) == 1) {
     array(initial_FOI, dim = n_age)
   } else {
-    array_from_df(dim1 = n_age, updates = initial_FOI)
+    initial_FOI
   }
 
   prop_complications_dims <- n_age
