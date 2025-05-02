@@ -41,7 +41,8 @@ run_model <- function(odin_model, params, time = 1000, no_runs = 25) {
       Is = c("age", "vaccination", "risk", "time"),
       Rc = c("age", "vaccination", "risk", "time"),
       Reff_age_prop = c("age", "time"),
-      Reff_age = c("age", "time")
+      Reff_age = c("age", "time"),
+      new_case = c("age", "vaccination", "risk", "time") 
     )
   )
 }
