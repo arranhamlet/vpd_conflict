@@ -98,7 +98,7 @@ initial_FOI <- calculate_foi_from_R0(
   R0 = 12,
   contact_matrix = model_data_preprocessed$processed_demographic_data$contact_matrix,
   S = model_data_preprocessed$processed_demographic_data$N0[, 4],
-  infectious_period = subset(measles_parameters, parameter == "recovery_rate") %>% pull(value)
+  infectious_period = 365/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value)
 )
 
 #Set up model
@@ -127,7 +127,6 @@ params <- param_packager(
   severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value) * 365,
   
   #Seeding previous cases
-  foi_turn_off_when_vaccinating = 0,
   I0 = 0,
   # tt_seeded = case_vaccination_ready$tt_seeded,
   # seeded = case_vaccination_ready$seeded,
@@ -153,8 +152,8 @@ params <- param_packager(
   repro_low = 15,
   repro_high = 49,
   age_maternal_protection_ends = 1,
-  protection_weight_vacc = 1,
-  protection_weight_rec = 1,
+  protection_weight_vacc = .5,
+  protection_weight_rec = .5,
   migration_represent_current_pop = 1
 
 )
@@ -192,7 +191,7 @@ ggplot(
 #Plot
 ggplot(
   data = clean_df %>%
-    filter(state %in% c("I") & age == "All" & time > 50),
+    filter(state %in% c("new_case") & age == "All" & time > 30),
   mapping = aes(
     x = time + year_start,
     y = value
@@ -201,11 +200,47 @@ ggplot(
   geom_bar(stat = "identity") +
   labs(
     x = "Year",
-    y = "Population"
+    y = "Cases"
   ) +
   scale_y_continuous(label = scales::comma) +
   theme_bw() +
   facet_wrap(~state, scales = "free_y")
+
+ggplot(
+  data = clean_df %>%
+    filter(state %in% c("Reff") & age == "All" & time > 1),
+  mapping = aes(
+    x = time + year_start,
+    y = value
+  )
+) +
+  geom_line(stat = "identity") +
+  labs(
+    x = "Year",
+    y = "Reff"
+  ) +
+  scale_y_continuous(label = scales::comma) +
+  theme_bw() +
+  facet_wrap(~state, scales = "free_y")
+
+
+ggplot(
+  data = clean_df %>%
+    filter(state %in% c("lambdao") & age == "All" & time > 59),
+  mapping = aes(
+    x = time + year_start,
+    y = value
+  )
+) +
+  geom_line(stat = "identity") +
+  labs(
+    x = "Year",
+    y = "Lambda"
+  ) +
+  scale_y_continuous(label = scales::comma) +
+  theme_bw() +
+  facet_wrap(~state, scales = "free_y")
+
 
 
 #Plot
@@ -220,6 +255,17 @@ vacc_agg <- clean_df %>%
     time
   ) %>%
   mutate(coverage = value/sum(value, na.rm = T))
+
+ggplot(
+  data = vacc_agg,
+  mapping = aes(
+    x = time,
+    y = coverage,
+    color = vaccination
+  )
+) +
+  geom_line() +
+  theme_bw()
 
 
 #For select ages
@@ -260,17 +306,6 @@ vaccine_by_age <- ggplot(
     title = "Measles vaccination coverage (2024)"
   ) +
   scale_y_continuous(labels = scales::comma)
-
-
-# ggplot(
-#   data = subset(clean_df, state == "Reff_age"),
-#   mapping = aes(
-#     x = time,
-#     y = as.numeric(age),
-#     fill = value
-#   )
-# ) +
-#   geom_tile()
 
 
 #Okay more complicated plot, combine vaccination and R to create graph of those immune

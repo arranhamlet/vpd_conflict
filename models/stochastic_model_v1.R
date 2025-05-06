@@ -388,7 +388,7 @@ t_R0 <- interpolate(tt_R0, R0, "constant")
 beta[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else t_R0 / infectious_period[i, j, k]
 
 #Update with vaccination and age mediation
-beta_updated[, , ] <- if(i <= age_maternal_protection_ends) beta[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k]) * (1 - (protection_weight_vacc[i] * prop_maternal_vaccinated[k] + protection_weight_rec[i] * prop_maternal_natural[k])) else (1 - age_vaccination_beta_modifier[i, j, k]) * beta[i, j, k]
+beta_updated[, , ] <- if(i <= age_maternal_protection_ends) beta[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k]) * (1 - (protection_weight_vacc * prop_maternal_vaccinated[k] + protection_weight_rec * prop_maternal_natural[k])) else (1 - age_vaccination_beta_modifier[i, j, k]) * beta[i, j, k]
 
 user_specified_foi <- parameter(0)
 initial_FOI <- parameter()
@@ -543,8 +543,6 @@ dim(prop_maternal_vaccinated) <- n_risk
 dim(prop_maternal_natural) <- n_risk
 dim(vaccinated_mums) <- n_risk
 dim(antibody_mums) <- n_risk
-dim(protection_weight_vacc) <- age_maternal_protection_ends
-dim(protection_weight_rec) <- age_maternal_protection_ends
 
 dim(tt_vaccination_coverage) <- no_vacc_changes
 dim(vaccination_coverage) <- c(n_age, n_vacc, n_risk, no_vacc_changes)
