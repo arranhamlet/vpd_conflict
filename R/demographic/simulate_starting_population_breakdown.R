@@ -83,7 +83,7 @@ age_vaccination_beta_modifier <- rbind(
     dim1 = 1:101,
     dim2 = 2:3,
     dim3 = 1,
-    value = subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
+    value = 1#subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
   ),
   expand.grid(
     dim1 = 1:101,
@@ -97,7 +97,8 @@ age_vaccination_beta_modifier <- rbind(
 initial_FOI <- calculate_foi_from_R0(
   R0 = 12,
   contact_matrix = model_data_preprocessed$processed_demographic_data$contact_matrix,
-  S = model_data_preprocessed$processed_demographic_data$N0[, 4]
+  S = model_data_preprocessed$processed_demographic_data$N0[, 4],
+  infectious_period = subset(measles_parameters, parameter == "recovery_rate") %>% pull(value)
 )
 
 #Set up model
@@ -144,9 +145,9 @@ params <- param_packager(
   crude_death = model_data_preprocessed$processed_demographic_data$crude_death,
   simp_birth_death = 0,
   aging_rate = 1,
-  # tt_migration = model_data_preprocessed$processed_demographic_data$tt_migration,
-  # migration_in_number = model_data_preprocessed$processed_demographic_data$migration_in_number,
-  # migration_distribution_values = model_data_preprocessed$processed_demographic_data$migration_distribution_values,
+  tt_migration = model_data_preprocessed$processed_demographic_data$tt_migration,
+  migration_in_number = model_data_preprocessed$processed_demographic_data$migration_in_number,
+  migration_distribution_values = model_data_preprocessed$processed_demographic_data$migration_distribution_values,
 
   #Birth ages
   repro_low = 15,
@@ -154,6 +155,7 @@ params <- param_packager(
   age_maternal_protection_ends = 1,
   protection_weight_vacc = 1,
   protection_weight_rec = 1,
+  migration_represent_current_pop = 1
 
 )
 
@@ -172,6 +174,25 @@ year_start <- model_data_preprocessed$processed_demographic_data$input_data$year
 ggplot(
   data = clean_df %>%
     filter(state %in% c("S", "E", "I", "R", "Is", "Rc") & age == "All" & time > 5),
+  mapping = aes(
+    x = time + year_start,
+    y = value
+  )
+) +
+  geom_bar(stat = "identity") +
+  labs(
+    x = "Year",
+    y = "Population"
+  ) +
+  scale_y_continuous(label = scales::comma) +
+  theme_bw() +
+  facet_wrap(~state, scales = "free_y")
+
+
+#Plot
+ggplot(
+  data = clean_df %>%
+    filter(state %in% c("I") & age == "All" & time > 50),
   mapping = aes(
     x = time + year_start,
     y = value
@@ -213,6 +234,7 @@ vacc_age <- subset(clean_df, state %in% c("S", "E", "I", "R", "Is", "Rc")) %>%
       !is.nan(coverage) ~ coverage
     )
   )
+
 vaccine_by_age <- ggplot(
   data = vacc_age %>%
     subset(time == max(time) &
@@ -257,8 +279,8 @@ susceptibility_data <- subset(clean_df, state %in% c("S", "E", "I", "R", "Is", "
     status = case_when(
       state == "S" & vaccination == 1 ~ "Susceptible",
       state == "S" & vaccination > 1 ~ "Vaccine protected",
-      state %in% c("S", "E", "I", "R", "Is", "Rc") & vaccination == 1 ~ "Exposure protected",
-      state %in% c("S", "E", "I", "R", "Is", "Rc") & vaccination > 1 ~ "Vaccine and exposure protected"
+      state != "S" & vaccination == 1 ~ "Exposure protected",
+      state != "S" & vaccination > 1 ~ "Vaccine and exposure protected"
       
     ),
     status = factor(status, levels = c("Susceptible", "Vaccine protected", "Exposure protected", 

@@ -160,28 +160,31 @@ vaccinating_into_S[, , ] <- if(j == 3) vaccinating_out_of_S[i, 1, k] else if(j >
 S_after_vaccination[, , ] <- S_after_aging[i, j, k] + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k]
 
 # For E compartment
-vaccinating_out_of_E[, , ] <- if(n_vacc == 1 || j > n_vacc - 2 || E_after_aging[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(E_after_aging[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
-vaccinating_into_E[, , ] <- if(j == 3) vaccinating_out_of_E[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_E[i, j - 2, k] + vaccinating_out_of_E[i, j - 3, k] else 0
+vaccinating_out_of_E[, , ] <- if(1 == 1) 0 else if(n_vacc == 1 || j > n_vacc - 2 || E_after_aging[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(E_after_aging[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
+vaccinating_into_E[, , ] <- if(1 == 1) 0 else if(j == 3) vaccinating_out_of_E[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_E[i, j - 2, k] + vaccinating_out_of_E[i, j - 3, k] else 0
 E_after_vaccination[, , ] <- E_after_aging[i, j, k] + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k]
 
 # For I compartment
-vaccinating_out_of_I[, , ] <- if(n_vacc == 1 || j > n_vacc - 2 || I_after_aging[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(I_after_aging[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
-vaccinating_into_I[, , ] <- if(j == 3) vaccinating_out_of_I[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_I[i, j - 2, k] + vaccinating_out_of_I[i, j - 3, k] else 0
+vaccinating_out_of_I[, , ] <- if(1 == 1) 0 else if(n_vacc == 1 || j > n_vacc - 2 || I_after_aging[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(I_after_aging[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
+vaccinating_into_I[, , ] <- if(1 == 1) 0 else if(j == 3) vaccinating_out_of_I[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_I[i, j - 2, k] + vaccinating_out_of_I[i, j - 3, k] else 0
 I_after_vaccination[, , ] <- I_after_aging[i, j, k] + vaccinating_into_I[i, j, k] - vaccinating_out_of_I[i, j, k]
 
 # For R compartment
-vaccinating_out_of_R[, , ] <- if(n_vacc == 1 || j > n_vacc - 2 || R_after_aging[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(R_after_aging[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
-vaccinating_into_R[, , ] <- if(j == 3) vaccinating_out_of_R[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_R[i, j - 2, k] + vaccinating_out_of_R[i, j - 3, k] else 0
+vaccinating_out_of_R[, , ] <- if(1 == 1) 0 else if(n_vacc == 1 || j > n_vacc - 2 || R_after_aging[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(R_after_aging[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
+vaccinating_into_R[, , ] <- if(1 == 1) 0 else if(j == 3) vaccinating_out_of_R[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_R[i, j - 2, k] + vaccinating_out_of_R[i, j - 3, k] else 0
 R_after_vaccination[, , ] <- R_after_aging[i, j, k] + vaccinating_into_R[i, j, k] - vaccinating_out_of_R[i, j, k]
 
+update(vaccinating_into_Ro) <- sum(vaccinating_into_R)
+initial(vaccinating_into_Ro) <- 0
+
 # For Is compartment
-vaccinating_out_of_Is[, , ] <- if(n_vacc == 1 || j > n_vacc - 2 || Is_after_aging[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(Is_after_aging[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
-vaccinating_into_Is[, , ] <- if(j == 3) vaccinating_out_of_Is[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_Is[i, j - 2, k] + vaccinating_out_of_Is[i, j - 3, k] else 0
+vaccinating_out_of_Is[, , ] <- if(1 == 1) 0 else if(n_vacc == 1 || j > n_vacc - 2 || Is_after_aging[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(Is_after_aging[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
+vaccinating_into_Is[, , ] <- if(1 == 1) 0 else if(j == 3) vaccinating_out_of_Is[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_Is[i, j - 2, k] + vaccinating_out_of_Is[i, j - 3, k] else 0
 Is_after_vaccination[, , ] <- Is_after_aging[i, j, k] + vaccinating_into_Is[i, j, k] - vaccinating_out_of_Is[i, j, k]
 
 # For Rc compartment
-vaccinating_out_of_Rc[, , ] <- if(n_vacc == 1 || j > n_vacc - 2 || Rc_after_aging[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(Rc_after_aging[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
-vaccinating_into_Rc[, , ] <- if(j == 3) vaccinating_out_of_Rc[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_Rc[i, j - 2, k] + vaccinating_out_of_Rc[i, j - 3, k] else 0
+vaccinating_out_of_Rc[, , ] <- if(1 == 1) 0 else if(n_vacc == 1 || j > n_vacc - 2 || Rc_after_aging[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(Rc_after_aging[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
+vaccinating_into_Rc[, , ] <- if(1 == 1) 0 else if(j == 3) vaccinating_out_of_Rc[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_Rc[i, j - 2, k] + vaccinating_out_of_Rc[i, j - 3, k] else 0
 Rc_after_vaccination[, , ] <- Rc_after_aging[i, j, k] + vaccinating_into_Rc[i, j, k] - vaccinating_out_of_Rc[i, j, k]
 
 # STEP 3: WANING - Apply waning to the results after vaccination
@@ -250,22 +253,21 @@ moving_risk_to_Rc[, , ] <- if(sum(moving_risk_distribution[i, j,]) <= 0) moving_
 migration <- interpolate(tt_migration, migration_in_number, "constant")
 migration_distribution <- interpolate(tt_migration, migration_distribution_values, "constant")
 
+migration_represent_current_pop <- parameter(0)
+
 #Positive or negative flow
 pos_neg_migration <- if(sum(migration) < 0) -1 else 1
 migration_adjusted[, , ] <- migration[i, j, k] * pos_neg_migration
+migration_flat <- sum(migration_adjusted)
 
 # Moving INTO each compartment with specified distribution - not sampling as we want the exact numbers
-migration_S[, , ] <- if(sum(migration_distribution) <= 0 || migration_adjusted[i, j, k] <= 0) 0 else migration_adjusted[i, j, k] * sum(migration_distribution[1])/sum(migration_distribution)
+migration_S[, , ]  <- if(sum(migration_distribution) <= 0 || migration_adjusted[i, j, k] <= 0) 0 else if(migration_represent_current_pop == 0) migration_adjusted[i, j, k] * sum(migration_distribution[1])/sum(migration_distribution) else if(migration_represent_current_pop == 1 && sum(S) > 0 && sum(migration_distribution) > 0) migration_flat * S[i, j, k]/sum(S) * sum(migration_distribution[1])/sum(migration_distribution) else 0
+migration_E[, , ]  <- if(sum(migration_distribution) <= 0 || migration_adjusted[i, j, k] <= 0) 0 else if(migration_represent_current_pop == 0) migration_adjusted[i, j, k] * sum(migration_distribution[2])/sum(migration_distribution) else if(migration_represent_current_pop == 1 && sum(E) > 0 && sum(migration_distribution) > 0) migration_flat * E[i, j, k]/sum(E) * sum(migration_distribution[2])/sum(migration_distribution) else 0
+migration_I[, , ]  <- if(sum(migration_distribution) <= 0 || migration_adjusted[i, j, k] <= 0) 0 else if(migration_represent_current_pop == 0) migration_adjusted[i, j, k] * sum(migration_distribution[3])/sum(migration_distribution) else if(migration_represent_current_pop == 1 && sum(I) > 0 && sum(migration_distribution) > 0) migration_flat * I[i, j, k]/sum(I) * sum(migration_distribution[3])/sum(migration_distribution) else 0
+migration_R[, , ]  <- if(sum(migration_distribution) <= 0 || migration_adjusted[i, j, k] <= 0) 0 else if(migration_represent_current_pop == 0) migration_adjusted[i, j, k] * sum(migration_distribution[4])/sum(migration_distribution) else if(migration_represent_current_pop == 1 && sum(R) > 0 && sum(migration_distribution) > 0) migration_flat * R[i, j, k]/sum(R) * sum(migration_distribution[4])/sum(migration_distribution) else 0
+migration_Is[, , ] <- if(sum(migration_distribution) <= 0 || migration_adjusted[i, j, k] <= 0) 0 else if(migration_represent_current_pop == 0) migration_adjusted[i, j, k] * sum(migration_distribution[5])/sum(migration_distribution) else if(migration_represent_current_pop == 1 && sum(Is) > 0 && sum(migration_distribution) > 0) migration_flat * Is[i, j, k]/sum(Is) * sum(migration_distribution[5])/sum(migration_distribution) else 0
+migration_Rc[, , ] <- if(sum(migration_distribution) <= 0 || migration_adjusted[i, j, k] <= 0) 0 else if(migration_represent_current_pop == 0) migration_adjusted[i, j, k] * sum(migration_distribution[6])/sum(migration_distribution) else if(migration_represent_current_pop == 1 && sum(Rc) > 0 && sum(migration_distribution) > 0) migration_flat * Rc[i, j, k]/sum(Rc) * sum(migration_distribution[6])/sum(migration_distribution) else 0
 
-migration_E[, , ] <- if(sum(migration_distribution) <= 0 || migration_adjusted[i, j, k] <= 0) 0 else migration_adjusted[i, j, k] * sum(migration_distribution[2])/sum(migration_distribution)
-
-migration_I[, , ] <- if(sum(migration_distribution) <= 0 || migration_adjusted[i, j, k] <= 0) 0 else migration_adjusted[i, j, k] * sum(migration_distribution[3])/sum(migration_distribution)
-
-migration_R[, , ] <- if(sum(migration_distribution) <= 0 || migration_adjusted[i, j, k] <= 0) 0 else migration_adjusted[i, j, k] * sum(migration_distribution[4])/sum(migration_distribution)
-
-migration_Is[, , ] <- if(sum(migration_distribution) <= 0 || migration_adjusted[i, j, k] <= 0) 0 else migration_adjusted[i, j, k] * sum(migration_distribution[5])/sum(migration_distribution)
-
-migration_Rc[, , ] <- if(sum(migration_distribution) <= 0 || migration_adjusted[i, j, k] <= 0) 0 else migration_adjusted[i, j, k] * sum(migration_distribution[6])/sum(migration_distribution)
 
 # User parameter values --------------------------------------------------------
 

@@ -14,7 +14,7 @@ case_vaccine_to_param <- function(
   
   ages <- 0:(n_age - 1)
   years <- demog_data$input_data$year_start:demog_data$input_data$year_end
-
+  
   #Subset schedule
   schedule_subset <- vaccination_schedule %>%
     filter(grepl(unique(processed_case$disease_description), Disease)) %>%
@@ -70,17 +70,8 @@ case_vaccine_to_param <- function(
         value = this_row$coverage/100
       )
     }, simplify = FALSE))
-
+    
   }, simplify = FALSE))
-  
-  #Remove above 1 values, sometimes found in the data
-  vaccination_param_df <- vaccination_param_df %>%
-    #Have to include a row for time 1 where the values are 0
-    rbind(
-      vaccination_param_df[1, ] %>%
-        mutate(dim4 = 1,
-               value = 0)
-    )
   
   #Process sia data - different data and different approach
   processed_vaccination_sia_upd <- fill_missing_years_general(
@@ -97,7 +88,7 @@ case_vaccine_to_param <- function(
     
     #Subset to the row and work out the timing
     this_row <- processed_vaccination_sia_upd[x, ]
-
+    
     #Create dataframe
     #Need to create a dataframe of here and then a dataframe 1 after with a value of 0 to turn off the interpolation
     data.frame(
@@ -119,6 +110,14 @@ case_vaccine_to_param <- function(
       .groups = "drop"
     )
   
+  #Have to include a row for time 1 where the values are 0
+  vaccination_combo_param_df <- vaccination_combo_param_df %>%
+    rbind(
+      vaccination_combo_param_df[1, ] %>%
+        mutate(dim4 = 1,
+               value = 0)
+    )
+  
   #Seeded case
   processed_case_upd <- fill_missing_years_general(
     df = processed_case,
@@ -126,7 +125,7 @@ case_vaccine_to_param <- function(
     value_col = "cases"
   ) %>%
     filter(year <= demog_data$input_data$year_end)
-
+  
   case_param_df <- Reduce(rbind, sapply(1:nrow(processed_case_upd), function(x){
     
     #Subset to the row and work out the timing
@@ -134,7 +133,7 @@ case_vaccine_to_param <- function(
     #Population_distribution
     popdist <- demog_data$population_data[which(this_row$year == years), ]
     popdist <- popdist/sum(popdist)
-
+    
     set.seed(1)
     
     #Work out case distribution
@@ -171,9 +170,9 @@ case_vaccine_to_param <- function(
   case_param_df <- case_param_df %>%
     rbind(
       case_param_df[1, ] %>%
-      mutate(dim4 = 1,
-             value = 0)
-  ) %>% filter(!(duplicated(dim1, dim4) & value == 0))
+        mutate(dim4 = 1,
+               value = 0)
+    ) %>% filter(!(duplicated(dim1, dim4) & value == 0))
   
   list(tt_vaccination = c(0, which(years %in% processed_vaccination_upd$year)),
        vaccination_coverage = vaccination_combo_param_df,
