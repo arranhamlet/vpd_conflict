@@ -396,6 +396,9 @@ dim(initial_FOI) <- n_age
 inf_weighted[, , ] <- beta_updated[i, j, k] * (I[i, j, k] + Is[i, j, k])
 dim(inf_weighted) <- c(n_age, n_vacc, n_risk)
 
+update(inf_weightedo) <- sum(inf_weighted)
+initial(inf_weightedo) <- 0
+
 infectious_source[] <- sum(inf_weighted[i, , ])
 dim(infectious_source) <- n_age
 
@@ -407,7 +410,7 @@ lambda_raw[] <- sum(lambda_contact[i, ]) / Npop_age[i]
 dim(lambda_raw) <- n_age
 
 # Step 3: Expand to full lambda by copying across j, k
-lambda[, , ] <- if(N <= 0) 0 else if(user_specified_foi == 1) ngm[i]/R0[1] * initial_FOI[i] else max(0, lambda_raw[i])
+lambda[, , ] <- if(N <= 0) 0 else if(user_specified_foi == 1) beta_updated[i, j, k] * ngm[i]/t_R0 * initial_FOI[i] else max(0, lambda_raw[i] * beta_updated[i, j, k])
 
 # Calculate next-generation matrix elements
 ngm_unfolded[, , , ] <- S[i, k, l] * beta_updated[i, k, l] * infectious_period[i, k, l] * contact_matrix[i, j]

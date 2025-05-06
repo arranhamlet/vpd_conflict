@@ -150,10 +150,10 @@ params <- param_packager(
   contact_matrix = model_data_preprocessed$processed_demographic_data$contact_matrix,
   N0 = model_data_preprocessed$processed_demographic_data$N0,
   #List of when birth_death_changes
- 
+  
   simp_birth_death = 0,
   aging_rate = 1,
- 
+  
   
   #Birth ages
   repro_low = 15,
@@ -404,7 +404,7 @@ tiny_params <- sapply(1, function(meow){
 }, simplify = FALSE)[[1]]
 
 
-prob_out <- sapply(vacc_use$prop, function(x){
+prob_out <- sapply(seq(0.98, 0.82, by = -0.02), function(x){
   
   print(x)
   
@@ -421,16 +421,12 @@ prob_out <- sapply(vacc_use$prop, function(x){
   clean_df <- run_model(
     odin_model = model,
     params = params_upd,
-    time = 365,
-    no_runs = 10
+    time = 365 * 3,
+    no_runs = 25
   ) %>%
     filter(state %in% c("S", "new_case") &
              vaccination != "All")
-  
-  boop = subset(clean_df, state == "new_case") %>% fgroup_by(time, run) %>% fsummarise(value = sum(value)) 
-  ggplot(data = boop, mapping = aes(x = time, y= value, color = run)) + geom_line()
-  
-  
+
   values <- clean_df %>%
     subset(state == "new_case") %>%
     fgroup_by(time, run) %>%
@@ -455,8 +451,6 @@ combo_annual <- combo %>%
   fsummarise(
     value = sum(value)
   )
-  
-
 
 get_95CI <- function(x, method = c("normal", "t.test", "bootstrap"), conf_level = 0.95, n_boot = 1000, type) {
   method <- match.arg(method)
@@ -510,12 +504,12 @@ combo_sum <- combo_annual %>%
 #   )
 
 #Total case per year
-case_per_year <- combo %>%
-  # subset(state == "new_case") %>%
-  fgroup_by(vac_coverage) %>%
-  fsummarise(value = sum(value))
+# case_per_year <- combo %>%
+#   # subset(state == "new_case") %>%
+#   fgroup_by(vac_coverage) %>%
+#   fsummarise(value = sum(value))
 
-combo_sum$time <- 63:54
+combo_sum$time <- 63:55
 
 vac_coverage_plot <- ggplot(
   data = combo_sum,
@@ -523,17 +517,17 @@ vac_coverage_plot <- ggplot(
     x = time + year_start, #100 * vac_coverage,
     ymin = low,
     ymax = high,
-    y = median
-    )
+    y = mean
+  )
 ) +
   geom_point() +
   geom_errorbar() +
   labs(y = "Mean outbreak size",
        x = "") +
-  # scale_y_continuous(lab = scales::comma, limits = c(0, 1500)) +
+  scale_y_continuous(lab = scales::comma) +
   # scale_x_reverse() +
   theme_bw() +
-  coord_cartesian(xlim = c(2024, 2033)) +
+  coord_cartesian(xlim = c(2025, 2033)) +
   theme(axis.title.x = element_blank(), 
         axis.line.x = element_blank(), 
         axis.text.x = element_blank(),
@@ -542,13 +536,27 @@ vac_coverage_plot <- ggplot(
   geom_hline(yintercept = subset(combo_sum, vac_coverage  == max(vac_coverage )) %>% pull(mean), linetype = "dashed")
 
 
-protected_plot <- ggplot(data = pop_prot %>%
-         mutate(status_simple = factor(status_simple, levels = c("Susceptible", "Protected"))),
-       mapping = aes(
-         x = time + year_start,
-         y = prop * 100,
-         fill = status_simple
-       )) +
+prot_df <- data.frame(
+  time = 63:55,
+  status_simple = "Protected",
+  prop = combo_sum$vac_coverage
+) %>%
+  rbind(
+    data.frame(
+      time = 63:55,
+      status_simple = "Susceptible",
+      prop = 1 - combo_sum$vac_coverage
+    )
+  )%>%
+  mutate(status_simple = factor(status_simple, levels = c("Susceptible", "Protected")))
+
+
+protected_plot <- ggplot(data = prot_df ,
+                         mapping = aes(
+                           x = time + year_start,
+                           y = prop * 100,
+                           fill = status_simple
+                         )) +
   geom_bar(width = 1, stat = "identity") +
   theme_bw() +
   labs(
@@ -557,33 +565,54 @@ protected_plot <- ggplot(data = pop_prot %>%
     fill = ""
   ) +
   theme(legend.position = "bottom") +
-  coord_cartesian(xlim = c(2024, 2033), ylim = c(50, 100)) +
+  coord_cartesian(xlim = c(2025, 2033), ylim = c(80, 100)) +
   theme(plot.margin = unit(rep(0, 4), "pt")) +
-  geom_hline(yintercept = 100 * max(combo_sum$vac_coverage), linetype = "dashed")
+  geom_hline(yintercept = 100 * max(combo_sum$vac_coverage), linetype = "dashed") +
+  scale_fill_manual(values = c("red", "grey80"))
 
-ggplot(
-  data = combo,
+outbreak_cases <- ggplot(
+  data = combo %>%
+    mutate(
+      facet_title = paste0("Population immunity: ", vac_coverage * 100, "%"),
+      facet_title = factor(facet_title,
+                           levels = paste0("Population immunity: ", unique(combo$vac_coverage) * 100, "%"))
+    ),
   mapping = aes(
     x = time,
-    y = value/100,
-    group = run
+    y = value,
+    group = run,
   )
 ) +
-  geom_line() +
-  facet_wrap(~vac_coverage) +
+  geom_line(color = "gray90") +
+  facet_wrap(~facet_title) +
   theme_bw() +
-  coord_cartesian(xlim = c(0, 365))
+  # coord_cartesian(xlim = c(0, 365)) +
+  scale_y_continuous(lab = scales::comma) +
+  geom_text(mapping = aes(x = 675, y = 10000, label = paste0(100 * above_100, "% of introductions led to an\noutbreak of more than 100 cases")), size = 2) +
+  labs(x = "Days",
+       y = "Cases")
+  
 
 
-       
-vac_coverage_plot / protected_plot + plot_annotation(
-  title = "Relationship of population level vaccination coverage and outbreak size for measles.", 
-  subtitle = "Disruption of routine vaccination in 2024 increases the susceptible population to over 30%, driving a 4x increase in mean outbreak size—highlighting critical humanitarian response needs.",
-  tag_levels  = "A")
-
-ggsave("figs/population_protection_outbreak_size.jpg", height = 5, width = 7)
-
-
-
+ontop_plot <- (vac_coverage_plot / protected_plot)
+# 
+# giga_plot <- ontop_plot | outbreak_cases + plot_annotation(
+#   title = "Relationship of population level vaccination coverage and outbreak size for measles.", 
+#   subtitle = "Disruption of routine vaccination in 2024 increases the susceptible population to over 30%, driving a 4x increase in mean outbreak size—highlighting critical humanitarian response needs.",
+#   tag_levels  = "A")
+# 
+# ggsave(plot = giga_plot, filename = "figs/population_protection_outbreak_size.jpg", height = 5, width = 12)
 
 
+
+
+# ggpubr_alt <- ggpubr::ggarrange(ggpubr::ggarrange(vac_coverage_plot, protected_plot, ncol = 1, vjust = 1), 
+#                                 outbreak_cases, ncol = 2, widths = c(1, 2))
+
+ggsave(plot = ggpubr::ggarrange(ontop_plot, outbreak_cases, ncol = 2, widths = c(1, 1.5)), filename = "figs/population_protection_outbreak_size.jpg", height = 6, width = 10)
+
+
+ggpubr::ggarrange(ontop_plot, outbreak_cases, ncol = 2, widths = c(1, 1.5)) + plot_annotation(
+      title = "Relationship of population level vaccination coverage and outbreak size for measles.",
+      subtitle = "Disruption of routine vaccination in 2025 ",
+      tag_levels  = "A")
