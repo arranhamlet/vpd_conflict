@@ -97,7 +97,7 @@ age_vaccination_beta_modifier <- rbind(
 initial_FOI <- calculate_foi_from_R0(
   R0 = 12,
   contact_matrix = model_data_preprocessed$processed_demographic_data$contact_matrix,
-  S = model_data_preprocessed$processed_demographic_data$N0[, 4],
+  N = model_data_preprocessed$processed_demographic_data$N0[, 4],
   infectious_period = 365/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value)
 )
 
@@ -152,8 +152,8 @@ params <- param_packager(
   repro_low = 15,
   repro_high = 49,
   age_maternal_protection_ends = 1,
-  protection_weight_vacc = .5,
-  protection_weight_rec = .5,
+  protection_weight_vacc = 1,
+  protection_weight_rec = 1,
   migration_represent_current_pop = 1
 
 )

@@ -1,29 +1,38 @@
-calculate_foi_from_R0 <- function(R0, contact_matrix, S, infectious_period = 5) {
-  # Arguments:
-  # R0              = basic reproduction number (scalar)
-  # contact_matrix  = age-by-age contact matrix (matrix)
-  # S               = vector of susceptibles per age group
-  # infectious_period = average infectious period in days (default 5)
+calculate_foi_from_R0 <- function(R0, contact_matrix, N, I = NULL, infectious_period = 5) {
+  # R0              = target basic reproduction number
+  # contact_matrix  = age-by-age matrix, contacts from age i to j
+  # N               = total population by age group (length n)
+  # I               = infected individuals by age group (length n); if NULL, uses eigenvector
+  # infectious_period = mean duration of infectiousness (in days)
   
-  # Step 1: Construct unscaled Next Generation Matrix (NGM)
-  # Assume unit infectivity and full susceptibility
-  unscaled_NGM <- contact_matrix
+  stopifnot(length(N) == nrow(contact_matrix))
   
-  # Step 2: Get dominant eigenvalue and eigenvector
-  eig <- eigen(unscaled_NGM)
-  lambda_max <- Re(eig$values[1])
-  v <- Re(eig$vectors[, 1])
+  # Step 1: Construct unscaled NGM using full susceptibility assumption
+  unscaled_NGM <- matrix(0, nrow = length(N), ncol = length(N))
+  for (i in seq_along(N)) {
+    for (j in seq_along(N)) {
+      unscaled_NGM[i, j] <- contact_matrix[i, j] * infectious_period
+    }
+  }
   
-  # Step 3: Scale contact matrix to match R0
-  scaling_factor <- R0 / lambda_max
-  beta <- scaling_factor / infectious_period  # Transmission rate per contact per day
+  # Step 2: Find leading eigenvalue to get scaling
+  lambda_max <- Re(eigen(unscaled_NGM)$values[1])
   
-  # Step 4: Estimate relative infectious distribution (normalize eigenvector)
-  I_rel <- v / sum(v)  # Relative I per age group
-  N <- rep(1, length(S))  # Assume equal population if unknown; cancels out
-  I_over_N <- I_rel / N
+  # Step 3: Scale beta to hit target R0
+  beta <- R0 / lambda_max / infectious_period
   
-  # Step 5: Calculate FOI
+  # Step 4: Define I/N (infection prevalence by age)
+  if (is.null(I)) {
+    # Use right eigenvector as proxy for relative infection intensity
+    eig <- eigen(unscaled_NGM)
+    v <- Re(eig$vectors[, 1])
+    v <- abs(v)
+    I <- v / sum(v) * sum(N) * 0.01  # assume 1% total prevalence as default scale
+  }
+  
+  I_over_N <- I / N
+  
+  # Step 5: FOI on susceptibles in each age group
   FOI <- beta * (contact_matrix %*% I_over_N)
   names(FOI) <- paste0("age_group_", seq_along(FOI))
   
