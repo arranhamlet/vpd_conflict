@@ -30,7 +30,7 @@ contact_matricies <- import(here("data", "raw", "contact_matricies", "contact_al
 
 routine_vaccination_data <- import("data/raw/WHO/coverage-data_updated.xlsx")
 full_disease_df <- import("data/processed/WHO/reported_cases_data.csv")
-vaccination_schedule <- import("data/processed/WHO/WHO_vaccination_schedule.xlsx")
+vaccination_schedule <- import("data/processed/WHO/vaccine-schedule-data.xlsx")
 measles_parameters <- import(here("data", "processed", "model_parameters", "Measles_SEIR_Parameters.csv"))
 sia_vaccination <- import("data/processed/vaccination/sia_vimc.rds")
 VIMC_vaccination <- import("C:/Users/ah1114/Documents/Imperial/VPD_conflict/generic_vpd_models/data/processed/vaccination/coverage_table.rds")
@@ -61,21 +61,12 @@ model_data_preprocessed <- model_input_formatter_wrapper(
 )
 
 #Take pre-processed case and vaccination data and get it ready for params
-# case_vaccination_ready <- case_vaccine_to_param_vimc(
-#   demog_data = model_data_preprocessed$processed_demographic_data,
-#   processed_vaccination_vimc = model_data_preprocessed$processed_vaccination_vimc,
-#   processed_case = model_data_preprocessed$processed_case_data,
-#   vaccination_schedule = vaccination_schedule,
-#   setting = "high"
-# )
-
 case_vaccination_ready <- case_vaccine_to_param(
   demog_data = model_data_preprocessed$processed_demographic_data,
   processed_vaccination = model_data_preprocessed$processed_vaccination_data,
   processed_vaccination_sia = model_data_preprocessed$processed_vaccination_sia,
   processed_case = model_data_preprocessed$processed_case_data,
-  vaccination_schedule = vaccination_schedule,
-  setting = "high"
+  vaccination_schedule = vaccination_schedule
 )
 
 age_vaccination_beta_modifier <- rbind(
@@ -95,7 +86,7 @@ age_vaccination_beta_modifier <- rbind(
 
 #Okay we are going to be using a constant FOI
 initial_FOI <- calculate_foi_from_R0(
-  R0 = 12,
+  R0 = 18,
   contact_matrix = model_data_preprocessed$processed_demographic_data$contact_matrix,
   N = model_data_preprocessed$processed_demographic_data$N0[, 4],
   infectious_period = 365/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value)
@@ -115,7 +106,7 @@ params <- param_packager(
   age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   
   # Disease parameters 
-  R0 = 12,
+  R0 = 18,
   user_specified_foi = 1,
   initial_FOI = initial_FOI,
 
@@ -191,7 +182,7 @@ ggplot(
 #Plot
 ggplot(
   data = clean_df %>%
-    filter(state %in% c("new_case") & age == "All" & time > 30),
+    filter(state %in% c("new_case") & age == "All" & time > 20),
   mapping = aes(
     x = time + year_start,
     y = value
@@ -208,25 +199,26 @@ ggplot(
 
 ggplot(
   data = clean_df %>%
-    filter(state %in% c("Reff") & age == "All" & time > 1),
+    filter(state %in% c("FOI_scale_sum") & age != "All" & time > 50),
   mapping = aes(
     x = time + year_start,
-    y = value
+    y = value,
+    color = age
   )
 ) +
   geom_line(stat = "identity") +
   labs(
     x = "Year",
-    y = "Reff"
+    y = "FOI scale"
   ) +
   scale_y_continuous(label = scales::comma) +
   theme_bw() +
-  facet_wrap(~state, scales = "free_y")
+  facet_wrap(~as.numeric(age))
 
 
 ggplot(
   data = clean_df %>%
-    filter(state %in% c("lambdao") & age == "All" & time > 59),
+    filter(state %in% c("lambdao") & age == "All" & time > 2),
   mapping = aes(
     x = time + year_start,
     y = value
@@ -375,6 +367,23 @@ pop_prot <- susceptibility_data %>%
     prop = value/sum(value)
   )
 
+pop_prot_age <- susceptibility_data %>%
+  mutate(
+    status_simple = case_when(
+      status == "Susceptible" ~ "Susceptible",
+      status != "Susceptible" ~ "Protected"
+    )
+  ) %>%
+  fgroup_by(time, age, status_simple) %>%
+  fsummarise(
+    value = sum(value)
+  ) %>%
+  group_by(time, age) %>%
+  mutate(
+    prop = value/sum(value)
+  )
+
+
 
 ggplot(data = pop_prot %>%
          mutate(status_simple = factor(status_simple, levels = c("Susceptible", "Protected"))) %>%
@@ -394,7 +403,7 @@ ggplot(data = pop_prot %>%
 
 ggplot(data = pop_prot %>%
          mutate(status_simple = factor(status_simple, levels = c("Susceptible", "Protected"))) %>%
-         subset(status_simple == "Protected"),
+         subset(status_simple == "Protected" & time > 5),
        mapping = aes(
          x = time + year_start,
          y = prop * 100,

@@ -412,7 +412,30 @@ lambda_raw[] <- sum(lambda_contact[i, ]) / Npop_age[i]
 dim(lambda_raw) <- n_age
 
 # Step 3: Expand to full lambda by copying across j, k
-lambda[, , ] <- if(N <= 0) 0 else if(user_specified_foi == 1) beta_updated[i, j, k] * ngm[i]/t_R0 * initial_FOI[i] else max(0, lambda_raw[i] * beta_updated[i, j, k])
+# Maternal protection per age and risk group
+maternal_protection[, ] <- if(i <= age_maternal_protection_ends) protection_weight_vacc * prop_maternal_vaccinated[j] + protection_weight_rec * prop_maternal_natural[j] else 0
+dim(maternal_protection) <- c(n_age, n_risk)
+
+# Effective susceptible population
+S_effective[, , ] <- S[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k]) * (1 - maternal_protection[i, k])
+dim(S_effective) <- c(n_age, n_vacc, n_risk)
+
+# Effective susceptibles aggregated by age
+S_effective_age[] <- sum(S_effective[i, , ])
+dim(S_effective_age) <- n_age
+
+# FOI scaling factor (age-specific)
+FOI_scaling_factor[] <- if(Npop_age[i] <= 0) 0 else min(1, max(0, S_effective_age[i] / Npop_age[i]))
+dim(FOI_scaling_factor) <- n_age
+
+update(S_eff_total) <- sum(S_effective_age)
+initial(S_eff_total) <- 0
+
+lambda[, , ] <- if(N <= 0) 0 else if(user_specified_foi == 1) beta_updated[i, j, k] * ngm[i]/t_R0 * initial_FOI[i] * FOI_scaling_factor[i]  else max(0, lambda_raw[i] * beta_updated[i, j, k])
+
+update(FOI_scale_sum[]) <- FOI_scaling_factor[i]
+initial(FOI_scale_sum[]) <- 0
+dim(FOI_scale_sum) <- n_age
 
 # Calculate next-generation matrix elements
 ngm_unfolded[, , , ] <- S[i, k, l] * beta_updated[i, k, l] * infectious_period[i, k, l] * contact_matrix[i, j]

@@ -3,8 +3,7 @@ case_vaccine_to_param <- function(
     processed_vaccination,
     processed_vaccination_sia,
     processed_case,
-    vaccination_schedule,
-    setting
+    vaccination_schedule
 ){
   
   #Set up parameters
@@ -12,28 +11,21 @@ case_vaccine_to_param <- function(
   n_vacc <- demog_data$input_data$n_vacc
   n_risk <- demog_data$input_data$n_risk
   
+  vaccination_type <- unique(c(processed_vaccination_sia$vaccination_name,
+                               processed_vaccination_sia$disease))
+  
   ages <- 0:(n_age - 1)
   years <- demog_data$input_data$year_start:demog_data$input_data$year_end
   
   #Subset schedule
   schedule_subset <- vaccination_schedule %>%
-    filter(grepl(unique(processed_case$disease_description), Disease)) %>%
-    filter(grepl(setting, transmission_setting))
-  
-  #Get dose timing
-  dose_timing <- schedule_subset %>%
-    select(contains("dose in ")) %>%
-    gather() %>%
-    filter(!is.na(value)) %>%
-    mutate(value = floor(value)) %>%
-    mutate(key = case_when(
-      grepl("First", key) ~ "1st",
-      grepl("Second", key) ~ "2nd",
-      grepl("Third", key) ~ "3rd",
-      grepl("Fourth", key) ~ "4th",
-      grepl("Fifth", key) ~ "5th",
-      grepl("Sixth", key) ~ "6th"
-    ))
+    subset(grepl(vaccination_type, VACCINE_DESCRIPTION, ignore.case = T) & ISO_3_CODE == demog_data$input_data$iso) %>%
+    mutate(
+      age_years = case_when(
+        grepl("Y", AGEADMINISTERED) ~ as.numeric(gsub("[^0-9.-]", "", AGEADMINISTERED)),
+        grepl("M", AGEADMINISTERED) ~ as.numeric(gsub("[^0-9.-]", "", AGEADMINISTERED))/12,
+      )
+    )
   
   #Process vaccination first
   processed_vaccination_upd <- fill_missing_years_general(
@@ -51,7 +43,7 @@ case_vaccine_to_param <- function(
     #Subset to the row and work out the timing
     this_row <- processed_vaccination_upd[x, ]
     dose_to_use <- paste(unlist(strsplit(this_row$antigen_description, " ")), collapse = "|")
-    timing <- dose_timing[which(grepl(dose_to_use, dose_timing$key, ignore.case = T)), ]
+    timing <- schedule_subset %>% subset(SCHEDULEROUNDS == this_row$dose_order) %>% pull(age_years)
     
     target_vaccination <- if (this_row$dose_order == 1) {
       1
@@ -63,7 +55,7 @@ case_vaccine_to_param <- function(
     #Need to create a dataframe of here and then a dataframe 1 after with a value of 0 to turn off the interpolation
     Reduce(rbind, sapply(target_vaccination, function(e){
       data.frame(
-        dim1 = which(ages == timing$value),
+        dim1 = which(ages == floor(timing)),
         dim2 = e,
         dim3 = 1,
         dim4 = which(this_row$year == vaccination_years),
