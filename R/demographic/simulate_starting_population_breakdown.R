@@ -41,7 +41,7 @@ measles_cases <- import(here("data", "raw", "cases", "UK_measles_cases_1940_2023
 
 #Run processing
 model_data_preprocessed <- model_input_formatter_wrapper(
-  iso = "GBR",    
+  iso = "PSE",    
   disease = "measles",
   vaccine = "measles",
   n_age = 101,
@@ -63,12 +63,12 @@ model_data_preprocessed <- model_input_formatter_wrapper(
 #Take pre-processed case and vaccination data and get it ready for params
 case_vaccination_ready <- case_vaccine_to_param(
   demog_data = model_data_preprocessed$processed_demographic_data,
-  # processed_vaccination = model_data_preprocessed$processed_vaccination_data %>%
-  #   mutate(coverage = (100 - coverage) * .5 + coverage),
-  # processed_vaccination_sia = model_data_preprocessed$processed_vaccination_sia %>% 
-  #   mutate(coverage = (100 - coverage) * .5 + coverage),
-  processed_vaccination = model_data_preprocessed$processed_vaccination_data,
-  processed_vaccination_sia = model_data_preprocessed$processed_vaccination_sia,
+  processed_vaccination = model_data_preprocessed$processed_vaccination_data %>%
+    mutate(coverage = (100 - coverage) * .5 + coverage),
+  processed_vaccination_sia = model_data_preprocessed$processed_vaccination_sia %>%
+    mutate(coverage = (100 - coverage) * .5 + coverage),
+  # processed_vaccination = model_data_preprocessed$processed_vaccination_data,
+  # processed_vaccination_sia = model_data_preprocessed$processed_vaccination_sia,
   processed_case = model_data_preprocessed$processed_case_data,
   vaccination_schedule = vaccination_schedule
 )
@@ -110,7 +110,8 @@ params <- param_packager(
   age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   
   # Disease parameters 
-  R0 = 18,
+  R0 = c(18, 12),
+  tt_R0 = c(0, 50),
   user_specified_foi = 1,
   initial_FOI = initial_FOI,
 
@@ -182,11 +183,10 @@ ggplot(
   theme_bw() +
   facet_wrap(~state, scales = "free_y")
 
-
 #Plot
 ggplot(
   data = clean_df %>%
-    filter(state %in% c("new_case") & age == "All" & time > 40),
+    filter(state %in% c("new_case") & age == "All" & time > 35),
   mapping = aes(
     x = time + year_start,
     y = value
