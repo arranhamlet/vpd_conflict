@@ -63,6 +63,10 @@ model_data_preprocessed <- model_input_formatter_wrapper(
 #Take pre-processed case and vaccination data and get it ready for params
 case_vaccination_ready <- case_vaccine_to_param(
   demog_data = model_data_preprocessed$processed_demographic_data,
+  # processed_vaccination = model_data_preprocessed$processed_vaccination_data %>%
+  #   mutate(coverage = (100 - coverage) * .5 + coverage),
+  # processed_vaccination_sia = model_data_preprocessed$processed_vaccination_sia %>% 
+  #   mutate(coverage = (100 - coverage) * .5 + coverage),
   processed_vaccination = model_data_preprocessed$processed_vaccination_data,
   processed_vaccination_sia = model_data_preprocessed$processed_vaccination_sia,
   processed_case = model_data_preprocessed$processed_case_data,
@@ -118,7 +122,7 @@ params <- param_packager(
   severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value) * 365,
   
   #Seeding previous cases
-  I0 = 0,
+  # I0 = 0,
   # tt_seeded = case_vaccination_ready$tt_seeded,
   # seeded = case_vaccination_ready$seeded,
   #Setting up vaccination
@@ -182,7 +186,7 @@ ggplot(
 #Plot
 ggplot(
   data = clean_df %>%
-    filter(state %in% c("new_case") & age == "All" & time > 20),
+    filter(state %in% c("new_case") & age == "All" & time > 40),
   mapping = aes(
     x = time + year_start,
     y = value
@@ -197,28 +201,28 @@ ggplot(
   theme_bw() +
   facet_wrap(~state, scales = "free_y")
 
-ggplot(
-  data = clean_df %>%
-    filter(state %in% c("FOI_scale_sum") & age != "All" & time > 50),
-  mapping = aes(
-    x = time + year_start,
-    y = value,
-    color = age
-  )
-) +
-  geom_line(stat = "identity") +
-  labs(
-    x = "Year",
-    y = "FOI scale"
-  ) +
-  scale_y_continuous(label = scales::comma) +
-  theme_bw() +
-  facet_wrap(~as.numeric(age))
+# ggplot(
+#   data = clean_df %>%
+#     filter(state %in% c("FOI_scale_sum") & age != "All" & time > 50),
+#   mapping = aes(
+#     x = time + year_start,
+#     y = value,
+#     color = age
+#   )
+# ) +
+#   geom_line(stat = "identity") +
+#   labs(
+#     x = "Year",
+#     y = "FOI scale"
+#   ) +
+#   scale_y_continuous(label = scales::comma) +
+#   theme_bw() +
+#   facet_wrap(~as.numeric(age))
 
 
 ggplot(
   data = clean_df %>%
-    filter(state %in% c("lambdao") & age == "All" & time > 2),
+    filter(state %in% c("Reff") & age == "All" & time > 5),
   mapping = aes(
     x = time + year_start,
     y = value
@@ -416,3 +420,43 @@ ggplot(data = pop_prot %>%
     x = "Year" ,
     fill = ""
   )
+
+#UKHSA susceptibility
+susceptibility <- import("data/processed/vaccination/UKHSA_susceptability_measles.xlsx") %>%
+  clean_names() %>%
+  group_by(birth_year) %>%
+  mutate(
+    birth_year = as.numeric(unlist(strsplit(birth_year[1], " "))[1]),
+    age = 2023 - birth_year,
+    percent_susceptible = percent_susceptible/100
+  ) %>%
+  select(birth_year, age, percent_susceptible)
+
+ukhsa_compare <- subset(pop_prot_age, time == max(time) & status_simple == "Susceptible" & as.numeric(age) >= 7) %>% 
+  arrange(as.numeric(age)) %>% 
+  mutate(birth_year = 2023 - as.numeric(age),
+         prop_adjusted = median(c(0, prop))) %>% 
+  select(birth_year, time, age, prop, prop_adjusted)
+
+ukhsa_model_comp <- ukhsa_compare %>%
+  left_join(susceptibility, "birth_year") %>%
+  subset(!is.na(age.y)) %>%
+  select(birth_year, model_prop = prop, model_prop_adjusted = prop_adjusted, UKHSA_adjusted = percent_susceptible) %>%
+  gather(key = "measurement", value = "susceptible", - c(birth_year, time))
+  
+#Plot this madness
+ggplot(
+  data = ukhsa_model_comp %>%
+    subset(measurement != "model_prop_adjusted"),
+  mapping = aes(
+    x = birth_year,
+    y = susceptible * 100,
+    color = measurement
+  )
+) +
+  geom_line() +
+  theme_bw() +
+  labs(x = "Birth year",
+       y = "Susceptible (%)",
+       color = "")
+
