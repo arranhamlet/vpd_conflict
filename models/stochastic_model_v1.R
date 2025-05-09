@@ -93,7 +93,7 @@ total_R_out[, , ] <- if(pos_neg_migration == 1) R_death[i, j, k] + waning_R[i, j
 R_left[, , ] <- R[i, j, k] + total_R_in[i, j, k] - total_R_out[i, j, k]
 
 total_Rc_in[, , ] <- if(pos_neg_migration == 1) recovered_Is_to_Rc[i, j, k] + migration_Rc[i, j, k] else recovered_Is_to_Rc[i, j, k]
-  total_Rc_out[, , ] <- if(pos_neg_migration == 1) Rc_death[i, j, k] + waning_Rc[i, j, k] else Rc_death[i, j, k] + waning_Rc[i, j, k] + migration_Rc[i, j, k] 
+total_Rc_out[, , ] <- if(pos_neg_migration == 1) Rc_death[i, j, k] + waning_Rc[i, j, k] else Rc_death[i, j, k] + waning_Rc[i, j, k] + migration_Rc[i, j, k] 
 Rc_left[, , ] <- Rc[i, j, k] + total_Rc_in[i, j, k] - total_Rc_out[i, j, k]
 
 
@@ -173,9 +173,6 @@ I_after_vaccination[, , ] <- I_after_aging[i, j, k] + vaccinating_into_I[i, j, k
 vaccinating_out_of_R[, , ] <- if(1 == 1) 0 else if(n_vacc == 1 || j > n_vacc - 2 || R_after_aging[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(R_after_aging[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
 vaccinating_into_R[, , ] <- if(1 == 1) 0 else if(j == 3) vaccinating_out_of_R[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_R[i, j - 2, k] + vaccinating_out_of_R[i, j - 3, k] else 0
 R_after_vaccination[, , ] <- R_after_aging[i, j, k] + vaccinating_into_R[i, j, k] - vaccinating_out_of_R[i, j, k]
-
-update(vaccinating_into_Ro) <- sum(vaccinating_into_R)
-initial(vaccinating_into_Ro) <- 0
 
 # For Is compartment
 vaccinating_out_of_Is[, , ] <- if(1 == 1) 0 else if(n_vacc == 1 || j > n_vacc - 2 || Is_after_aging[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(Is_after_aging[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
@@ -394,6 +391,7 @@ user_specified_foi <- parameter(0)
 initial_FOI <- parameter()
 dim(initial_FOI) <- n_age
 
+
 # Step 1: Infectious contribution by age
 inf_weighted[, , ] <- beta_updated[i, j, k] * (I[i, j, k] + Is[i, j, k])
 dim(inf_weighted) <- c(n_age, n_vacc, n_risk)
@@ -409,6 +407,8 @@ lambda_raw[] <- if(Npop_age[i] <= 0) 0 else sum(lambda_contact[i, ]) / Npop_age[
 dim(lambda_raw) <- n_age
 
 # Step 3: Expand to full lambda by copying across j, k
+# lambda[, , ] <- if(N <= 0) 0 else if(user_specified_foi == 1) ngm[i]/R0[1] * initial_FOI[i] else max(0, lambda_raw[i])
+
 # Maternal protection per age and risk group
 maternal_protection[, ] <- if(i <= age_maternal_protection_ends) protection_weight_vacc * prop_maternal_vaccinated[j] + protection_weight_rec * prop_maternal_natural[j] else 0
 dim(maternal_protection) <- c(n_age, n_risk)
@@ -428,7 +428,7 @@ dim(FOI_scaling_factor) <- n_age
 update(S_eff_total) <- sum(S_effective_age)
 initial(S_eff_total) <- 0
 
-lambda[, , ] <- if(N <= 0) 0 else if(user_specified_foi == 1) beta_updated[i, j, k] * ngm[i]/t_R0 * initial_FOI[i] * FOI_scaling_factor[i]  else max(0, lambda_raw[i] * beta_updated[i, j, k])
+lambda[, , ] <- if(N <= 0) 0 else if(user_specified_foi == 1) beta_updated[i, j, k] * ngm[i]/t_R0 * initial_FOI[i] * FOI_scaling_factor[i]  else max(0, lambda_raw[i])
 
 update(FOI_scale_sum[]) <- FOI_scaling_factor[i]
 initial(FOI_scale_sum[]) <- 0
@@ -452,8 +452,6 @@ dim(Reff_age) <- n_age
 update(lambdao) <- lambda[1, 1, 1]
 initial(lambdao) <- 0
 
-update(lambdasum) <- sum(lambda)
-initial(lambdasum) <- 0
 #Seeding
 t_seeded <- interpolate(tt_seeded, seeded, "constant")
 
