@@ -35,13 +35,9 @@ measles_parameters <- import(here("data", "processed", "model_parameters", "Meas
 sia_vaccination <- import("data/processed/vaccination/sia_vimc.rds")
 VIMC_vaccination <- import("C:/Users/ah1114/Documents/Imperial/VPD_conflict/generic_vpd_models/data/processed/vaccination/coverage_table.rds")
 
-measles_cases <- import(here("data", "raw", "cases", "UK_measles_cases_1940_2023.xlsx")) %>%
-  clean_names() %>%
-  select(1:3)
-
 #Run processing
 model_data_preprocessed <- model_input_formatter_wrapper(
-  iso = "PSE",    
+  iso = "GBR",    
   disease = "measles",
   vaccine = "measles",
   n_age = 101,
@@ -56,19 +52,14 @@ model_data_preprocessed <- model_input_formatter_wrapper(
   disease_data = full_disease_df,
   vaccination_data_routine = routine_vaccination_data,
   vaccination_data_sia = sia_vaccination,
-  VIMC_vaccination = VIMC_vaccination,
   year_start = 1950
 )
 
 #Take pre-processed case and vaccination data and get it ready for params
 case_vaccination_ready <- case_vaccine_to_param(
   demog_data = model_data_preprocessed$processed_demographic_data,
-  processed_vaccination = model_data_preprocessed$processed_vaccination_data %>%
-    mutate(coverage = (100 - coverage) * .5 + coverage),
-  processed_vaccination_sia = model_data_preprocessed$processed_vaccination_sia %>%
-    mutate(coverage = (100 - coverage) * .5 + coverage),
-  # processed_vaccination = model_data_preprocessed$processed_vaccination_data,
-  # processed_vaccination_sia = model_data_preprocessed$processed_vaccination_sia,
+  processed_vaccination = model_data_preprocessed$processed_vaccination_data,
+  processed_vaccination_sia = model_data_preprocessed$processed_vaccination_sia,
   processed_case = model_data_preprocessed$processed_case_data,
   vaccination_schedule = vaccination_schedule
 )
@@ -78,7 +69,7 @@ age_vaccination_beta_modifier <- rbind(
     dim1 = 1:101,
     dim2 = 2:3,
     dim3 = 1,
-    value = 1#subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
+    value = subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
   ),
   expand.grid(
     dim1 = 1:101,
@@ -110,9 +101,9 @@ params <- param_packager(
   age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   
   # Disease parameters 
-  R0 = c(18, 12),
-  tt_R0 = c(0, 50),
-  user_specified_foi = 1,
+  R0 = 18,
+  tt_R0 = 0,
+  user_specified_foi = 0,
   initial_FOI = initial_FOI,
 
   #Disease parameters
@@ -123,9 +114,9 @@ params <- param_packager(
   severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value) * 365,
   
   #Seeding previous cases
-  # I0 = 0,
-  # tt_seeded = case_vaccination_ready$tt_seeded,
-  # seeded = case_vaccination_ready$seeded,
+  I0 = 1,
+  tt_seeded = case_vaccination_ready$tt_seeded,
+  seeded = case_vaccination_ready$seeded,
   #Setting up vaccination
   vaccination_coverage = case_vaccination_ready$vaccination_coverage,
   tt_vaccination_coverage = case_vaccination_ready$tt_vaccination, 
@@ -141,8 +132,8 @@ params <- param_packager(
   simp_birth_death = 0,
   aging_rate = 1,
   tt_migration = model_data_preprocessed$processed_demographic_data$tt_migration,
-  migration_in_number = model_data_preprocessed$processed_demographic_data$migration_in_number,
-  migration_distribution_values = model_data_preprocessed$processed_demographic_data$migration_distribution_values,
+  # migration_in_number = model_data_preprocessed$processed_demographic_data$migration_in_number,
+  # migration_distribution_values = model_data_preprocessed$processed_demographic_data$migration_distribution_values,
 
   #Birth ages
   repro_low = 15,
@@ -168,7 +159,7 @@ year_start <- model_data_preprocessed$processed_demographic_data$input_data$year
 #Plot
 ggplot(
   data = clean_df %>%
-    filter(state %in% c("S", "E", "I", "R", "Is", "Rc") & age == "All" & time > 5),
+    filter(state %in% c("S", "E", "I", "R", "Is", "Rc") & age == "All"),
   mapping = aes(
     x = time + year_start,
     y = value
@@ -186,7 +177,7 @@ ggplot(
 #Plot
 ggplot(
   data = clean_df %>%
-    filter(state %in% c("new_case") & age == "All" & time > 35),
+    filter(state %in% c("new_case") & age == "All" & time > 5),
   mapping = aes(
     x = time + year_start,
     y = value
@@ -231,11 +222,12 @@ ggplot(
   geom_line(stat = "identity") +
   labs(
     x = "Year",
-    y = "Lambda"
+    y = "Reff"
   ) +
   scale_y_continuous(label = scales::comma) +
   theme_bw() +
-  facet_wrap(~state, scales = "free_y")
+  facet_wrap(~state, scales = "free_y") +
+  geom_hline(yintercept = 1)
 
 
 
@@ -267,8 +259,9 @@ ggplot(
 #For select ages
 vacc_age <- subset(clean_df, state %in% c("S", "E", "I", "R", "Is", "Rc")) %>%
   ungroup() %>%
+  fgroup_by(time, age, vaccination) %>%
+  fsummarise(value = sum(value)) %>%
   group_by(time, age, vaccination) %>%
-  summarise(value = sum(value)) %>%
   mutate(
     coverage = value/sum(value, na.rm = T),
     coverage = case_when(

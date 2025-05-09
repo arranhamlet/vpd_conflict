@@ -93,7 +93,7 @@ total_R_out[, , ] <- if(pos_neg_migration == 1) R_death[i, j, k] + waning_R[i, j
 R_left[, , ] <- R[i, j, k] + total_R_in[i, j, k] - total_R_out[i, j, k]
 
 total_Rc_in[, , ] <- if(pos_neg_migration == 1) recovered_Is_to_Rc[i, j, k] + migration_Rc[i, j, k] else recovered_Is_to_Rc[i, j, k]
-  total_Rc_out[, , ] <- if(pos_neg_migration == 1) Rc_death[i, j, k] + waning_Rc[i, j, k] else Rc_death[i, j, k] + waning_Rc[i, j, k] + migration_Rc[i, j, k] 
+total_Rc_out[, , ] <- if(pos_neg_migration == 1) Rc_death[i, j, k] + waning_Rc[i, j, k] else Rc_death[i, j, k] + waning_Rc[i, j, k] + migration_Rc[i, j, k] 
 Rc_left[, , ] <- Rc[i, j, k] + total_Rc_in[i, j, k] - total_Rc_out[i, j, k]
 
 
@@ -250,8 +250,8 @@ moving_risk_to_Is[, , ] <- if(sum(moving_risk_distribution[i, j,]) <= 0) moving_
 moving_risk_to_Rc[, , ] <- if(sum(moving_risk_distribution[i, j,]) <= 0) moving_risk_from_Rc[i, j, k] else sum(moving_risk_from_Rc[i, j, ]) * moving_risk_distribution[i, j, k]/ sum(moving_risk_distribution[i, j, ])
 
 # Parameters to control movement between risk groups
-migration <- interpolate(tt_migration, migration_in_number, "constant") 
-migration_distribution <- interpolate(tt_migration, migration_distribution_values, "constant")
+migration <- interpolate(tt_migration, migration_in_number, "linear")
+migration_distribution <- interpolate(tt_migration, migration_distribution_values, "linear")
 
 migration_represent_current_pop <- parameter(0)
 
@@ -383,7 +383,7 @@ death_modifier = parameter()
 infectious_period[, , ] <- if((severe_recovery_rate + cfr_severe[i] + background_death[i, k]) <= 0 || (recovery_rate + cfr_normal[i] + background_death[i, k]) <= 0) 0 else (1 - prop_severe[i, j, k]) / (recovery_rate + cfr_normal[i] + background_death[i, k]) + prop_severe[i, j, k] / (severe_recovery_rate + cfr_severe[i] + background_death[i, k])
 
 #Interpolate R0
-t_R0 <- interpolate(tt_R0, R0, "constant")
+t_R0 <- interpolate(tt_R0, R0, "linear")
 #Calculate beta from the R0 and infectious period
 beta[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else t_R0 / infectious_period[i, j, k]
 
@@ -455,10 +455,8 @@ dim(Reff_age) <- n_age
 update(lambdao) <- lambda[1, 1, 1]
 initial(lambdao) <- 0
 
-update(lambdasum) <- sum(lambda)
-initial(lambdasum) <- 0
 #Seeding
-t_seeded <- interpolate(tt_seeded, seeded, "constant")
+t_seeded <- interpolate(tt_seeded, seeded, "linear")
 
 #Calculate populations
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
@@ -469,7 +467,7 @@ dim(Npop_age) <- n_age
 #Calculate death rates
 Npop_background_death[, ] <- if(Npop_age_risk[i, j] <= 0) 0 else Binomial(Npop_age_risk[i, j], max(min(background_death[i, j], 1), 0))
 #Interpolate changes in death rate
-death_int <- interpolate(tt_death_changes, crude_death, "constant")
+death_int <- interpolate(tt_death_changes, crude_death, "linear")
 # life_expectancy <- parameter()
 
 #Select background death rate to use
@@ -487,7 +485,7 @@ reproductive_population[] <- sum(S[repro_low:repro_high, , i]) +
 #Calculate birth rate
 birth_rate[] <- if(reproductive_population[i] <= 0) 0 else sum(Npop_background_death[, i])/reproductive_population[i]
 #Interpolate changes in birth rate
-birth_int <- interpolate(tt_birth_changes, crude_birth, "constant")
+birth_int <- interpolate(tt_birth_changes, crude_birth, "linear")
 #Calculate the number of births
 Births[] <-  if(reproductive_population[i] <= 0) 0 else if(simp_birth_death == 1) Binomial(reproductive_population[i], max(min(fertility_modifier * birth_rate[i]/2, 1), 0)) else Binomial(reproductive_population[i], max(min(fertility_modifier * birth_int[i]/2, 1), 0))
 
@@ -502,11 +500,11 @@ prop_maternal_vaccinated[] <- if(reproductive_population[i] <= 0) 0 else vaccina
 prop_maternal_natural[] <- if(reproductive_population[i] <= 0) 0 else antibody_mums[i]/reproductive_population[i]
 
 #Interpolate vaccination coverage
-vaccination_prop <- interpolate(tt_vaccination_coverage, vaccination_coverage, "constant")
+vaccination_prop <- interpolate(tt_vaccination_coverage, vaccination_coverage, "linear")
 
 # Parameters to control movement between risk groups
-moving_risk_prop <- interpolate(tt_moving_risk, moving_risk_values, "constant")
-moving_risk_distribution <- interpolate(tt_moving_risk, moving_risk_distribution_values, "constant")  # Proportion going to each risk group
+moving_risk_prop <- interpolate(tt_moving_risk, moving_risk_values, "linear")
+moving_risk_distribution <- interpolate(tt_moving_risk, moving_risk_distribution_values, "linear")  # Proportion going to each risk group
 
 
 # Dimensions --------------------------------------------------------------
