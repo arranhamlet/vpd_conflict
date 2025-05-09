@@ -103,7 +103,7 @@ params <- param_packager(
   # Disease parameters 
   R0 = 18,
   tt_R0 = 0,
-  user_specified_foi = 0,
+  user_specified_foi = 1,
   initial_FOI = initial_FOI,
 
   #Disease parameters
@@ -114,9 +114,9 @@ params <- param_packager(
   severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value) * 365,
   
   #Seeding previous cases
-  I0 = 1,
-  tt_seeded = case_vaccination_ready$tt_seeded,
-  seeded = case_vaccination_ready$seeded,
+  I0 = 0,
+  # tt_seeded = case_vaccination_ready$tt_seeded,
+  # seeded = case_vaccination_ready$seeded,
   #Setting up vaccination
   vaccination_coverage = case_vaccination_ready$vaccination_coverage,
   tt_vaccination_coverage = case_vaccination_ready$tt_vaccination, 

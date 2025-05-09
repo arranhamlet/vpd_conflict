@@ -1,3 +1,14 @@
+# iso = "GBR"
+# disease = "measles"
+# vaccine = "measles"
+# R0 = 18
+# timestep = "quarter"
+# year_start = ""
+# year_end = ""
+
+
+
+
 data_load_process_wrapper <- function(
   iso,
   disease,
@@ -78,6 +89,8 @@ data_load_process_wrapper <- function(
     7
   } else if(timestep == "month"){
     30 
+  } else if(timestep == "quarter"){
+    91.25
   } else if(timestep == "year"){
     365
   }
@@ -90,15 +103,6 @@ data_load_process_wrapper <- function(
     timestep_length = time_adjust
   )$infection_proportion_per_timestep
   
-  
-  final_epidemic_size_structured(
-    contact_matrix = contact_matricies$GBR,#model_data_preprocessed$processed_demographic_data$contact_matrix,
-    R0 = 2,
-    D = measles_parameters %>% subset(parameter == "recovery_rate") %>% pull(value),
-    tol = 1e-8, 
-    max_iter = 1000
-    )
-    
   
   
   #Set up model

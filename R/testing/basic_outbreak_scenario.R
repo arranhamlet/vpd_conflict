@@ -42,7 +42,7 @@ demog_data <- process_demography(
   contact_matricies = contact_matricies,
   year_start = "2010",
   year_end = "2020",
-  iso = "PSE",
+  iso = "GBR",
   n_age = 101,
   number_of_vaccines = 0, 
   n_risk = 1
@@ -72,22 +72,22 @@ age_vaccination_beta_modifier <- rbind(
     dim1 = 1:101,
     dim2 = 2:3,
     dim3 = 1,
-    value = 1 - subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
+    value = subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
   ), 
   expand.grid(
     dim1 = 1:101,
     dim2 = 4:5,
     dim3 = 1,
-    value = 1 - subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("2 dose", description)) %>% pull(value)/100
+    value = subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("2 dose", description)) %>% pull(value)/100
   )
 )
 
 #Initial FOI
-initial_FOI <- calculate_foi_from_R0(
-  R0 = 2,
-  contact_matrix = demog_data$contact_matrix,
-  S = demog_data$N0[, 4]
-)
+# initial_FOI <- calculate_foi_from_R0(
+#   R0 = 2,
+#   contact_matrix = demog_data$contact_matrix,
+#   S = demog_data$N0[, 4]
+# )
 
 #Set up model
 params <- param_packager(
@@ -105,7 +105,7 @@ params <- param_packager(
   cfr_severe = 0,#median(cfr),
   incubation_rate = 1/subset(measles_parameters, parameter == "incubation_period") %>% pull(value),
   recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
-  severe_recovery_rate = 0,#1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
+  severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value),
   
   prop_complications = 0,#median(prop_complications),
   prop_severe = 0,#median(prop_severe),
@@ -115,27 +115,29 @@ params <- param_packager(
   initial_background_death = 0,
   
   #Infectious
-  I0 = 0,
-  user_specified_foi = 1,
-  initial_FOI = initial_FOI,
+  I0 = 1,
+  user_specified_foi = 0,
+  initial_FOI = 0,
   
   # tt_seeded = c(0, 10, 11),
-  # seeded = data.frame(dim1 = 1, dim2 = 1, dim3 = 1, dim4 = 2, value = 10),
+  # seeded = data.frame(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 2, value = 1),
   
   #Demographic parameters
   contact_matrix = demog_data$contact_matrix,
-  N0 = demog_data$N0,
-  crude_birth = demog_data$crude_birth[1, ] %>%
-    mutate(value = value/365),
-  crude_death = demog_data$crude_death %>%
-    subset(dim3 == 1) %>%
-    mutate(value = value/365),
-  simp_birth_death = 0,
-  aging_rate = 1/365,
-  tt_migration = demog_data$tt_migration * 365,
-  migration_in_number = demog_data$migration_in_number %>%
-    mutate(value = value/365),
-  migration_distribution_values = demog_data$migration_distribution_values,
+  N0 = demog_data$N0 %>%
+    mutate(value = floor(value/10000)),
+  # crude_birth = demog_data$crude_birth %>%
+  # subset(dim2 == 1) %>%
+  #   mutate(value = value/365),
+  # crude_death = demog_data$crude_death %>%
+  #   subset(dim3 == 1) %>%
+  #   mutate(value = value/365),
+  # simp_birth_death = 0,
+  # aging_rate = 1/365,
+  # tt_migration = demog_data$tt_migration * 365,
+  # migration_in_number = demog_data$migration_in_number %>%
+  #   mutate(value = value/365),
+  # migration_distribution_values = demog_data$migration_distribution_values,
   #
   #Birth ages
   # repro_low = 15,
@@ -147,8 +149,8 @@ params <- param_packager(
 clean_df <- run_model(
   odin_model = model,
   params = params,
-  time = 3000,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
-  no_runs = 4
+  time = 500,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
+  no_runs = 25
 )
 
 #Subset and aggregate

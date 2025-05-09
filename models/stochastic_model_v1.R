@@ -398,9 +398,6 @@ dim(initial_FOI) <- n_age
 inf_weighted[, , ] <- beta_updated[i, j, k] * (I[i, j, k] + Is[i, j, k])
 dim(inf_weighted) <- c(n_age, n_vacc, n_risk)
 
-update(inf_weightedo) <- sum(inf_weighted)
-initial(inf_weightedo) <- 0
-
 infectious_source[] <- sum(inf_weighted[i, , ])
 dim(infectious_source) <- n_age
 
@@ -408,7 +405,7 @@ dim(infectious_source) <- n_age
 lambda_contact[, ] <- contact_matrix[i, j] * infectious_source[j]
 dim(lambda_contact) <- c(n_age, n_age)
 
-lambda_raw[] <- sum(lambda_contact[i, ]) / Npop_age[i]
+lambda_raw[] <- if(Npop_age[i] <= 0) 0 else sum(lambda_contact[i, ]) / Npop_age[i]
 dim(lambda_raw) <- n_age
 
 # Step 3: Expand to full lambda by copying across j, k
