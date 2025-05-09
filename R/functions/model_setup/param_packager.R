@@ -96,7 +96,7 @@ param_packager <- function(
   #Set initial background death rate
   initial_background_death = 0,
   #Set simple births and deaths
-  simp_birth_death = 1,
+  simp_birth_death = 0,
   #Changing birth rate if  simp_birth_death != 1
   tt_birth_changes = 0,
   tt_death_changes = 0,

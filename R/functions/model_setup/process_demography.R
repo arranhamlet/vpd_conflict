@@ -55,7 +55,7 @@ process_demography <- function(
     death_modifier = 1,
     migration_modifier = 1,
     n_age = 1, 
-    number_of_vaccines = 1, 
+    number_of_vaccines = 0, 
     n_risk = 1
 ) {
   

@@ -1,12 +1,3 @@
-# iso = "GBR"
-# disease = "measles"
-# vaccine = "measles"
-# R0 = 18
-# timestep = "quarter"
-# year_start = ""
-# year_end = ""
-
-
 
 
 data_load_process_wrapper <- function(
@@ -94,16 +85,7 @@ data_load_process_wrapper <- function(
   } else if(timestep == "year"){
     365
   }
-  
-  #Okay we are going to be using a constant FOI
-  initial_FOI <- calculate_foi_from_R0(
-    R0 = 18,
-    contact_matrix = model_data_preprocessed$processed_demographic_data$contact_matrix,
-    N = model_data_preprocessed$processed_demographic_data$N0[, 4],
-    infectious_period = 30/8,#365/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value)
-  )
-  
-  
+
   #Set up model
   time_changes_mig <- model_data_preprocessed$processed_demographic_data$tt_migration * 365/time_adjust
   time_changes_mig <- floor(c(time_changes_mig, max(time_changes_mig) + 1))
@@ -130,8 +112,7 @@ data_load_process_wrapper <- function(
     R0 = R0,
     tt_R0 = 0,
     user_specified_foi = 0,
-    initial_FOI = initial_FOI,
-    
+
     #Disease parameters
     cfr_normal = 0,
     cfr_severe = 0,
@@ -145,8 +126,7 @@ data_load_process_wrapper <- function(
     #Demographic parameters
     contact_matrix = model_data_preprocessed$processed_demographic_data$contact_matrix,
     N0 = model_data_preprocessed$processed_demographic_data$N0,
-    I0 = data.frame(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, value = 100),
-    
+
     #Time of changes
     tt_birth_changes = time_changes_mig,
     tt_death_changes = time_changes_mig,
@@ -158,14 +138,13 @@ data_load_process_wrapper <- function(
       mutate(value = value/(365/time_adjust)),
     crude_death = model_data_preprocessed$processed_demographic_data$crude_death %>%
       mutate(value = value/(365/time_adjust)),
-    simp_birth_death = 0,
     aging_rate = time_adjust/365,
     migration_in_number = model_data_preprocessed$processed_demographic_data$migration_in_number %>%
       mutate(value = value/(365/time_adjust)),
     migration_distribution_values = model_data_preprocessed$processed_demographic_data$migration_distribution_values,
     
     tt_seeded = c(0, max(time_changes_seeded)),
-    seeded = expand.grid(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, dim5 = 1:2, value = 1),
+    seeded = expand.grid(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, dim5 = 1:2, value = 0),
     
     #Birth ages
     repro_low = 15,
@@ -177,57 +156,12 @@ data_load_process_wrapper <- function(
     
   )
   
-  #Run model
-  clean_df <- run_model(
-    odin_model = model,
+  #Export these
+  list(
     params = params,
     time = c((model_data_preprocessed$processed_demographic_data$input_data$year_end - model_data_preprocessed$processed_demographic_data$input_data$year_start) + 1) * 365/time_adjust,
-    no_runs = 1
+    input_data = model_data_preprocessed$processed_demographic_data$input_data %>%
+      mutate(time_adjust = time_adjust)
   )
-  
-  #Plot total population
-  year_start <- model_data_preprocessed$processed_demographic_data$input_data$year_start
-  
-  #Plot
-  ggplot(
-    data = clean_df %>%
-      filter(state %in% c("S", "E", "I", "R", "Is", "Rc") & age == "All"),
-    mapping = aes(
-      x = time + year_start,
-      y = value
-    )
-  ) +
-    geom_bar(stat = "identity") +
-    labs(
-      x = "Year",
-      y = "Population"
-    ) +
-    scale_y_continuous(label = scales::comma) +
-    theme_bw() +
-    facet_wrap(~state, scales = "free_y")
-  
-  #Plot
-  annual_cases <- clean_df %>%
-    subset(state == "new_case" & age == "All") %>%
-    mutate(year = floor(1950 + (time * time_adjust)/365)) %>%
-    fgroup_by(year) %>%
-    fsummarise(value = sum(value))
-
-  ggplot(
-    data = annual_cases %>%
-      subset(year >= 1970),
-    mapping = aes(
-      x = year,
-      y = value
-    )
-  ) +
-    geom_bar(stat = "identity") +
-    labs(
-      x = "Year",
-      y = "Cases"
-    ) +
-    scale_y_continuous(label = scales::comma) +
-    theme_bw()
-
   
 }

@@ -1,3 +1,5 @@
+options(scipen = 999)
+
 if(!require("pacman")) install.packages("pacman")
 
 #Load packages
@@ -20,25 +22,43 @@ invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recur
 #Import model
 model <- odin2::odin("models/stochastic_model_v1.R")
 
+#Run process
+GBR_day <- data_load_process_wrapper(
+    iso = "GBR",
+    disease = "measles",
+    vaccine = "measles",
+    R0 = 18,
+    timestep = "month"
+)
+
+GBR_year <- data_load_process_wrapper(
+  iso = "GBR",
+  disease = "measles",
+  vaccine = "measles",
+  R0 = 18,
+  timestep = "year"
+)
+
+#Run model
+GBR_day_processed <- run_model(
+  odin_model = model,
+  params = GBR_day$params,
+  time = floor(GBR_day$time),
+  no_runs = 1
+)
+
+GBR_year_processed <- run_model(
+  odin_model = model,
+  params = GBR_year$params,
+  time = floor(GBR_year$time),
+  no_runs = 1
+)
+
+GBR_day_processed %>% subset(state == "total_pop" & time == max(time))
+GBR_year_processed %>% subset(state == "total_pop" & time == max(time))
 
 
-#Parameters to find
-#Vaccination
-long_term_waning
-short_term_waning
-#Maternal protection
-protection_weight_vacc
-protection_weight_rec
-age_maternal_protection_ends
-#Natural immunity waning
-delta
-
-
-
-
-
-
-
-
+sum(GBR_day_processed %>% subset(state == "total_pop") %>% pull(value))
+sum(GBR_year_processed %>% subset(state == "total_pop") %>% pull(value))
 
 

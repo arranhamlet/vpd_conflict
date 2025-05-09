@@ -43,6 +43,7 @@ all_plot_together <- sapply(random_iso, function(x){
     year_end = "",
     iso = x,
     n_age = 101,
+    number_of_vaccines = 2,
     contact_matricies = contact_matricies
   )
 
@@ -76,7 +77,8 @@ all_plot_together <- sapply(random_iso, function(x){
     #Migration
     tt_migration = demog_data$tt_migration,
     migration_in_number = demog_data$migration_in_number,
-    migration_distribution_values = demog_data$migration_distribution_values
+    migration_distribution_values = demog_data$migration_distribution_values,
+    migration_represent_current_pop = 1
     
   )
   
