@@ -153,7 +153,7 @@ model <- odin2::odin("models/stochastic_model_v1.R")
 clean_df <- run_model(
   odin_model = model,
   params = params,
-  time = 500,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
+  time = 1000,#364 * 5,#(demog_data$input_data$year_end - demog_data$input_data$year_start) + 1,
   no_runs = 4
 )
 

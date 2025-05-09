@@ -114,7 +114,7 @@ params <- param_packager(
   severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value) * 365,
   
   #Seeding previous cases
-  I0 = 0,
+  I0 = data.frame(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, value = 1),
   # tt_seeded = case_vaccination_ready$tt_seeded,
   # seeded = case_vaccination_ready$seeded,
   #Setting up vaccination

@@ -391,7 +391,6 @@ user_specified_foi <- parameter(0)
 initial_FOI <- parameter()
 dim(initial_FOI) <- n_age
 
-
 # Step 1: Infectious contribution by age
 inf_weighted[, , ] <- beta_updated[i, j, k] * (I[i, j, k] + Is[i, j, k])
 dim(inf_weighted) <- c(n_age, n_vacc, n_risk)
