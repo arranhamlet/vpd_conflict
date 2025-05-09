@@ -28,7 +28,7 @@ GBR_day <- data_load_process_wrapper(
     disease = "measles",
     vaccine = "measles",
     R0 = 18,
-    timestep = "month"
+    timestep = "day"
 )
 
 GBR_year <- data_load_process_wrapper(
@@ -36,7 +36,7 @@ GBR_year <- data_load_process_wrapper(
   disease = "measles",
   vaccine = "measles",
   R0 = 18,
-  timestep = "year"
+  timestep = "month"
 )
 
 #Run model
@@ -54,11 +54,57 @@ GBR_year_processed <- run_model(
   no_runs = 1
 )
 
-GBR_day_processed %>% subset(state == "total_pop" & time == max(time))
-GBR_year_processed %>% subset(state == "total_pop" & time == max(time))
+GBR_day_clean <- process_for_plotting(run_model_output = GBR_day_processed, input_data = GBR_day$input_data)
+GBR_year_clean <- process_for_plotting(run_model_output = GBR_year_processed, input_data = GBR_year$input_data)
+
+total_data <- rbind(
+  GBR_day_clean$aggregate_df %>%
+    mutate(time_adjust = GBR_day$input_data$time_adjust),
+  GBR_year_clean$aggregate_df %>%
+    mutate(time_adjust = GBR_year$input_data$time_adjust)
+)
+
+ggplot(data = total_data %>% 
+         subset(state == "total_pop"), 
+       mapping = aes(x = year, y = value, fill = time_adjust)) + 
+  geom_bar(stat = "identity", position = position_dodge())
 
 
-sum(GBR_day_processed %>% subset(state == "total_pop") %>% pull(value))
-sum(GBR_year_processed %>% subset(state == "total_pop") %>% pull(value))
+ggplot(data = total_data %>% 
+         subset(state == "I" & age == "All"), 
+       mapping = aes(x = year, y = value, fill = as.factor(time_adjust))) + 
+  geom_bar(stat = "identity", 
+           position = position_dodge()) +
+  facet_wrap(~time_adjust, scales = "free_y")
+
+
+total_susceptible <- rbind(
+  GBR_day_clean$susceptibility_data %>%
+    mutate(time_adjust = GBR_day$input_data$time_adjust),
+  GBR_year_clean$susceptibility_data %>%
+    mutate(time_adjust = GBR_year$input_data$time_adjust)
+)
+
+
+
+protection_by_age <- ggplot(
+  data = total_susceptible %>%
+    subset(year == max(year)),
+  mapping = aes(
+    x = as.numeric(age),
+    y = value,
+    fill = status
+  )
+) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  labs(
+    x = "Age",
+    y = "Population",
+    fill = "",
+    title = "Measles susceptibility (2024)"
+  ) +
+  facet_wrap(~time_adjust)
+
 
 

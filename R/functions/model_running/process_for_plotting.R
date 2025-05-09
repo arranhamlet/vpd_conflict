@@ -37,70 +37,8 @@ process_for_plotting <- function(run_model_output, input_data){
         !is.nan(coverage) ~ coverage
       )
     )
-  
-  #Plots
-  #All states
-  #Plot
-  ggplot(
-    data = clean_df %>%
-      filter(age == "All" & time > 5),
-    mapping = aes(
-      x = time + year_start,
-      y = value
-    )
-  ) +
-    geom_bar(stat = "identity") +
-    labs(
-      x = "Year",
-      y = "Cases"
-    ) +
-    scale_y_continuous(label = scales::comma) +
-    theme_bw() +
-    facet_wrap(~state, scales = "free_y")
-  
-  #By age
-  vaccine_by_age <- ggplot(
-    data = vacc_age %>%
-      subset(time == max(time) &
-               age != "All") %>%
-      mutate(vaccination = case_when(
-        vaccination == 1 ~ "Unvaccinated",
-        vaccination %in% 2:3 ~ "1 dose",
-        vaccination %in% 4:5 ~ "2 doses",
-      ),
-      vaccination = factor(vaccination, levels = c("Unvaccinated", "1 dose", "2 doses"))),
-    mapping = aes(
-      x = as.numeric(age),
-      y = value,
-      fill = vaccination
-    )
-  ) +
-    geom_bar(stat = "identity") +
-    theme_bw() +
-    labs(
-      x = "Age",
-      y = "Population",
-      fill = "",
-      title = "Measles vaccination coverage (2024)"
-    ) +
-    scale_y_continuous(labels = scales::comma)
-  
-  protection_by_age <- ggplot(
-    data = susceptibility_data %>%
-      subset(time == max(time)),
-    mapping = aes(
-      x = as.numeric(age),
-      y = value,
-      fill = status
-    )
-  ) +
-    geom_bar(stat = "identity") +
-    theme_bw() +
-    labs(
-      x = "Age",
-      y = "Population",
-      fill = "",
-      title = "Measles susceptibility (2024)"
-    )
+
+  list(aggregate_df = aggregate_df,
+       susceptibility_data = susceptibility_data)
   
 }
