@@ -115,33 +115,33 @@ params <- param_packager(
   initial_background_death = 0,
   
   #Infectious
-  I0 = 1,
+  I0 = 0,
   user_specified_foi = 0,
   initial_FOI = 0,
   
-  # tt_seeded = c(0, 10, 11),
-  # seeded = data.frame(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 2, value = 1),
+  tt_seeded = c(0, 10, 11),
+  seeded = data.frame(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 2, value = 1),
   
   #Demographic parameters
   contact_matrix = demog_data$contact_matrix,
-  N0 = demog_data$N0 %>%
-    mutate(value = floor(value/10000)),
-  # crude_birth = demog_data$crude_birth %>%
-  # subset(dim2 == 1) %>%
-  #   mutate(value = value/365),
-  # crude_death = demog_data$crude_death %>%
-  #   subset(dim3 == 1) %>%
-  #   mutate(value = value/365),
-  # simp_birth_death = 0,
-  # aging_rate = 1/365,
-  # tt_migration = demog_data$tt_migration * 365,
-  # migration_in_number = demog_data$migration_in_number %>%
-  #   mutate(value = value/365),
-  # migration_distribution_values = demog_data$migration_distribution_values,
+  N0 = demog_data$N0,
+  crude_birth = demog_data$crude_birth %>%
+  subset(dim2 == 1) %>%
+    mutate(value = value/365),
+  crude_death = demog_data$crude_death %>%
+    subset(dim3 == 1) %>%
+    mutate(value = value/365),
+  simp_birth_death = 0,
+  aging_rate = 1/365,
+  tt_migration = demog_data$tt_migration * 365,
+  migration_in_number = demog_data$migration_in_number %>%
+    mutate(value = value/365),
+  migration_distribution_values = demog_data$migration_distribution_values,
+  migration_represent_current_pop = 1,
   #
   #Birth ages
-  # repro_low = 15,
-  # repro_high = 49,
+  repro_low = 15,
+  repro_high = 49,
   
 )
 
