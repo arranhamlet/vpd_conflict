@@ -31,7 +31,7 @@ GBR_day <- data_load_process_wrapper(
     timestep = "day"
 )
 
-GBR_year <- data_load_process_wrapper(
+GBR_month <- data_load_process_wrapper(
   iso = "GBR",
   disease = "measles",
   vaccine = "measles",
@@ -39,48 +39,172 @@ GBR_year <- data_load_process_wrapper(
   timestep = "month"
 )
 
-#Run model
-GBR_day_processed <- run_model(
+GBR_year <- data_load_process_wrapper(
+  iso = "GBR",
+  disease = "measles",
+  vaccine = "measles",
+  R0 = 18,
+  timestep = "year"
+)
+
+#Process for plotting
+GBR_day_clean <- process_for_plotting(run_model_output = run_model(
   odin_model = model,
   params = GBR_day$params,
   time = floor(GBR_day$time),
-  no_runs = 1
-)
+  no_runs = 4
+), input_data = GBR_day$input_data)
 
-GBR_year_processed <- run_model(
+GBR_month_clean <- process_for_plotting(run_model_output = run_model(
+  odin_model = model,
+  params = GBR_month$params,
+  time = floor(GBR_month$time),
+  no_runs = 4
+), input_data = GBR_month$input_data)
+
+GBR_year_clean <- process_for_plotting(run_model_output = run_model(
   odin_model = model,
   params = GBR_year$params,
   time = floor(GBR_year$time),
-  no_runs = 1
-)
+  no_runs = 4
+), input_data = GBR_year$input_data)
 
-GBR_day_clean <- process_for_plotting(run_model_output = GBR_day_processed, input_data = GBR_day$input_data)
-GBR_year_clean <- process_for_plotting(run_model_output = GBR_year_processed, input_data = GBR_year$input_data)
-
+#Combine
 total_data <- rbind(
   GBR_day_clean$aggregate_df %>%
     mutate(time_adjust = GBR_day$input_data$time_adjust),
+  GBR_month_clean$aggregate_df %>%
+    mutate(time_adjust = GBR_month$input_data$time_adjust),
   GBR_year_clean$aggregate_df %>%
     mutate(time_adjust = GBR_year$input_data$time_adjust)
 )
 
+total_data_age <- total_data %>%
+  subset(year == 2023 & age != "All" & state %in% c("S", "E", "I", "R", "Is", "Rc")) %>%
+  fgroup_by(age, year, time_adjust) %>%
+  fsummarise(value = sum(value),
+             value_min = sum(value_min),
+             value_max = sum(value_max)) %>%
+  group_by(year, time_adjust) %>%
+  mutate(prop_value = value/sum(value),
+         prop_value_min = value_min/sum(value_min),
+         prop_value_max = value_max/sum(value_max))
+
+ggplot(data = total_data_age %>%
+         subset(age != "All"), 
+       mapping = aes(
+         x = as.numeric(age), 
+         y = value/(time_adjust/365), 
+         ymin = value_min/(time_adjust/365), 
+         ymax = value_max/(time_adjust/365), 
+         color = as.factor(time_adjust), 
+         fill = as.factor(time_adjust))
+       ) + 
+  geom_line() +
+  geom_ribbon(alpha = 0.25) +
+  labs(x = "Age",
+       y = "Number",
+       fill = "Timestep",
+       color = "Timestep") +
+  theme_bw() +
+  scale_y_continuous()
+
+#Age in
+ggplot(data = total_data_age %>%
+         subset(age != "All"), 
+       mapping = aes(
+         x = as.numeric(age), 
+         y = prop_value * 100, 
+         ymin = prop_value_min * 100,
+         ymax = prop_value_max * 100,
+         fill = as.factor(time_adjust),
+         color = as.factor(time_adjust))
+) + 
+  geom_line() +
+  geom_ribbon(alpha = 0.25) + 
+  labs(x = "Age",
+       y = "Percent of population",
+       fill = "Timestep",
+       color = "Timestep",
+       title = "Proportion of population in each age for different timesteps (GBR 2023)",
+       subtitle = "Averaged across 4 model runs") +
+  theme_bw() +
+  scale_y_continuous()
+
+ggsave("figs/demography/GBR_timestep.jpg", height = 4, width = 7)
+
 ggplot(data = total_data %>% 
-         subset(state == "total_pop"), 
-       mapping = aes(x = year, y = value, fill = time_adjust)) + 
-  geom_bar(stat = "identity", position = position_dodge())
+         subset(state == "total_pop") %>%
+         mutate(time_adjust = case_when(
+           time_adjust == 1 ~ "Day",
+           time_adjust == 7 ~ "Week",
+           time_adjust == 30 ~ "Month",
+           time_adjust == 365 ~ "Year"
+         )), 
+       mapping = aes(x = year, y = value, color = as.factor(time_adjust),
+                     ymin = value_min, ymax = value_max, fill = as.factor(time_adjust))) + 
+  geom_line() +
+  geom_ribbon(alpha = 0.1) +
+  labs(x = "",
+       y = "Total population",
+       fill = "Timestep",
+       color = "Timestep",
+       title = "Total population over years estimate (GBR)",
+       subtitle = "Averaged across 4 model runs") +
+  theme_bw() +
+  scale_y_continuous(labels = scales::comma)
+
+ggsave("figs/demography/GBR_total_population_timestep.jpg", height = 4, width = 7)
 
 
-ggplot(data = total_data %>% 
-         subset(state == "I" & age == "All"), 
-       mapping = aes(x = year, y = value, fill = as.factor(time_adjust))) + 
-  geom_bar(stat = "identity", 
-           position = position_dodge()) +
-  facet_wrap(~time_adjust, scales = "free_y")
+whole_time <- ggplot(data = total_data %>% 
+         subset(year > 1950 & state == "new_case" & age == "All") %>%
+         mutate(time_adjust = case_when(
+           time_adjust == 1 ~ "Day",
+           time_adjust == 7 ~ "Week",
+           time_adjust == 30 ~ "Month",
+           time_adjust == 365 ~ "Year"
+         )), 
+       mapping = aes(x = year, y = value, fill = as.factor(time_adjust), ymin = value_min, ymax = value_max)) + 
+  geom_line() +
+  geom_ribbon(alpha = 0.25) + 
+  facet_wrap(~time_adjust, scales = "free_y", ncol = 1) +
+   theme_bw()  +
+  scale_y_continuous(labels = scales::comma) +
+  labs(x = "",
+       y = "Annual cases",
+       fill = "Timestep",
+       color = "Timestep")
+
+last_30_years <- ggplot(data = total_data %>% 
+                       subset(year > 1995 & state == "new_case" & age == "All") %>%
+                       mutate(time_adjust = case_when(
+                         time_adjust == 1 ~ "Day",
+                         time_adjust == 7 ~ "Week",
+                         time_adjust == 30 ~ "Month",
+                         time_adjust == 365 ~ "Year"
+                       )), 
+                     mapping = aes(x = year, y = value, fill = as.factor(time_adjust), ymin = value_min, ymax = value_max)) + 
+  geom_line() +
+  geom_ribbon(alpha = 0.25) + 
+  facet_wrap(~time_adjust, scales = "free_y", ncol = 1) +
+  theme_bw()  +
+  scale_y_continuous(labels = scales::comma) +
+  labs(x = "",
+       y = "",
+       fill = "Timestep",
+       color = "Timestep")
+
+combo_cases <- ggpubr::ggarrange(whole_time, last_30_years, common.legend = T, legend = "bottom", widths = c(2, 1))
+
+ggsave("figs/demography/GBR_cases_over_time_timestep.jpg", height = 5, width = 10)
 
 
 total_susceptible <- rbind(
   GBR_day_clean$susceptibility_data %>%
     mutate(time_adjust = GBR_day$input_data$time_adjust),
+  GBR_month_clean$susceptibility_data %>%
+    mutate(time_adjust = GBR_month$input_data$time_adjust),
   GBR_year_clean$susceptibility_data %>%
     mutate(time_adjust = GBR_year$input_data$time_adjust)
 )

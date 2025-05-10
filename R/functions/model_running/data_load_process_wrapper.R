@@ -144,7 +144,7 @@ data_load_process_wrapper <- function(
     migration_distribution_values = model_data_preprocessed$processed_demographic_data$migration_distribution_values,
     
     tt_seeded = c(0, max(time_changes_seeded)),
-    seeded = expand.grid(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, dim5 = 1:2, value = 1),
+    seeded = expand.grid(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, dim5 = 1:2, value = 10),
     
     #Birth ages
     repro_low = 15,

@@ -2,41 +2,79 @@
 process_for_plotting <- function(run_model_output, input_data){
   
   #Aggregate across runs
-  aggregate_df <- run_model_output %>%
-    subset(state %in% c("S", "E", "I", "R", "Is", "Rc", "new_case", "total_pop", "Reff")) %>%
-    mutate(year = floor(input_data$year_start + (time * input_data$time_adjust)/365)) %>%
-    fgroup_by(state, age, vaccination, risk, year) %>%
-    fsummarise(value = median(value),
-               value_min = quantile(value, 0.025),
-               value_max = quantile(value, 0.975))
+  # Convert to data.table if needed
+  setDT(run_model_output)
+  
+  # Cache constants
+  time_adj <- input_data$time_adjust
+  year_start <- input_data$year_start
+  
+  # Define states to split
+  state_groups <- list(
+    new_case = "new_case",
+    rest = c("S", "E", "I", "R", "Is", "Rc", "total_pop", "Reff")
+  )
+  
+  # Define fast quantile summariser
+  fast_summary <- function(x) {
+    x <- sort(x)
+    n <- length(x)
+    list(
+      value = median(x),
+      value_min = x[max(1, floor(0.025 * n))],
+      value_max = x[min(n, ceiling(0.975 * n))]
+    )
+  }
+  
+  # Apply summarisation per group
+  result_list <- lapply(1:length(state_groups), function(group) {
+   
+     states_subset <- state_groups[[group]]
+    
+    dt <- run_model_output[state %in% states_subset]
+    dt[, year := floor(year_start + (time * time_adj) / 365)]
+    
+    if (names(state_groups)[group]  == "new_case") {
+      # First aggregate to yearly total per run
+      dt_agg <- dt[, .(value = sum(value)), by = .(state, age, vaccination, risk, run, year)]
+    } else {
+      dt_agg <- dt
+    }
+    
+    # Then summarise across runs
+    dt_agg[, fast_summary(value), by = .(state, age, vaccination, risk, year)]
+  })
+  
+  aggregate_df <- Reduce(rbind, result_list) %>%
+    setDT()
 
   #Aggregate by susceptibility
-  susceptibility_data <- subset(aggregate_df, state %in% c("S", "E", "I", "R", "Is", "Rc") & age != "All") %>%
-    mutate(
-      status = case_when(
-        state == "S" & vaccination == 1 ~ "Susceptible",
-        state == "S" & vaccination > 1 ~ "Vaccine protected",
-        state != "S" & vaccination == 1 ~ "Exposure protected",
-        state != "S" & vaccination > 1 ~ "Vaccine and exposure protected"
-        
-      ),
-      status = factor(status, levels = c("Susceptible", "Vaccine protected", "Exposure protected", 
-                                         "Vaccine and exposure protected"))
-    ) %>%
-    group_by(
-      year, age, status
-    ) %>%
-    summarise(
-      value = sum(value),
-      .groups = "keep"
-    ) %>%
-    mutate(
-      coverage = value/sum(value, na.rm = T),
-      coverage = case_when(
-        is.nan(coverage) ~ 0,
-        !is.nan(coverage) ~ coverage
-      )
-    )
+  # Step 1: Filter and compute 'status'
+  susceptibility_data <- aggregate_df[
+    state %in% c("S", "E", "I", "R", "Is", "Rc") & age != "All"
+  ][
+    , status := fifelse(state == "S" & vaccination == 1, "Susceptible",
+                        fifelse(state == "S" & vaccination > 1, "Vaccine protected",
+                                fifelse(state != "S" & vaccination == 1, "Exposure protected",
+                                        "Vaccine and exposure protected")))
+    
+    # Optionally enforce factor level ordering
+  ][
+    , status := factor(status, levels = c("Susceptible", "Vaccine protected", "Exposure protected", 
+                                          "Vaccine and exposure protected"))
+  ]
+  
+  # Step 2: Aggregate
+  susceptibility_agg <- susceptibility_data[
+    , .(value = sum(value)), by = .(year, age, status)
+  ]
+  
+  # Step 3: Compute coverage within each (year, age)
+  susceptibility_agg[
+    , coverage := value / sum(value), by = .(year, age)
+  ][
+    is.na(coverage), coverage := 0
+  ]
 
   list(aggregate_df = aggregate_df,
        susceptibility_data = susceptibility_data)
