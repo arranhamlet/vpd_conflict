@@ -28,9 +28,12 @@ population_all <- import(here("data", "processed", "WPP", "age_both.csv"))
 population_female <- import(here("data", "processed", "WPP", "age_female.csv"))
 contact_matricies <- import(here("data", "raw", "contact_matricies", "contact_all.rdata"))
 
-random_iso <- c(sample(unique(migration$iso3), 7), "GBR")
+# random_iso <- c(sample(unique(migration$iso3), 7), "GBR")
+random_iso <- c("BGD", "BHR", "GBR", "SVK", "ZWE")
 
 all_plot_together <- sapply(random_iso, function(x){
+  
+  print(x)
   
   #Run function - add in modifiers to account for Gaza
   demog_data <- process_demography(
@@ -59,24 +62,27 @@ all_plot_together <- sapply(random_iso, function(x){
     contact_matrix = demog_data$contact_matrix,
     I0 = 0,
     initial_background_death = 1,
-    aging_rate = 1,
+    aging_rate = 1/365,
     
     #Changing mortality and birth
     #Turn off simple birth/deaths
     simp_birth_death = 0,
     #List of when birth_death_changes
-    tt_birth_changes = demog_data$tt_migration,
-    tt_death_changes = demog_data$tt_migration,
+    tt_birth_changes = demog_data$tt_migration * 365,
+    tt_death_changes = demog_data$tt_migration * 365,
     #Values of changes
-    crude_birth = demog_data$crude_birth,
-    crude_death = demog_data$crude_death,
+    crude_birth = demog_data$crude_birth %>%
+      mutate(value = value/365),
+    crude_death = demog_data$crude_death %>%
+      mutate(value = value/365),
     #Birth ages
     repro_low = 15,
     repro_high = 49,
     
     #Migration
-    tt_migration = demog_data$tt_migration,
-    migration_in_number = demog_data$migration_in_number,
+    tt_migration = demog_data$tt_migration * 365,
+    migration_in_number = demog_data$migration_in_number %>% 
+      mutate(value = value/365),
     migration_distribution_values = demog_data$migration_distribution_values,
     migration_represent_current_pop = 1
     
@@ -86,7 +92,7 @@ all_plot_together <- sapply(random_iso, function(x){
   clean_df <- run_model(
     odin_model = model,
     params = params,
-    time = length(demog_data$tt_migration),
+    time = max(demog_data$tt_migration * 365) + 1,
     no_runs = 1
   )
   
@@ -112,7 +118,7 @@ all_plot_together <- sapply(random_iso, function(x){
     plot_layout(guides = "collect") &
     theme(legend.position = 'bottom')
     
-  ggsave(paste0("figs/demography/", x, "_population.jpg"), 
+  ggsave(paste0("figs/demography/", x, "_daily_model_population.jpg"), 
          plot,
          width = 8, height = 4)
   

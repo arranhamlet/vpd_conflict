@@ -2,19 +2,36 @@
 model_run_demographic_plots <- function(
     clean_model_df,
     demog_data,
-    end_year = NA
+    end_year = NA,
+    time_adjust = NA
     ){
   
   years <- seq(demog_data$input_data$year_start, demog_data$input_data$year_end)
   end_year <- if(is.na(end_year)) max(years) else end_year
 
+  #Aggregate to year if not in year format
   #Subset to end year
-  full_time_year <- data.frame(model_time = 0:max(clean_model_df$time),
+  #Subset to end year
+  full_time_year <- data.frame(model_time = (demog_data$input_data$year_start:demog_data$input_data$year_end) - demog_data$input_data$year_start,
                                year = years)
   
-  model_data_subset <- clean_model_df %>%
-    filter(time <= full_time_year %>% filter(year == end_year) %>% 
-             pull(model_time))
+  if(!is.na(time_adjust)){
+    model_data_subset <- clean_model_df %>%
+      subset(state %in% c("S", "E", "I", "R", "Is", "Rc", "total_pop")) %>%
+      mutate(year = time/time_adjust,
+             year_flat = floor(year)) %>%
+      group_by(state, age, vaccination, risk, year_flat) %>%
+      summarise(value = last(value)) %>%
+      rename(year = year_flat) %>%
+      filter(year <= end_year) %>%
+      mutate(year = min(years) + year)
+      
+  } else {
+    model_data_subset <- clean_model_df %>%
+      filter(time <= full_time_year %>% filter(year == end_year) %>% 
+               pull(model_time)) %>%
+      mutate(year = min(years) - 1 + time)
+  }
   
   total_population_df <- data.frame(year = years, value = 1000 * rowSums(demog_data$population_data)) %>%
     filter(year <= end_year)
@@ -32,7 +49,7 @@ model_run_demographic_plots <- function(
     geom_line(
       data = subset(model_data_subset, state == "total_pop"),
       mapping = aes(
-        x = min(years) - 1 + time,
+        x = year,
         y = value,
         color = "Model"
       )) +
@@ -48,7 +65,7 @@ model_run_demographic_plots <- function(
     labs(x = "Year",
          y = "Population",
          color = "",
-         subtitle = paste0(paste0("Model population estimated in ", end_year, ": ", formatC(subset(model_data_subset, time == full_time_year %>% filter(year == end_year) %>% pull(model_time) & state == "total_pop")$value, big.mark = ",", format = "fg")), "\n",
+         subtitle = paste0(paste0("Model population estimated in ", end_year, ": ", formatC(subset(model_data_subset, year == end_year & state == "total_pop")$value, big.mark = ",", format = "fg")), "\n",
                            paste0("UN WPP population estimated in ", end_year, ": ", formatC(sum(total_population_df[nrow(total_population_df), ]$value), big.mark = ",", format = "fg")))) +
     theme_bw()
   
@@ -57,7 +74,7 @@ model_run_demographic_plots <- function(
   age_pyramid_df <- rbind(
     
     data.frame(age = 1:101,
-               value = subset(clean_model_df,state == "S" & time == full_time_year %>% filter(year == end_year) %>% pull(model_time) & age != "All") %>% mutate(age = as.numeric(age)) %>% pull(value),
+               value = subset(model_data_subset, vaccination == 1 & risk == 1 & state == "S" & year == end_year & age != "All") %>% mutate(age = as.numeric(age)) %>% arrange(age) %>% pull(value),
                type = "Model estimate"),
     
     data.frame(age = 1:101,

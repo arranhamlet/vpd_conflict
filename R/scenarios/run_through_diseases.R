@@ -94,9 +94,9 @@ ggplot(data = total_data_age %>%
          subset(age != "All"), 
        mapping = aes(
          x = as.numeric(age), 
-         y = value/(time_adjust/365), 
-         ymin = value_min/(time_adjust/365), 
-         ymax = value_max/(time_adjust/365), 
+         y = value, 
+         ymin = value_min, 
+         ymax = value_max, 
          color = as.factor(time_adjust), 
          fill = as.factor(time_adjust))
        ) + 
@@ -134,7 +134,7 @@ ggplot(data = total_data_age %>%
 ggsave("figs/demography/GBR_timestep.jpg", height = 4, width = 7)
 
 ggplot(data = total_data %>% 
-         subset(state == "total_pop") %>%
+         subset(state == "total_pop" & year <= 2023) %>%
          mutate(time_adjust = case_when(
            time_adjust == 1 ~ "Day",
            time_adjust == 7 ~ "Week",
@@ -158,7 +158,7 @@ ggsave("figs/demography/GBR_total_population_timestep.jpg", height = 4, width = 
 
 
 whole_time <- ggplot(data = total_data %>% 
-         subset(year > 1950 & state == "new_case" & age == "All") %>%
+         subset(year > 1950 & state == "new_case" & age == "All" & year <= 2023) %>%
          mutate(time_adjust = case_when(
            time_adjust == 1 ~ "Day",
            time_adjust == 7 ~ "Week",
@@ -177,7 +177,7 @@ whole_time <- ggplot(data = total_data %>%
        color = "Timestep")
 
 last_30_years <- ggplot(data = total_data %>% 
-                       subset(year > 1995 & state == "new_case" & age == "All") %>%
+                       subset(year > 1995 & state == "new_case" & age == "All" & year <= 2023) %>%
                        mutate(time_adjust = case_when(
                          time_adjust == 1 ~ "Day",
                          time_adjust == 7 ~ "Week",
@@ -210,10 +210,9 @@ total_susceptible <- rbind(
 )
 
 
-
 protection_by_age <- ggplot(
   data = total_susceptible %>%
-    subset(year == max(year)),
+    subset(year == 2023),
   mapping = aes(
     x = as.numeric(age),
     y = value,
@@ -228,7 +227,10 @@ protection_by_age <- ggplot(
     fill = "",
     title = "Measles susceptibility (2024)"
   ) +
-  facet_wrap(~time_adjust)
+  facet_wrap(~time_adjust) +
+  theme(legend.position = "bottom") +
+  scale_y_continuous(labels = scales::comma)
 
+ggsave("figs/demography/GBR_protection_by_age_time_timestep.jpg", height = 5, width = 10)
 
 
