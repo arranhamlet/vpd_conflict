@@ -31,13 +31,13 @@ GBR_day <- data_load_process_wrapper(
     timestep = "day"
 )
 
-GBR_month <- data_load_process_wrapper(
-  iso = "GBR",
-  disease = "measles",
-  vaccine = "measles",
-  R0 = 18,
-  timestep = "month"
-)
+# GBR_month <- data_load_process_wrapper(
+#   iso = "GBR",
+#   disease = "measles",
+#   vaccine = "measles",
+#   R0 = 18,
+#   timestep = "month"
+# )
 
 GBR_year <- data_load_process_wrapper(
   iso = "GBR",
@@ -52,29 +52,29 @@ GBR_day_clean <- process_for_plotting(run_model_output = run_model(
   odin_model = model,
   params = GBR_day$params,
   time = floor(GBR_day$time),
-  no_runs = 4
+  no_runs = 2
 ), input_data = GBR_day$input_data)
 
-GBR_month_clean <- process_for_plotting(run_model_output = run_model(
-  odin_model = model,
-  params = GBR_month$params,
-  time = floor(GBR_month$time),
-  no_runs = 4
-), input_data = GBR_month$input_data)
+# GBR_month_clean <- process_for_plotting(run_model_output = run_model(
+#   odin_model = model,
+#   params = GBR_month$params,
+#   time = floor(GBR_month$time),
+#   no_runs = 2
+# ), input_data = GBR_month$input_data)
 
 GBR_year_clean <- process_for_plotting(run_model_output = run_model(
   odin_model = model,
   params = GBR_year$params,
   time = floor(GBR_year$time),
-  no_runs = 4
+  no_runs = 2
 ), input_data = GBR_year$input_data)
 
 #Combine
 total_data <- rbind(
   GBR_day_clean$aggregate_df %>%
     mutate(time_adjust = GBR_day$input_data$time_adjust),
-  GBR_month_clean$aggregate_df %>%
-    mutate(time_adjust = GBR_month$input_data$time_adjust),
+  # GBR_month_clean$aggregate_df %>%
+  #   mutate(time_adjust = GBR_month$input_data$time_adjust),
   GBR_year_clean$aggregate_df %>%
     mutate(time_adjust = GBR_year$input_data$time_adjust)
 )
@@ -200,11 +200,60 @@ combo_cases <- ggpubr::ggarrange(whole_time, last_30_years, common.legend = T, l
 ggsave("figs/demography/GBR_cases_over_time_timestep.jpg", height = 5, width = 10)
 
 
+total_susceptible <- total_data %>%
+  subset(state %in% c("S", "E", "I", "R", "Is", "Rc")) %>%
+  mutate(status = case_when(
+    state == "S" & vaccination == 1 ~ "Susceptible",
+    state == "S" & vaccination > 1 ~ "Vaccine protected",
+    state != "S" & vaccination == 1 ~ "Exposure protected",
+    state != "S" & vaccination > 1 ~ "Vaccine and exposure protected"
+  )) %>%
+  fgroup_by(age, year, time_adjust, status) %>%
+  fsummarise(
+    value = sum(value),
+    value_min = sum(value_min),
+    value_max = sum(value_max)
+  ) %>%
+  group_by(
+    age, year, time_adjust
+  ) %>%
+  mutate(prop = value/sum(value),
+         prop_min = value_min/sum(value_min),
+         prop_max = value_max/sum(value_max)) %>%
+  mutate(
+    status = factor(status, levels = c("Susceptible", "Vaccine protected", "Exposure protected", 
+                              "Vaccine and exposure protected"))
+  )
+  
+
+ggplot(
+  data = total_susceptible %>%
+    subset(year > 2000 & age == 2 & status == "Susceptible"),
+  mapping = aes(
+    x = as.numeric(year),
+    y = prop,
+    fill = status
+  )
+) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  labs(
+    x = "Age",
+    y = "Population",
+    fill = "",
+    title = "Measles susceptibility (2024)"
+  ) +
+  facet_wrap(~time_adjust) +
+  theme(legend.position = "bottom") +
+  scale_y_continuous(labels = scales::comma)
+
+
+  
 total_susceptible <- rbind(
   GBR_day_clean$susceptibility_data %>%
     mutate(time_adjust = GBR_day$input_data$time_adjust),
-  GBR_month_clean$susceptibility_data %>%
-    mutate(time_adjust = GBR_month$input_data$time_adjust),
+  # GBR_month_clean$susceptibility_data %>%
+  #   mutate(time_adjust = GBR_month$input_data$time_adjust),
   GBR_year_clean$susceptibility_data %>%
     mutate(time_adjust = GBR_year$input_data$time_adjust)
 )

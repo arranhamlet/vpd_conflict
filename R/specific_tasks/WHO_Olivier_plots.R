@@ -33,36 +33,36 @@ cases_of_interest <- import("data/processed/WHO/reported_cases_data.csv") %>%
   subset(disease_description == "Measles" & iso3 %in% countries_of_interest) 
 
 
-country_data <- sapply(countries_of_interest, function(a){
-  
-  print(a)
-  
-  #Run process
-  model_data_processed <- data_load_process_wrapper(
-    iso = a,
-    disease = "measles",
-    vaccine = "measles",
-    R0 = 15,
-    timestep = "day"
-  )
-  
-  #Process for plotting
-  data_clean <- process_for_plotting(run_model_output = run_model(
-    odin_model = model,
-    params = model_data_processed$params,
-    time = floor(model_data_processed$time),
-    no_runs = 10
-  ), input_data = model_data_processed$input_data)
-  
-  export(x = data_clean[[1]],
-         file = paste0("output/model_run/WHO_showcase/", a, "_full_data.csv"))
-  
-  export(x = data_clean[[2]],
-         file = paste0("output/model_run/WHO_showcase/", a, "_susceptibility_data.csv"))
-  
-  a
-  
-}, simplify = FALSE)
+# country_data <- sapply(countries_of_interest, function(a){
+#   
+#   print(a)
+#   
+#   #Run process
+#   model_data_processed <- data_load_process_wrapper(
+#     iso = a,
+#     disease = "measles",
+#     vaccine = "measles",
+#     R0 = 15,
+#     timestep = "day"
+#   )
+#   
+#   #Process for plotting
+#   data_clean <- process_for_plotting(run_model_output = run_model(
+#     odin_model = model,
+#     params = model_data_processed$params,
+#     time = floor(model_data_processed$time),
+#     no_runs = 10
+#   ), input_data = model_data_processed$input_data)
+#   
+#   export(x = data_clean[[1]],
+#          file = paste0("output/model_run/WHO_showcase/", a, "_full_data.csv"))
+#   
+#   export(x = data_clean[[2]],
+#          file = paste0("output/model_run/WHO_showcase/", a, "_susceptibility_data.csv"))
+#   
+#   a
+#   
+# }, simplify = FALSE)
 
 
 #Load in processed data
@@ -81,6 +81,10 @@ all_full_data <- all_full_data %>%
   left_join(cases_of_interest %>%
               select(iso = iso3, year, cases), by = c("iso", "year")) %>%
   mutate(iso_fact = factor(iso))
+
+#Vaccinated
+vacc_pop <- all_full_data %>%
+  subset(state %in% c("S", "E", "I", "R", "Is", "Rc") & age != "All")
 
 
 #Plot cases over time
@@ -142,17 +146,43 @@ ggpubr::ggarrange(
 
 #Plot susceptible
 suscept_agg <- all_susceptibility_data %>%
-  subset(year == 2023) %>%
-  group_by(age, status, iso) %>%
+  mutate(status_simple = case_when(
+    grepl("Vaccine", status) ~ "Vaccinated",
+    !grepl("Vaccine", status) ~ "Unvaccinated"
+  )) %>%
+  group_by(age, year, status_simple, iso) %>%
   summarise(value = sum(value),
             value_min = sum(value_min),
             value_max = sum(value_max),
             .groups = "drop") %>%
-  group_by(age, iso) %>%
-  mutate(prop = value/sum(value))
+  group_by(age, year, iso) %>%
+  mutate(prop = value/sum(value),
+         prop_min = value_min/sum(value_min),
+         prop_max = value_max/sum(value_max))
 
+ggplot(
+  data = suscept_agg %>%
+    subset(status_simple == "Vaccinated" & year >= 1980 & age %in% c(1, 5, 18)),
+  mapping = aes(
+    x = year,
+    y = prop * 100,
+    fill = as.factor(iso),
+    color = as.factor(iso),
+    ymin = prop_min * 100,
+    ymax = prop_max * 100
+  )
+) +
+  geom_line() +
+  geom_ribbon(alpha = 0.25) + 
+  theme_bw() +
+  labs(x = "",
+       y = "% vaccinated",
+       color = "",
+       fill = "") +
+  facet_wrap(~age)
 
-ggplot(data = suscept_agg,
+ggplot(data = suscept_agg %>%
+         subset(year == 2023),
        mapping = aes(
          x = as.numeric(age),
          y = value,

@@ -62,27 +62,27 @@ all_plot_together <- sapply(random_iso, function(x){
     contact_matrix = demog_data$contact_matrix,
     I0 = 0,
     initial_background_death = 1,
-    aging_rate = 1/365,
+    aging_rate = 1/1,
     
     #Changing mortality and birth
     #Turn off simple birth/deaths
     simp_birth_death = 0,
     #List of when birth_death_changes
-    tt_birth_changes = demog_data$tt_migration * 365,
-    tt_death_changes = demog_data$tt_migration * 365,
+    tt_birth_changes = demog_data$tt_migration * 1,
+    tt_death_changes = demog_data$tt_migration * 1,
     #Values of changes
     crude_birth = demog_data$crude_birth %>%
-      mutate(value = value/365),
+      mutate(value = value/1),
     crude_death = demog_data$crude_death %>%
-      mutate(value = value/365),
+      mutate(value = value/1),
     #Birth ages
     repro_low = 15,
     repro_high = 49,
     
     #Migration
-    tt_migration = demog_data$tt_migration * 365,
+    tt_migration = demog_data$tt_migration * 1,
     migration_in_number = demog_data$migration_in_number %>% 
-      mutate(value = value/365),
+      mutate(value = value/1),
     migration_distribution_values = demog_data$migration_distribution_values,
     migration_represent_current_pop = 1
     
@@ -92,7 +92,7 @@ all_plot_together <- sapply(random_iso, function(x){
   clean_df <- run_model(
     odin_model = model,
     params = params,
-    time = max(demog_data$tt_migration * 365) + 1,
+    time = max(demog_data$tt_migration * 1) + 1,
     no_runs = 1
   )
   
