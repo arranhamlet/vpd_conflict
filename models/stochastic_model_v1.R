@@ -20,61 +20,6 @@ initial(repro_pop) <- 0
 # Update compartments
 update(S[, , ]) <- max(S[i, j, k] + waning_R[i, j, k] + waning_Rc[i, j, k] + aging_into_S[i, j, k] - aging_out_of_S[i, j, k] - lambda_S[i, j, k] - S_death[i, j, k] + moving_risk_to_S[i, j, k] - moving_risk_from_S[i, j, k] + migration_S[i, j, k] * pos_neg_migration + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k] + waning_to_S_long[i, j, k] + waning_to_S_unvaccinated[i, j, k] - waning_from_S_short[i, j, k] - waning_from_S_long[i, j, k] - t_seeded[i, j, k], 0)
 
-
-update(add_waning_R) <- sum(waning_R)
-initial(add_waning_R) <- 0
-
-update(add_waning_Rc) <- sum(waning_Rc)
-initial(add_waning_Rc) <- 0
-
-update(add_aging_into_S) <- sum(aging_into_S)
-initial(add_aging_into_S) <- 0
-
-update(sub_aging_out_of_S) <- sum(aging_out_of_S)
-initial(sub_aging_out_of_S) <- 0
-
-update(sub_lambda_S) <- sum(lambda_S)
-initial(sub_lambda_S) <- 0
-
-update(sub_S_death) <- sum(S_death)
-initial(sub_S_death) <- 0
-
-update(add_moving_risk_to_S) <- sum(moving_risk_to_S)
-initial(add_moving_risk_to_S) <- 0
-
-update(sub_moving_risk_from_S) <- sum(moving_risk_from_S)
-initial(sub_moving_risk_from_S) <- 0
-
-update(add_migration_S) <- sum(migration_S)
-initial(add_migration_S) <- 0
-
-update(add_vaccinating_into_S) <- sum(vaccinating_into_S)
-initial(add_vaccinating_into_S) <- 0
-
-update(sub_vaccinating_out_of_S) <- sum(vaccinating_out_of_S)
-initial(sub_vaccinating_out_of_S) <- 0
-
-update(add_waning_to_S_long) <- sum(waning_to_S_long)
-initial(add_waning_to_S_long) <- 0
-
-update(add_waning_to_S_unvaccinated) <- sum(waning_to_S_unvaccinated)
-initial(add_waning_to_S_unvaccinated) <- 0
-
-update(sub_waning_from_S_short) <- sum(waning_from_S_short)
-initial(sub_waning_from_S_short) <- 0
-
-update(sub_waning_from_S_long) <- sum(waning_from_S_long)
-initial(sub_waning_from_S_long) <- 0
-
-update(sub_t_seeded) <- sum(t_seeded)
-initial(sub_t_seeded) <- 0
-
-
-
-
-
-
-
 #
 update(E[, , ]) <- max(E[i, j, k] + lambda_S[i, j, k] - incubated[i, j, k] + aging_into_E[i, j, k] - aging_out_of_E[i, j, k] - E_death[i, j, k] + moving_risk_to_E[i, j, k] - moving_risk_from_E[i, j, k] + migration_E[i, j, k] * pos_neg_migration + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k] + waning_to_E_long[i, j, k] + waning_to_E_unvaccinated[i, j, k] - waning_from_E_short[i, j, k] - waning_from_E_long[i, j, k], 0)
 # 
@@ -178,6 +123,9 @@ dim(total_Rc_out) <- c(n_age, n_vacc, n_risk)
 dim(Rc_left) <- c(n_age, n_vacc, n_risk)
 
 # STEP 1: AGING - Apply aging to the remaining individuals
+
+
+
 # For S compartment
 aging_into_S[1, 1, ] <- Births[k]
 aging_into_S[2:n_age, , ] <- if(S_left[i - 1, j, k] <= 0) 0 else Binomial(S_left[i - 1, j, k], max(min(aging_rate[i-1], 1), 0))
