@@ -10,10 +10,10 @@ initial(Rc[, , ]) <- 0
 
 #Additional outputs
 initial(total_pop) <- sum(N0)
-initial(total_birth) <- 0
-initial(total_death) <- 0
-initial(total_migration) <- 0
-initial(repro_pop) <- 0
+# initial(total_birth) <- 0
+# initial(total_death) <- 0
+# initial(total_migration) <- 0
+# initial(repro_pop) <- 0
 
 # Compartments ------------------------------------------------------------
 
@@ -33,10 +33,10 @@ update(Rc[, , ]) <- max(Rc[i, j, k] + recovered_Is_to_Rc[i, j, k] - waning_Rc[i,
 
 #Additional outputs
 update(total_pop) <- N
-update(total_birth) <- sum(Births)
-update(total_death) <- sum(S_death) + sum(E_death) + sum(I_death) + sum(R_death) + sum(Is_death) + sum(Rc_death)
-update(total_migration) <- sum(migration)
-update(repro_pop) <- sum(reproductive_population)
+# update(total_birth) <- sum(Births)
+# update(total_death) <- sum(S_death) + sum(E_death) + sum(I_death) + sum(R_death) + sum(Is_death) + sum(Rc_death)
+# update(total_migration) <- sum(migration)
+# update(repro_pop) <- sum(reproductive_population)
 
 # Entering and exiting compartments ---------------------------------------
 
@@ -162,11 +162,6 @@ Rc_after_aging[, , ] <- Rc_left[i, j, k] + aging_into_Rc[i, j, k] - aging_out_of
 vaccinating_out_of_S[, , ] <- if(n_vacc == 1 || j >= n_vacc - 1 || aging_into_S[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(aging_into_S[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
 vaccinating_into_S[, , ] <- if(j == 3) vaccinating_out_of_S[i, 1, k] else if(j > 3 && j %% 2 == 1) vaccinating_out_of_S[i, j - 2, k] + vaccinating_out_of_S[i, j - 3, k] else 0
 # S_after_vaccination[, , ] <- S_after_aging[i, j, k] + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k]
-
-update(svacout) <- sum(vaccinating_out_of_S)
-update(svacin) <- sum(vaccinating_into_S)
-initial(svacout) <- 0
-initial(svacin) <- 0
 
 # For E compartment
 vaccinating_out_of_E[, , ] <- if(1 == 1) 0 else if(n_vacc == 1 || j > n_vacc - 2 || aging_into_E[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(aging_into_E[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
@@ -444,14 +439,7 @@ dim(S_effective_age) <- n_age
 FOI_scaling_factor[] <- if(Npop_age[i] <= 0) 0 else min(1, max(0, S_effective_age[i] / Npop_age[i]))
 dim(FOI_scaling_factor) <- n_age
 
-update(S_eff_total) <- sum(S_effective_age)
-initial(S_eff_total) <- 0
-
 lambda[, , ] <- if(N <= 0) 0 else if(user_specified_foi == 1) beta_updated[i, j, k] * ngm[i]/t_R0 * initial_FOI[i] * FOI_scaling_factor[i]  else max(0, lambda_raw[i]) * beta_updated[i, j, k]
-
-update(FOI_scale_sum[]) <- FOI_scaling_factor[i]
-initial(FOI_scale_sum[]) <- 0
-dim(FOI_scale_sum) <- n_age
 
 # Calculate next-generation matrix elements
 ngm_unfolded[, , , ] <- S[i, k, l] * beta_updated[i, k, l] * infectious_period[i, k, l] * contact_matrix[i, j]
@@ -467,9 +455,6 @@ initial(Reff) <- R0[1]
 update(Reff_age[]) <- ngm[i]
 initial(Reff_age[]) <- 0
 dim(Reff_age) <- n_age
-
-update(lambdao) <- lambda[1, 1, 1]
-initial(lambdao) <- 0
 
 #Seeding
 t_seeded <- interpolate(tt_seeded, seeded, "constant")

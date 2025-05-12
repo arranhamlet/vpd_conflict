@@ -19,7 +19,7 @@ case_vaccine_to_param <- function(
   
   #Subset schedule
   schedule_subset <- vaccination_schedule %>%
-    subset(grepl(vaccination_type, VACCINE_DESCRIPTION, ignore.case = T) & ISO_3_CODE == demog_data$input_data$iso) %>%
+    subset(grepl(vaccination_type, VACCINE_DESCRIPTION, ignore.case = T) & ISO_3_CODE == demog_data$input_data$iso & TARGETPOP_DESCRIPTION != "Travellers") %>%
     mutate(
       age_years = case_when(
         grepl("Y", AGEADMINISTERED) ~ as.numeric(gsub("[^0-9.-]", "", AGEADMINISTERED)),

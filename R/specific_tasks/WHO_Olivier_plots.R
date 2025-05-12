@@ -25,44 +25,41 @@ invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recur
 model <- odin2::odin("models/stochastic_model_v1.R")
 
 #Run through some countries
-countries_of_interest <- c("PSE", "ETH", 
-                           "PAK", "SDN", "YEM",
-                           "UKR")
-
+countries_of_interest <- c("PSE", "MMR", "SOM", "UKR", "VEN")
+  
 cases_of_interest <- import("data/processed/WHO/reported_cases_data.csv") %>%
   subset(disease_description == "Measles" & iso3 %in% countries_of_interest) 
 
+country_data <- sapply(countries_of_interest, function(a){
 
-# country_data <- sapply(countries_of_interest, function(a){
-#   
-#   print(a)
-#   
-#   #Run process
-#   model_data_processed <- data_load_process_wrapper(
-#     iso = a,
-#     disease = "measles",
-#     vaccine = "measles",
-#     R0 = 15,
-#     timestep = "day"
-#   )
-#   
-#   #Process for plotting
-#   data_clean <- process_for_plotting(run_model_output = run_model(
-#     odin_model = model,
-#     params = model_data_processed$params,
-#     time = floor(model_data_processed$time),
-#     no_runs = 10
-#   ), input_data = model_data_processed$input_data)
-#   
-#   export(x = data_clean[[1]],
-#          file = paste0("output/model_run/WHO_showcase/", a, "_full_data.csv"))
-#   
-#   export(x = data_clean[[2]],
-#          file = paste0("output/model_run/WHO_showcase/", a, "_susceptibility_data.csv"))
-#   
-#   a
-#   
-# }, simplify = FALSE)
+  print(a)
+
+  #Run process
+  model_data_processed <- data_load_process_wrapper(
+    iso = a,
+    disease = "measles",
+    vaccine = "measles",
+    R0 = 12,
+    timestep = "day"
+  )
+
+  #Process for plotting
+  data_clean <- process_for_plotting(run_model_output = run_model(
+    odin_model = model,
+    params = model_data_processed$params,
+    time = floor(model_data_processed$time),
+    no_runs = 8
+  ), input_data = model_data_processed$input_data)
+
+  export(x = data_clean[[1]],
+         file = paste0("output/model_run/WHO_showcase/", a, "_full_data.csv"))
+
+  export(x = data_clean[[2]],
+         file = paste0("output/model_run/WHO_showcase/", a, "_susceptibility_data.csv"))
+
+  a
+
+}, simplify = FALSE)
 
 
 #Load in processed data
@@ -162,7 +159,7 @@ suscept_agg <- all_susceptibility_data %>%
 
 ggplot(
   data = suscept_agg %>%
-    subset(status_simple == "Vaccinated" & year >= 1980 & age %in% c(1, 5, 18)),
+    subset(status_simple == "Vaccinated" & year >= 1980 & age %in% c(2, 18, 30)),
   mapping = aes(
     x = year,
     y = prop * 100,
