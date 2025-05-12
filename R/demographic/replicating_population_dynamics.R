@@ -29,7 +29,8 @@ population_female <- import(here("data", "processed", "WPP", "age_female.csv"))
 contact_matricies <- import(here("data", "raw", "contact_matricies", "contact_all.rdata"))
 
 # random_iso <- c(sample(unique(migration$iso3), 7), "GBR")
-random_iso <- c("BGD", "BHR", "GBR", "SVK", "ZWE")
+# random_iso <- c("BGD", "BHR", "GBR", "SVK", "ZWE")
+random_iso <- c("MMR", "PSE")
 
 all_plot_together <- sapply(random_iso, function(x){
   

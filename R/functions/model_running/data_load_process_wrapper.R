@@ -7,7 +7,8 @@ data_load_process_wrapper <- function(
   R0,
   timestep = "day",
   year_start = "",
-  year_end = ""
+  year_end = "",
+  constant_seed = F
   ){
   
   #Load files needed
@@ -109,7 +110,7 @@ data_load_process_wrapper <- function(
     age_vaccination_beta_modifier = age_vaccination_beta_modifier,
     
     # Disease parameters 
-    R0 = R0,
+    R0 = if(constant_seed == T) 0 else R0,
     tt_R0 = 0,
     user_specified_foi = 0,
 
@@ -143,8 +144,8 @@ data_load_process_wrapper <- function(
       mutate(value = value/(365/time_adjust)),
     migration_distribution_values = model_data_preprocessed$processed_demographic_data$migration_distribution_values,
     
-    tt_seeded = c(0, max(time_changes_seeded)),
-    seeded = expand.grid(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, dim5 = 1:2, value = 10),
+    tt_seeded = if(constant_seed == T) case_vaccination_ready$tt_seeded else c(0, max(time_changes_seeded)),
+    seeded = if(constant_seed == T) 0 else expand.grid(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, dim5 = 1:2, value = 10),
     
     #Birth ages
     repro_low = 15,
@@ -156,6 +157,7 @@ data_load_process_wrapper <- function(
     
   )
   
+
   #Export these
   list(
     params = params,

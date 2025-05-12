@@ -3,7 +3,7 @@ model_run_demographic_plots <- function(
     clean_model_df,
     demog_data,
     end_year = NA,
-    time_adjust = NA
+    time_adjust = 1
     ){
   
   years <- seq(demog_data$input_data$year_start, demog_data$input_data$year_end)
@@ -30,7 +30,7 @@ model_run_demographic_plots <- function(
     model_data_subset <- clean_model_df %>%
       filter(time <= full_time_year %>% filter(year == end_year) %>% 
                pull(model_time)) %>%
-      mutate(year = min(years) - 1 + time)
+      mutate(year = min(years) + time)
   }
   
   total_population_df <- data.frame(year = years, value = 1000 * rowSums(demog_data$population_data)) %>%
