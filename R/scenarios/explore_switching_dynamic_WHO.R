@@ -23,7 +23,7 @@ invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recur
 model <- odin2::odin("models/stochastic_model_v1.R")
 
 #Run process
-GBR_day <- data_load_process_wrapper(
+model_data_processed <- data_load_process_wrapper(
   iso = "GBR",
   disease = "measles",
   vaccine = "measles",
@@ -31,15 +31,16 @@ GBR_day <- data_load_process_wrapper(
   timestep = "day"
 )
 
-run_model_output = run_model(
+#Process for plotting
+data_clean <- process_for_plotting(run_model_output = run_model(
   odin_model = model,
-  params = GBR_day$params,
-  time = floor(GBR_day$time),
+  params = model_data_processed$params,
+  time = floor(model_data_processed$time),
   no_runs = 2
-)
+), input_data = model_data_processed$input_data)
 
 
-clean <- process_for_plotting(run_model_output = run_model_output, input_data = GBR_day$input_data)
+
 
 
 
@@ -57,7 +58,7 @@ clean <- process_for_plotting(run_model_output = run_model_output, input_data = 
 #   geom_ribbon()
 # 
 # 
-susc_agg <- clean$susceptibility_data %>%
+susc_agg <- data_clean$susceptibility_data %>%
   group_by(age, year, status) %>%
   summarise(
     value = sum(value),
@@ -73,17 +74,17 @@ susc_agg <- clean$susceptibility_data %>%
   ))
 # 
 # 
-ggplot(
-  data = subset(susc_agg, year == 2023),
-  mapping = aes(
-    x = as.numeric(age),
-    y = value,
-    fill = status
-  )
-) +
-  geom_bar(stat = "identity") +
-  theme_bw() +
-  labs(x = "", y = "", fill = "")
+# ggplot(
+#   data = subset(susc_agg, year == 2023),
+#   mapping = aes(
+#     x = as.numeric(age),
+#     y = value,
+#     fill = status
+#   )
+# ) +
+#   geom_bar(stat = "identity") +
+#   theme_bw() +
+#   labs(x = "", y = "", fill = "")
 
 # 
 ggplot(

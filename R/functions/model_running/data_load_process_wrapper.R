@@ -64,13 +64,13 @@ data_load_process_wrapper <- function(
       dim1 = 1:101,
       dim2 = 2:3,
       dim3 = 1,
-      value = subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
+      value = 1#subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
     ),
     expand.grid(
       dim1 = 1:101,
       dim2 = 4:5,
       dim3 = 1,
-      value = subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("2 dose", description)) %>% pull(value)/100
+      value = 1#subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("2 dose", description)) %>% pull(value)/100
     )
   )
   

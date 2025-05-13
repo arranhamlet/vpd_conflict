@@ -11,8 +11,11 @@ case_vaccine_to_param <- function(
   n_vacc <- demog_data$input_data$n_vacc
   n_risk <- demog_data$input_data$n_risk
   
-  vaccination_type <- unique(c(processed_vaccination_sia$vaccination_name,
-                               processed_vaccination_sia$disease))
+  vaccination_type <- paste(unique(c(unique(processed_case$disease_description),
+                                     processed_vaccination_sia$vaccination_name,
+                                     processed_vaccination_sia$disease,
+                                     processed_vaccination$antigen,
+                                     processed_vaccination$antigen_description)), collapse = "|")
   
   ages <- 0:(n_age - 1)
   years <- demog_data$input_data$year_start:demog_data$input_data$year_end
@@ -67,41 +70,46 @@ case_vaccine_to_param <- function(
   }, simplify = FALSE))
   
   #Process sia data - different data and different approach
-  processed_vaccination_sia_upd <- fill_missing_years_general(
-    df = processed_vaccination_sia,
-    year_col = "year",
-    value_col = "coverage"
-  ) %>%
-    group_by(disease, vaccination_name, age, year) %>%
-    summarise(coverage = max(coverage), .groups = "drop") %>%
-    arrange(year)
-  
-  
-  sia_param_df <- Reduce(rbind, sapply(1:nrow(processed_vaccination_sia_upd), function(x){
+  if(nrow(processed_vaccination_sia) > 0){
+    processed_vaccination_sia_upd <- fill_missing_years_general(
+      df = processed_vaccination_sia,
+      year_col = "year",
+      value_col = "coverage"
+    ) %>%
+      group_by(disease, vaccination_name, age, year) %>%
+      summarise(coverage = max(coverage), .groups = "drop") %>%
+      arrange(year)
     
-    #Subset to the row and work out the timing
-    this_row <- processed_vaccination_sia_upd[x, ]
     
-    #Create dataframe
-    #Need to create a dataframe of here and then a dataframe 1 after with a value of 0 to turn off the interpolation
-    data.frame(
-      dim1 = which(ages == this_row$age),
-      dim2 = 1,
-      dim3 = 1,
-      dim4 = which(this_row$year == vaccination_years),
-      value = this_row$coverage
-    )
+    sia_param_df <- Reduce(rbind, sapply(1:nrow(processed_vaccination_sia_upd), function(x){
+      
+      #Subset to the row and work out the timing
+      this_row <- processed_vaccination_sia_upd[x, ]
+      
+      #Create dataframe
+      #Need to create a dataframe of here and then a dataframe 1 after with a value of 0 to turn off the interpolation
+      data.frame(
+        dim1 = which(ages == this_row$age),
+        dim2 = 1,
+        dim3 = 1,
+        dim4 = which(this_row$year == vaccination_years),
+        value = this_row$coverage
+      )
+      
+    }, simplify = FALSE))
     
-  }, simplify = FALSE))
-  
-  #Combine vaccination
-  vaccination_combo_param_df <- vaccination_param_df %>%
-    rbind(sia_param_df) %>%
-    group_by(dim1, dim2, dim3, dim4) %>%
-    summarise(
-      value = pmin(sum(value), 1),
-      .groups = "drop"
-    )
+    #Combine vaccination
+    vaccination_combo_param_df <- vaccination_param_df %>%
+      rbind(sia_param_df) %>%
+      group_by(dim1, dim2, dim3, dim4) %>%
+      summarise(
+        value = pmin(sum(value), 1),
+        .groups = "drop"
+      )
+    
+  } else {
+    vaccination_combo_param_df <- vaccination_param_df
+  }
   
   #Have to include a row for time 1 where the values are 0
   vaccination_combo_param_df <- vaccination_combo_param_df %>%
