@@ -1,15 +1,14 @@
 
 
 data_load_process_wrapper <- function(
-  iso,
-  disease,
-  vaccine,
-  R0,
-  timestep = "day",
-  year_start = "",
-  year_end = "",
-  constant_seed = F
-  ){
+    iso,
+    disease,
+    vaccine,
+    R0,
+    timestep = "day",
+    year_start = "",
+    year_end = ""
+){
   
   #Load files needed
   migration <- import(here("data", "processed", "WPP", "migration.csv"))
@@ -29,7 +28,7 @@ data_load_process_wrapper <- function(
     subset(CODE == iso & grepl(vaccine, ANTIGEN_DESCRIPTION, ignore.case = T)) %>%
     pull(ANTIGEN) %>%
     unique()
-
+  
   #Run processing
   model_data_preprocessed <- model_input_formatter_wrapper(
     iso = iso,    
@@ -65,13 +64,13 @@ data_load_process_wrapper <- function(
       dim1 = 1:101,
       dim2 = 2:3,
       dim3 = 1,
-      value = 1#subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
+      value = subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
     ),
     expand.grid(
       dim1 = 1:101,
       dim2 = 4:5,
       dim3 = 1,
-      value = 1#subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("2 dose", description)) %>% pull(value)/100
+      value = subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("2 dose", description)) %>% pull(value)/100
     )
   )
   
@@ -86,7 +85,7 @@ data_load_process_wrapper <- function(
   } else if(timestep == "year"){
     365
   }
-
+  
   #Set up model
   time_changes_mig <- model_data_preprocessed$processed_demographic_data$tt_migration * 365/time_adjust
   time_changes_mig <- floor(c(time_changes_mig, max(time_changes_mig) + 1))
@@ -113,7 +112,7 @@ data_load_process_wrapper <- function(
     R0 = R0,
     tt_R0 = 0,
     user_specified_foi = 0,
-
+    
     #Disease parameters
     cfr_normal = 0,
     cfr_severe = 0,
@@ -127,7 +126,7 @@ data_load_process_wrapper <- function(
     #Demographic parameters
     contact_matrix = model_data_preprocessed$processed_demographic_data$contact_matrix,
     N0 = model_data_preprocessed$processed_demographic_data$N0,
-
+    
     #Time of changes
     tt_birth_changes = time_changes_mig,
     tt_death_changes = time_changes_mig,
@@ -144,8 +143,8 @@ data_load_process_wrapper <- function(
       mutate(value = value/(365/time_adjust)),
     migration_distribution_values = model_data_preprocessed$processed_demographic_data$migration_distribution_values,
     
-    tt_seeded = if(constant_seed == T) c(0, max(time_changes_seeded)) else case_vaccination_ready$tt_seeded,
-    seeded = if(constant_seed == T) expand.grid(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, dim5 = 1:2, value = 1) else case_vaccination_ready$seeded,
+    tt_seeded = c(0, max(time_changes_seeded)),
+    seeded = expand.grid(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, dim5 = 1:2, value = 10),
     
     #Birth ages
     repro_low = 15,
@@ -157,7 +156,6 @@ data_load_process_wrapper <- function(
     
   )
   
-
   #Export these
   list(
     params = params,

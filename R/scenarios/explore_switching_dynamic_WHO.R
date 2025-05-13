@@ -27,9 +27,8 @@ GBR_day <- data_load_process_wrapper(
   iso = "GBR",
   disease = "measles",
   vaccine = "measles",
-  R0 = 18,
-  timestep = "day",
-  constant_seed = T
+  R0 = 12,
+  timestep = "day"
 )
 
 run_model_output = run_model(
@@ -44,20 +43,20 @@ clean <- process_for_plotting(run_model_output = run_model_output, input_data = 
 
 
 
-
-ggplot(
-  data = subset(clean$aggregate_df, state == "new_case" & age == "All" & year >= 1960),
-  mapping = aes(
-    x = year,
-    y = value,
-    ymin = value_min,
-    ymax = value_max
-  )
-) +
-  geom_line() +
-  geom_ribbon()
-
-
+# 
+# ggplot(
+#   data = subset(clean$aggregate_df, state == "new_case" & age == "All" & year >= 1960),
+#   mapping = aes(
+#     x = year,
+#     y = value,
+#     ymin = value_min,
+#     ymax = value_max
+#   )
+# ) +
+#   geom_line() +
+#   geom_ribbon()
+# 
+# 
 susc_agg <- clean$susceptibility_data %>%
   group_by(age, year, status) %>%
   summarise(
@@ -72,8 +71,8 @@ susc_agg <- clean$susceptibility_data %>%
     grepl("vaccine", status, ignore.case = T) ~ "Vaccine protected",
     !grepl("vaccine", status, ignore.case = T) ~ "Susceptible"
   ))
-
-
+# 
+# 
 ggplot(
   data = subset(susc_agg, year == 2023),
   mapping = aes(
@@ -86,16 +85,16 @@ ggplot(
   theme_bw() +
   labs(x = "", y = "", fill = "")
 
-
+# 
 ggplot(
-  data = subset(susc_agg, age == 2 & status == "Vaccine protected"),
+  data = subset(susc_agg, year >= 1990 & age == 3 & status == "Vaccine protected"),
   mapping = aes(
     x = as.numeric(year),
     y = prop,
     fill = status_vacc
   )
 ) +
-  geom_bar(stat = "identity") +
+  geom_line(stat = "identity") +
   theme_bw() +
-  labs(x = "", y = "", fill = "")
+  labs(x = "", y = "", fill = "") 
 
