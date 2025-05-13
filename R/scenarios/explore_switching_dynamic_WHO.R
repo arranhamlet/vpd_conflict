@@ -135,9 +135,23 @@ ggplot(
   theme_bw() +
   labs(x = "", y = "", fill = "")
 
-# 
 ggplot(
-  data = subset(susc_agg, year >= 1990 & age == 3 & status == "Vaccine protected"),
+  data = subset(susc_agg, year == 2023),
+  mapping = aes(
+    x = as.numeric(age),
+    y = prop,
+    fill = status
+  )
+) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  labs(x = "", y = "", fill = "")
+
+
+# 
+
+ggplot(
+  data = subset(susc_agg, year >= 2010 & age == 5 & status == "Susceptible"),
   mapping = aes(
     x = as.numeric(year),
     y = prop,
@@ -148,3 +162,5 @@ ggplot(
   theme_bw() +
   labs(x = "", y = "", fill = "") 
 
+#Total susceptible
+susc_agg %>% group_by(status_vacc, year) %>% summarise(value = sum(value))
