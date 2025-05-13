@@ -30,7 +30,7 @@ contact_matricies <- import(here("data", "raw", "contact_matricies", "contact_al
 
 routine_vaccination_data <- import("data/raw/WHO/coverage-data_updated.xlsx")
 full_disease_df <- import("data/processed/WHO/reported_cases_data.csv")
-vaccination_schedule <- import("data/processed/WHO/WHO_vaccination_schedule.xlsx")
+vaccination_schedule <- import("data/processed/WHO/vaccine-schedule-data.xlsx")
 measles_parameters <- import(here("data", "processed", "model_parameters", "Measles_SEIR_Parameters.csv"))
 sia_vaccination <- import("data/processed/vaccination/sia_vimc.rds")
 VIMC_vaccination <- import("C:/Users/ah1114/Documents/Imperial/VPD_conflict/generic_vpd_models/data/processed/vaccination/coverage_table.rds")
@@ -41,7 +41,7 @@ measles_cases <- import(here("data", "raw", "cases", "UK_measles_cases_1940_2023
 
 #Run processing
 model_data_preprocessed <- model_input_formatter_wrapper(
-  iso = "PSE",    
+  iso = "GBR",    
   disease = "measles",
   vaccine = "measles",
   n_age = 101,
@@ -56,18 +56,17 @@ model_data_preprocessed <- model_input_formatter_wrapper(
   disease_data = full_disease_df,
   vaccination_data_routine = routine_vaccination_data,
   vaccination_data_sia = sia_vaccination,
-  VIMC_vaccination = VIMC_vaccination,
   year_start = 1970,
   year_end = 2023
 )
 
 #Take pre-processed case and vaccination data and get it ready for params
-case_vaccination_ready <- case_vaccine_to_param_vimc(
+case_vaccination_ready <- case_vaccine_to_param(
   demog_data = model_data_preprocessed$processed_demographic_data,
-  processed_vaccination_vimc = model_data_preprocessed$processed_vaccination_vimc,
+  processed_vaccination = model_data_preprocessed$processed_vaccination_data,
+  processed_vaccination_sia = model_data_preprocessed$processed_vaccination_sia,
   processed_case = model_data_preprocessed$processed_case_data,
-  vaccination_schedule = vaccination_schedule,
-  setting = "high"
+  vaccination_schedule = vaccination_schedule
 )
 
 age_vaccination_beta_modifier <- rbind(
@@ -83,13 +82,6 @@ age_vaccination_beta_modifier <- rbind(
     dim3 = 1,
     value = subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("2 dose", description)) %>% pull(value)/100
   )
-)
-
-#Okay we are going to be using a constant FOI
-initial_FOI <- calculate_foi_from_R0(
-  R0 = 12,
-  contact_matrix = model_data_preprocessed$processed_demographic_data$contact_matrix,
-  S = model_data_preprocessed$processed_demographic_data$N0[, 4]
 )
 
 #Set up model
@@ -340,7 +332,7 @@ tiny_params <- sapply(1, function(meow){
     contact_matricies = contact_matricies,
     year_start = "2023",
     year_end = "2023",
-    iso = "PSE",
+    iso = "GBR",
     n_age = 101,
     number_of_vaccines = 1, 
     n_risk = 1
@@ -404,18 +396,18 @@ tiny_params <- sapply(1, function(meow){
 }, simplify = FALSE)[[1]]
 
 
-prob_out <- sapply(vacc_use$prop, function(x){
+prob_out <- sapply(seq(0.98, 0.91, by = -0.01), function(x){
   
   print(x)
   
   params_upd <- tiny_params
-  vacc_upd <- abind::abind(params_upd$vaccination_coverage, 
-                           params_upd$vaccination_coverage, 
-                           params_upd$vaccination_coverage, along = 4)
-  vacc_upd[, 1, , 2] <- x
-  params_upd$vaccination_coverage <- vacc_upd
-  params_upd$tt_vaccination_coverage <- c(0, 1, 2)
-  params_upd$no_vacc_changes <- 3
+  # vacc_upd <- abind::abind(params_upd$vaccination_coverage, 
+  #                          params_upd$vaccination_coverage, 
+  #                          params_upd$vaccination_coverage, along = 4)
+  # vacc_upd[, 1, , 1] <- x
+  params_upd$vaccination_coverage[, 1, , ] <- x#vacc_upd
+  params_upd$tt_vaccination_coverage <- 0
+  params_upd$no_vacc_changes <- 1
   
   #Run model
   clean_df <- run_model(
@@ -427,9 +419,8 @@ prob_out <- sapply(vacc_use$prop, function(x){
     filter(state %in% c("S", "new_case") &
              vaccination != "All")
   
-  boop = subset(clean_df, state == "new_case") %>% fgroup_by(time, run) %>% fsummarise(value = sum(value)) 
-  ggplot(data = boop, mapping = aes(x = time, y= value, color = run)) + geom_line()
-  
+  # boop = subset(clean_df, state == "new_case") %>% fgroup_by(time, run) %>% fsummarise(value = sum(value)) 
+  # ggplot(data = boop, mapping = aes(x = time, y= value, color = run)) + geom_line()
   
   values <- clean_df %>%
     subset(state == "new_case") %>%
@@ -451,7 +442,7 @@ combo <- Reduce(rbind, prob_out)
 
 #Annual cases
 combo_annual <- combo %>%
-  fgroup_by(vac_coverage, above_100, run) %>%
+  fgroup_by(vac_coverage, run) %>%
   fsummarise(
     value = sum(value)
   )
@@ -520,7 +511,7 @@ combo_sum$time <- 63:54
 vac_coverage_plot <- ggplot(
   data = combo_sum,
   mapping = aes(
-    x = time + year_start, #100 * vac_coverage,
+    x = vac_coverage, #100 * vac_coverage,
     ymin = low,
     ymax = high,
     y = median

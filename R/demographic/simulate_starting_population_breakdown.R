@@ -79,14 +79,6 @@ age_vaccination_beta_modifier <- rbind(
   )
 )
 
-#Okay we are going to be using a constant FOI
-initial_FOI <- calculate_foi_from_R0(
-  R0 = 18,
-  contact_matrix = model_data_preprocessed$processed_demographic_data$contact_matrix,
-  N = model_data_preprocessed$processed_demographic_data$N0[, 4],
-  infectious_period = 365/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value)
-)
-
 #Set up model
 params <- param_packager(
   
@@ -101,10 +93,8 @@ params <- param_packager(
   age_vaccination_beta_modifier = age_vaccination_beta_modifier,
   
   # Disease parameters 
-  R0 = 18,
+  R0 = 12,
   tt_R0 = 0,
-  user_specified_foi = 1,
-  initial_FOI = initial_FOI,
 
   #Disease parameters
   cfr_normal = 0,

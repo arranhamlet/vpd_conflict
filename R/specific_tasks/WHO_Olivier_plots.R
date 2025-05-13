@@ -25,41 +25,45 @@ invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recur
 model <- odin2::odin("models/stochastic_model_v1.R")
 
 #Run through some countries
-countries_of_interest <- c("PSE", "MMR", "SOM", "UKR", "VEN")
+countries_of_interest <- c("PSE", "MMR", "SOM", "UKR", "VEN", "GBR")
   
 cases_of_interest <- import("data/processed/WHO/reported_cases_data.csv") %>%
   subset(disease_description == "Measles" & iso3 %in% countries_of_interest) 
 
-country_data <- sapply("GBR", function(a){
+population_all <- import(here("data", "processed", "WPP", "age_both.csv")) %>%
+  subset(iso3 %in% countries_of_interest)
 
-  print(a)
 
-  #Run process
-  model_data_processed <- data_load_process_wrapper(
-    iso = a,
-    disease = "measles",
-    vaccine = "measles",
-    R0 = 12,
-    timestep = "day"
-  )
-
-  #Process for plotting
-  data_clean <- process_for_plotting(run_model_output = run_model(
-    odin_model = model,
-    params = model_data_processed$params,
-    time = floor(model_data_processed$time),
-    no_runs = 8
-  ), input_data = model_data_processed$input_data)
-
-  export(x = data_clean[[1]],
-         file = paste0("output/model_run/WHO_showcase/", a, "_full_data.csv"))
-
-  export(x = data_clean[[2]],
-         file = paste0("output/model_run/WHO_showcase/", a, "_susceptibility_data.csv"))
-
-  a
-
-}, simplify = FALSE)
+# country_data <- sapply(countries_of_interest, function(a){
+# 
+#   print(a)
+# 
+#   #Run process
+#   model_data_processed <- data_load_process_wrapper(
+#     iso = a,
+#     disease = "measles",
+#     vaccine = "measles",
+#     R0 = 12,
+#     timestep = "day"
+#   )
+# 
+#   #Process for plotting
+#   data_clean <- process_for_plotting(run_model_output = run_model(
+#     odin_model = model,
+#     params = model_data_processed$params,
+#     time = floor(model_data_processed$time),
+#     no_runs = 8
+#   ), input_data = model_data_processed$input_data)
+# 
+#   export(x = data_clean[[1]],
+#          file = paste0("output/model_run/WHO_showcase/", a, "_full_data.csv"))
+# 
+#   export(x = data_clean[[2]],
+#          file = paste0("output/model_run/WHO_showcase/", a, "_susceptibility_data.csv"))
+# 
+#   a
+# 
+# }, simplify = FALSE)
 
 
 #Load in processed data
@@ -129,7 +133,6 @@ all_with_zoom <- sapply(countries_of_interest, function(a){
   
 }, simplify = FALSE)
 
-ggarrange(plotlist = all_with_zoom)
 
 
 ggplot(
@@ -190,7 +193,7 @@ suscept_complex_agg <- all_susceptibility_data %>%
 
 ggplot(
   data = suscept_agg %>%
-    subset(iso == "MMR" & status_simple == "Vaccinated" & year >= 1980 & age %in% c(2, 18, 30)) %>%
+    subset(iso == "MMR" & status_simple == "Vaccine protected" & year >= 1980 & age %in% c(2, 18, 30)) %>%
     mutate(age = as.numeric(age),
            age_text = paste0(age, " years old"),
            age_text = factor(age_text, levels = c("2 years old",
@@ -221,7 +224,7 @@ ggsave("figs/presentations/20251205/MMR_immunization_coverage_time.jpg", width =
 
 ggplot(
   data = suscept_agg %>%
-    subset(status_simple == "Vaccinated" & year >= 1980 & age %in% c(2, 18, 30)) %>%
+    subset(status_simple == "Vaccine protected" & year >= 1980 & age %in% c(2, 18, 30)) %>%
     mutate(age = as.numeric(age),
            age_text = paste0(age, " years old"),
            age_text = factor(age_text, levels = c("2 years old",
@@ -300,10 +303,34 @@ ggplot(data = suscept_complex_agg %>%
 ggsave("figs/presentations/20251205/MMR_vaccination_and_exposure_individual.jpg", width = 6, height = 4)
 
 
+pop_capita <- subset(suscept_complex_agg, year == 2023 & status == "Susceptible") %>%
+  left_join(
+  subset(population_all, year == 2023) %>%
+    group_by(iso3) %>%
+    mutate(total_population = 1000 * sum(across(x0:x100))) %>%
+    select(iso = iso3, year, total_population)
+) %>%
+  group_by(iso) %>%
+  summarise(value = sum(value),
+            total_population = median(total_population)) %>%
+  mutate(per_capita_susc = value/total_population * 1000)
+  
+#Per capita susceptible
+ggplot(
+  data = pop_capita,
+  mapping = aes(
+    y = iso,
+    x = per_capita_susc
+  )
+) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  labs(
+    y = "",
+    x = "Susceptibles (per 1000)"
+  ) +
+  scale_y_discrete(limits = rev)
 
-
-
-
-
+ggsave("figs/presentations/20251205/susceptible_per_capita.jpg", width = 5, height = 3)
 
 
