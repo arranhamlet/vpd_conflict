@@ -57,7 +57,7 @@ waning_Rc[, , ] <- if(Rc[i, j, k] <= 0) 0 else Binomial(Rc[i, j, k], max(min(nat
 #E sampling
 incubated[, , ] <- if(E[i, j, k] <= 0) 0 else Binomial(E[i, j, k], max(min(incubation_rate, 1), 0))
 
-update(new_case[, , ]) <- incubated[i, j, k]
+update(new_case[, , ]) <- incubated[i, j, k] + t_seeded[i, j, k]
 initial(new_case[, , ]) <- I0[i, j, k]
 dim(new_case) <- c(n_age, n_vacc, n_risk)
 

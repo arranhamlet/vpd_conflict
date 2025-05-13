@@ -7,7 +7,8 @@ data_load_process_wrapper <- function(
     R0,
     timestep = "day",
     year_start = "",
-    year_end = ""
+    year_end = "",
+    WHO_seed_switch = F
 ){
   
   #Load files needed
@@ -94,7 +95,30 @@ data_load_process_wrapper <- function(
   time_changes_vac <- floor(c(time_changes_vac, max(time_changes_vac) + 1))
   
   time_changes_seeded <- case_vaccination_ready$tt_seeded * 365/time_adjust
-  time_changes_seeded <- floor(c(time_changes_seeded, max(time_changes_seeded) + 1))
+  R0_switch_time <- time_changes_seeded[2]
+  
+  if(WHO_seed_switch == T){
+    
+    time_changes_seeded <- c(sapply(time_changes_seeded, function(e){
+      c(e, e + 1)
+    }))
+    
+    time <- sort(unique(case_vaccination_ready$seeded$dim4))
+    
+    seed_with_data <- case_vaccination_ready$seeded %>%
+      mutate(dim4 = dim4 * 2 - 1)
+    
+    seed_without_data <- case_vaccination_ready$seeded %>%
+      mutate(dim4 = dim4 * 2,
+             value = 0)
+    
+    seed <- rbind(seed_with_data,
+                  seed_without_data)
+    
+  } else{
+    time_changes_seeded <- floor(c(time_changes_seeded, max(time_changes_seeded) + 1))
+  }
+  
   
   params <- param_packager(
     
@@ -109,8 +133,8 @@ data_load_process_wrapper <- function(
     age_vaccination_beta_modifier = age_vaccination_beta_modifier,
     
     # Disease parameters 
-    R0 = R0,
-    tt_R0 = 0,
+    R0 = if(WHO_seed_switch == T) c(R0, 0) else R0,
+    tt_R0 = if(WHO_seed_switch == T) c(0, R0_switch_time) else 0,
     user_specified_foi = 0,
     
     #Disease parameters
@@ -126,6 +150,8 @@ data_load_process_wrapper <- function(
     #Demographic parameters
     contact_matrix = model_data_preprocessed$processed_demographic_data$contact_matrix,
     N0 = model_data_preprocessed$processed_demographic_data$N0,
+    
+    I0 = if(WHO_seed_switch == T) data.frame(dim1 = 18, dim2 = 1, dim3 = 1, value = 100) else 0,
     
     #Time of changes
     tt_birth_changes = time_changes_mig,
@@ -143,8 +169,8 @@ data_load_process_wrapper <- function(
       mutate(value = value/(365/time_adjust)),
     migration_distribution_values = model_data_preprocessed$processed_demographic_data$migration_distribution_values,
     
-    tt_seeded = c(0, max(time_changes_seeded)),
-    seeded = expand.grid(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, dim5 = 1:2, value = 10),
+    tt_seeded = if(WHO_seed_switch == T) time_changes_seeded else c(0, max(time_changes_seeded)),
+    seeded = if(WHO_seed_switch == T) seed else expand.grid(dim1 = 18, dim2 = 1, dim3 = 1, dim4 = 1, dim5 = 1:2, value = 10),
     
     #Birth ages
     repro_low = 15,

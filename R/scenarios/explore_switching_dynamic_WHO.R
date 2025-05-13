@@ -28,7 +28,8 @@ model_data_processed <- data_load_process_wrapper(
   disease = "measles",
   vaccine = "measles",
   R0 = 12,
-  timestep = "day"
+  timestep = "day",
+  WHO_seed_switch = T
 )
 
 #Process for plotting
@@ -42,20 +43,68 @@ data_clean <- process_for_plotting(run_model_output = run_model(
 
 
 
+new_case_df <- subset(data_clean$aggregate_df, state == "new_case" & age == "All" & year >= 1960 & year <= 2023)
+cases_of_interest <- import("data/processed/WHO/reported_cases_data.csv") %>%
+  subset(disease_description == "Measles" & iso3 %in% "GBR") 
+  
+new_case_df <- new_case_df %>%
+  left_join(
+    cases_of_interest %>%
+      select(year, cases),
+    by = "year"
+  )
 
 
-# 
-# ggplot(
-#   data = subset(clean$aggregate_df, state == "new_case" & age == "All" & year >= 1960),
-#   mapping = aes(
-#     x = year,
-#     y = value,
-#     ymin = value_min,
-#     ymax = value_max
-#   )
-# ) +
-#   geom_line() +
-#   geom_ribbon()
+ggplot(
+) +
+  geom_line(data = new_case_df,
+              mapping = aes(
+                x = year,
+                y = value
+              )) +
+  geom_ribbon(data = new_case_df,
+              mapping = aes(
+                x = year,
+                y = value,
+                ymin = value_min,
+                ymax = value_max
+              ),
+              alpha = 0.25) +
+  geom_bar(data = new_case_df,
+           mapping = aes(
+             x = year,
+             y = cases
+           ), stat = "identity",
+           fill = "red")
+  theme_bw() +
+  scale_y_continuous(labels = scales::comma)
+
+
+ggplot(
+) +
+  geom_line(data = new_case_df,
+              mapping = aes(
+                x = year,
+                y = value
+              )) +
+  geom_ribbon(data = new_case_df,
+              mapping = aes(
+                x = year,
+                y = value,
+                ymin = value_min,
+                ymax = value_max
+              ),
+              alpha = 0.25) +
+  geom_bar(data = new_case_df,
+           mapping = aes(
+             x = year,
+             y = cases
+           ), stat = "identity",
+           fill = "red")
+  theme_bw() +
+  scale_y_continuous(labels = scales::comma)
+
+
 # 
 # 
 susc_agg <- data_clean$susceptibility_data %>%
@@ -74,17 +123,17 @@ susc_agg <- data_clean$susceptibility_data %>%
   ))
 # 
 # 
-# ggplot(
-#   data = subset(susc_agg, year == 2023),
-#   mapping = aes(
-#     x = as.numeric(age),
-#     y = value,
-#     fill = status
-#   )
-# ) +
-#   geom_bar(stat = "identity") +
-#   theme_bw() +
-#   labs(x = "", y = "", fill = "")
+ggplot(
+  data = subset(susc_agg, year == 2023),
+  mapping = aes(
+    x = as.numeric(age),
+    y = value,
+    fill = status
+  )
+) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  labs(x = "", y = "", fill = "")
 
 # 
 ggplot(

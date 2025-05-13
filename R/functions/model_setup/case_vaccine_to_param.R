@@ -177,7 +177,7 @@ case_vaccine_to_param <- function(
   
   list(tt_vaccination = c(0, which(years %in% processed_vaccination_upd$year)),
        vaccination_coverage = vaccination_combo_param_df,
-       tt_seeded = c(0, which(years %in% processed_case_upd$year)),
+       tt_seeded = c(0, which(years %in% processed_case_upd$year) - 1),
        seeded = case_param_df)
   
 }
