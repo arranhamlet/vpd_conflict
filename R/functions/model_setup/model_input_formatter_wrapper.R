@@ -110,7 +110,13 @@ model_input_formatter_wrapper <- function(
     iso = demographic_data_calculated$input_data$iso,
     year_start = demographic_data_calculated$input_data$year_start,
     year_end = demographic_data_calculated$input_data$year_end
-  )
+  ) %>%
+    mutate(dose_order = case_when(
+      grepl("4th", antigen_description) ~ 4,
+      grepl("5th", antigen_description) ~ 5,
+      grepl("6th", antigen_description) ~ 6,
+      TRUE ~ dose_order
+    ))
   
   # Step 4: Process supplemental immunization activities
   processed_vaccination_sia <- process_vaccination_sia(

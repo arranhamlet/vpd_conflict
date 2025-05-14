@@ -22,11 +22,22 @@ data_load_process_wrapper <- function(
   sia_vaccination <- import("data/processed/vaccination/sia_vimc.rds")
   full_disease_df <- import("data/processed/WHO/reported_cases_data.csv")
   vaccination_schedule <- import("data/processed/WHO/vaccine-schedule-data.xlsx")
-  measles_parameters <- import(here("data", "processed", "model_parameters", "Measles_SEIR_Parameters.csv"))
+  vaccination_translated <- import("data/processed/vaccination/Vaccine_Abbreviations_and_Diseases.csv")
+  
+  routine_vaccination_data <- routine_vaccination_data %>%
+    left_join(vaccination_translated, by = c("ANTIGEN" = "Abbreviation"))
+  
+  disease_parameters <- import("data/processed/model_parameters/disease_parameters_table.xlsx") %>%
+    rename(disease_n = disease) %>%
+    subset(disease_n == disease)
+  
+  vaccine_parameters <- import("data/processed/vaccination/vaccine_protection.xlsx") %>%
+    rename(disease_n = disease) %>%
+    subset(disease_n == disease)
   
   #Calculate number of vaccines
   number_of_vaccines <- routine_vaccination_data %>%
-    subset(CODE == iso & grepl(vaccine, ANTIGEN_DESCRIPTION, ignore.case = T)) %>%
+    subset(CODE == iso & (grepl(vaccine, ANTIGEN_DESCRIPTION, ignore.case = T) | grepl(disease, Disease, ignore.case = T))) %>%
     pull(ANTIGEN) %>%
     unique()
   
@@ -60,20 +71,33 @@ data_load_process_wrapper <- function(
     vaccination_schedule = vaccination_schedule
   )
   
-  age_vaccination_beta_modifier <- rbind(
-    expand.grid(
-      dim1 = 1:101,
-      dim2 = 2:3,
-      dim3 = 1,
-      value = 1#subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("1 dose", description)) %>% pull(value)/100
-    ),
-    expand.grid(
-      dim1 = 1:101,
-      dim2 = 4:5,
-      dim3 = 1,
-      value = 1#subset(measles_parameters, parameter == "age_vaccination_beta_modifier" & grepl("2 dose", description)) %>% pull(value)/100
+  #Add in vaccine provided protection
+  n_vacc <- model_data_preprocessed$processed_demographic_data$input_data$n_vacc
+  
+  vacc_order <- seq(2, n_vacc, by = 2)
+  age_vaccination_beta_modifier <- Reduce(rbind, sapply(vacc_order, function(j){
+    
+    dose_details <- vaccine_parameters %>%
+      mutate(order = abs(j - vaccine_parameters$dose)) %>%
+      subset(order == min(order))
+    
+    rbind(
+      expand.grid(
+        dim1 = 1:101,
+        dim2 = j,
+        dim3 = 1,
+        value = dose_details %>% subset(parameter == "short_term_protection") %>% pull(value)
+      ),
+      expand.grid(
+        dim1 = 1:101,
+        dim2 = j + 1,
+        dim3 = 1,
+        value = dose_details %>% subset(parameter == "long_term_protection") %>% pull(value)
+      )
     )
-  )
+    
+  }, simplify = FALSE))
+  
   
   time_adjust <- if(timestep == "day"){
     1
@@ -128,8 +152,8 @@ data_load_process_wrapper <- function(
     n_risk = model_data_preprocessed$processed_demographic_data$input_data$n_risk,
     
     # Vaccine parameters
-    short_term_waning = 1/(14/time_adjust),
-    long_term_waning = 0,
+    short_term_waning = 1/((vaccine_parameters %>% subset(parameter == "short_term_waning") %>% pull(value) %>% as.numeric() %>% max() * 365)/time_adjust),
+    long_term_waning = 1/((vaccine_parameters %>% subset(parameter == "long_term_waning") %>% pull(value) %>% as.numeric() %>% max() * 365)/time_adjust),
     age_vaccination_beta_modifier = age_vaccination_beta_modifier,
     
     # Disease parameters 
@@ -140,9 +164,9 @@ data_load_process_wrapper <- function(
     #Disease parameters
     cfr_normal = 0,
     cfr_severe = 0,
-    incubation_rate = 1/subset(measles_parameters, parameter == "incubation_period") %>% pull(value) * time_adjust,
-    recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value) * time_adjust,
-    severe_recovery_rate = 1/subset(measles_parameters, parameter == "recovery_rate") %>% pull(value) * time_adjust,
+    incubation_rate = 1/subset(disease_parameters, parameter == "incubation period") %>% pull(value) %>% as.numeric() * time_adjust,
+    recovery_rate = 1/subset(disease_parameters, parameter == "infectious period") %>% pull(value) %>% as.numeric() * time_adjust,
+    severe_recovery_rate = 1/subset(disease_parameters, parameter == "infectious period") %>% pull(value) %>% as.numeric() * time_adjust,
     
     #Setting up vaccination
     vaccination_coverage = case_vaccination_ready$vaccination_coverage,

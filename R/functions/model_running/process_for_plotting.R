@@ -3,6 +3,10 @@ process_for_plotting <- function(run_model_output, input_data){
   
   #Aggregate across runs
   # Convert to data.table if needed
+  if(any(!colnames(run_model_output) %in% "run")){
+    run_model_output$run <- 0
+  }
+  
   setDT(run_model_output)
   
   # Cache constants

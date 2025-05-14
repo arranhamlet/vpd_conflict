@@ -18,7 +18,7 @@ process_vaccination_routine <- function(
   
   # Subset vaccine
   if (vaccine != "All") {
-    filtered <- filtered[grepl(vaccine, ANTIGEN_DESCRIPTION, ignore.case = T)]
+    filtered <- filtered[grepl(vaccine, ANTIGEN_DESCRIPTION, ignore.case = T) | grepl(vaccine, Disease, ignore.case = T)]
   }
   
   filtered %>%

@@ -17,20 +17,26 @@ case_vaccine_to_param <- function(
                                      processed_vaccination$antigen,
                                      processed_vaccination$antigen_description)), collapse = "|")
   
+  if(grepl("Diphtheria", vaccination_type, ignore.case = T)) vaccination_type <- paste0(vaccination_type, "|DTaP|DT|DTwP", collapse = "")
+  if(grepl("Pertussis", vaccination_type, ignore.case = T)) vaccination_type <- paste0(vaccination_type, "|DTaP|DT|DTwP", collapse = "")
+  
   ages <- 0:(n_age - 1)
   years <- demog_data$input_data$year_start:demog_data$input_data$year_end
   
   #Subset schedule
   schedule_subset <- vaccination_schedule %>%
-    subset(grepl(vaccination_type, VACCINE_DESCRIPTION, ignore.case = T) & ISO_3_CODE == demog_data$input_data$iso & TARGETPOP_DESCRIPTION != "Travellers") %>%
+    subset(!is.na(AGEADMINISTERED) & grepl(vaccination_type, VACCINE_DESCRIPTION, ignore.case = T) & ISO_3_CODE == demog_data$input_data$iso & TARGETPOP_DESCRIPTION != "Travellers") %>%
     mutate(
       age_years = case_when(
         grepl("Y", AGEADMINISTERED) ~ as.numeric(gsub("[^0-9.-]", "", AGEADMINISTERED)),
         grepl("M", AGEADMINISTERED) ~ as.numeric(gsub("[^0-9.-]", "", AGEADMINISTERED))/12,
         grepl("W", AGEADMINISTERED) ~ as.numeric(gsub("[^0-9.-]", "", AGEADMINISTERED))/52,
       )
-    )
+    ) %>%
+    arrange(age_years)
   
+  schedule_subset$SCHEDULEROUNDS <- 1:nrow(schedule_subset)
+
   #Process vaccination first
   processed_vaccination_upd <- fill_missing_years_general(
     df = processed_vaccination,
@@ -39,6 +45,7 @@ case_vaccine_to_param <- function(
   ) %>%
     group_by(antigen, antigen_description, dose_order, year) %>%
     summarise(coverage = max(coverage), .groups = "drop") %>%
+    subset(coverage != 0) %>%
     arrange(year)
   
   vaccination_years <- unique(processed_vaccination_upd$year)
