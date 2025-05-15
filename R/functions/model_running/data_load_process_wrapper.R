@@ -23,13 +23,15 @@ data_load_process_wrapper <- function(
   full_disease_df <- import("data/processed/WHO/reported_cases_data.csv")
   vaccination_schedule <- import("data/processed/WHO/vaccine-schedule-data.xlsx")
   vaccination_translated <- import("data/processed/vaccination/Vaccine_Abbreviations_and_Diseases.csv")
+  vaccination_pre1980 <- import("data/processed/vaccination/vaccine_coverage_backextrapolation_rules.xlsx")
   
   routine_vaccination_data <- routine_vaccination_data %>%
     left_join(vaccination_translated, by = c("ANTIGEN" = "Abbreviation"))
   
   disease_parameters <- import("data/processed/model_parameters/disease_parameters_table.xlsx") %>%
     rename(disease_n = disease) %>%
-    subset(disease_n == disease)
+    subset(disease_n == disease) %>%
+    mutate(value = replace_na(as.numeric(value), 0))
   
   vaccine_parameters <- import("data/processed/vaccination/vaccine_protection.xlsx") %>%
     rename(disease_n = disease) %>%
@@ -62,10 +64,41 @@ data_load_process_wrapper <- function(
     year_end = year_end
   )
   
+  #Set up pre-1980 vaccination
+  vac_pre1980_sub <- vaccination_pre1980 %>%
+    rownames_to_column() %>%
+    group_by(rowname) %>%
+    clean_names() %>%
+    mutate(income_group = paste(c(sapply(unlist(strsplit(income_group, " |-")), function(x) substring(x, 1, 1)), "C"), collapse = "")) %>%
+    rename(disease_n = disease) %>%
+    subset(tolower(disease_n) == disease & who_region == paste(c(get_WHO_region(iso3cs = iso), "O"), collapse = "") & income_group == as.character(get_income_group(iso)))
+
+  #First year
+  first_year_vac <- model_data_preprocessed$processed_vaccination_data %>% 
+    subset(year == min(year))
+  
+  year_diff <- min(first_year_vac$year) - vac_pre1980_sub$introduction_year
+  vac_prop <- sapply(first_year_vac$coverage, function(e) seq(vac_pre1980_sub$starting_coverage_percent, max(vac_pre1980_sub$starting_coverage_percent, e), length.out = 6), simplify = FALSE)
+  
+  
+  #Add in this pre-1980 vaccination
+  pre_1980 <- Reduce(rbind, sapply(1:year_diff, function(x){
+    Reduce(rbind, sapply(1:nrow(first_year_vac), function(k){
+      here <- first_year_vac[k, ]
+      here$year <- vac_pre1980_sub$introduction_year + (x - 1)
+      here$coverage <- vac_prop[[k]][min(c(x, length(vac_prop[[k]])))]
+      here      
+    }, simplify = FALSE)
+    )
+  }, simplify = FALSE))
+  
+  total_vac <- rbind(pre_1980,
+                     model_data_preprocessed$processed_vaccination_data)
+  
   #Take pre-processed case and vaccination data and get it ready for params
   case_vaccination_ready <- case_vaccine_to_param(
     demog_data = model_data_preprocessed$processed_demographic_data,
-    processed_vaccination = model_data_preprocessed$processed_vaccination_data,
+    processed_vaccination = total_vac,
     processed_vaccination_sia = model_data_preprocessed$processed_vaccination_sia,
     processed_case = model_data_preprocessed$processed_case_data,
     vaccination_schedule = vaccination_schedule
@@ -137,12 +170,18 @@ data_load_process_wrapper <- function(
              value = 0)
     
     seed <- rbind(seed_with_data,
-                  seed_without_data)
+                  seed_without_data) %>%
+      arrange(dim4) %>%
+      mutate(value = case_when(
+        dim4 == 2 & value == 0 ~ 100,
+        TRUE ~ value
+      ))
     
   } else{
     time_changes_seeded <- floor(c(time_changes_seeded, max(time_changes_seeded) + 1))
   }
   
+  waning_immunity <- subset(disease_parameters, parameter == "natural immunity waning") %>% pull(value) %>% as.numeric() * 365
   
   params <- param_packager(
     
@@ -168,6 +207,8 @@ data_load_process_wrapper <- function(
     recovery_rate = 1/subset(disease_parameters, parameter == "infectious period") %>% pull(value) %>% as.numeric() * time_adjust,
     severe_recovery_rate = 1/subset(disease_parameters, parameter == "infectious period") %>% pull(value) %>% as.numeric() * time_adjust,
     
+    natural_immunity_waning = if(waning_immunity == 0) 0 else  1/waning_immunity * time_adjust,
+    
     #Setting up vaccination
     vaccination_coverage = case_vaccination_ready$vaccination_coverage,
     
@@ -175,7 +216,7 @@ data_load_process_wrapper <- function(
     contact_matrix = model_data_preprocessed$processed_demographic_data$contact_matrix,
     N0 = model_data_preprocessed$processed_demographic_data$N0,
     
-    I0 = if(WHO_seed_switch == T) data.frame(dim1 = 18, dim2 = 1, dim3 = 1, value = 100) else 0,
+    I0 = 0,
     
     #Time of changes
     tt_birth_changes = time_changes_mig,
