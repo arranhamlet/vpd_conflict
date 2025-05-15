@@ -31,11 +31,18 @@ data_load_process_wrapper <- function(
   disease_parameters <- import("data/processed/model_parameters/disease_parameters_table.xlsx") %>%
     rename(disease_n = disease) %>%
     subset(disease_n == disease) %>%
-    mutate(value = replace_na(as.numeric(value), 0))
+    mutate(value = replace_na(as.numeric(value), 0)) #%>%
+    # mutate(value = case_when(
+    #   # parameter == "natural immunity waning" ~ 0,
+    #   # parameter == "incubation period" ~ 8,
+    #   parameter == "infectious period" ~ 8,
+    #   TRUE ~ value
+    # ))
   
   vaccine_parameters <- import("data/processed/vaccination/vaccine_protection.xlsx") %>%
     rename(disease_n = disease) %>%
-    subset(disease_n == disease)
+    subset(disease_n == "measles")
+    # subset(disease_n == disease)
   
   #Calculate number of vaccines
   number_of_vaccines <- routine_vaccination_data %>%
@@ -46,8 +53,8 @@ data_load_process_wrapper <- function(
   #Run processing
   model_data_preprocessed <- model_input_formatter_wrapper(
     iso = iso,    
-    disease = disease,
-    vaccine = vaccine,
+    disease = "measles",
+    vaccine = "measles",
     n_age = 101,
     number_of_vaccines = length(number_of_vaccines),
     #Datasets
@@ -71,7 +78,8 @@ data_load_process_wrapper <- function(
     clean_names() %>%
     mutate(income_group = paste(c(sapply(unlist(strsplit(income_group, " |-")), function(x) substring(x, 1, 1)), "C"), collapse = "")) %>%
     rename(disease_n = disease) %>%
-    subset(tolower(disease_n) == disease & who_region == paste(c(get_WHO_region(iso3cs = iso), "O"), collapse = "") & income_group == as.character(get_income_group(iso)))
+    subset(tolower(disease_n) == "measles" & who_region == paste(c(get_WHO_region(iso3cs = iso), "O"), collapse = "") & income_group == as.character(get_income_group(iso)))
+    # subset(tolower(disease_n) == disease & who_region == paste(c(get_WHO_region(iso3cs = iso), "O"), collapse = "") & income_group == as.character(get_income_group(iso)))
 
   #First year
   first_year_vac <- model_data_preprocessed$processed_vaccination_data %>% 

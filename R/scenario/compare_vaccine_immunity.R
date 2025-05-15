@@ -48,7 +48,7 @@ all_run <- sapply(1:nrow(diseases), function(x){
     disease = diseases$disease[x],
     vaccine = diseases$disease[x],
     R0 = diseases$R0[x],
-    timestep = "week",
+    timestep = "year",
     WHO_seed_switch = F
   )
   
@@ -57,7 +57,7 @@ all_run <- sapply(1:nrow(diseases), function(x){
     odin_model = model,
     params = model_data_processed$params,
     time = floor(model_data_processed$time),
-    no_runs = 1
+    no_runs = 10
   )
   
   process_for_plotting(model_ran, input_data = model_data_processed$input_data)
@@ -189,8 +189,27 @@ protection_2023 <- ggplot(
 ggsave("figs/protection_2023_3_diseases_upd.jpg", height = 4, width = 7)
 
 
+compare <- subset(susc_agg, year == 2023) %>%
+  group_by(age, disease) %>%
+  summarise(value = sum(value)) %>%
+  select(age, disease, value) %>%
+  spread(key = disease, value) %>%
+  mutate(diff = diphtheria - measles,
+         diff_prop = diff/diphtheria)
 
-
+ggplot(
+  data = compare,
+  mapping = aes(
+    x = as.numeric(age),
+    y = diff_prop,
+    fill = diff
+  )
+) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  labs(x = "",
+       y = "",
+       fill = "")
 
 
 
