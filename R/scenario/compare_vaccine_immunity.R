@@ -70,90 +70,90 @@ full_df <- Reduce(rbind, sapply(1:length(all_run), function(x) all_run[[x]][[1]]
 
 full_susceptibility<- Reduce(rbind, sapply(1:length(all_run), function(x) all_run[[x]][[2]] %>%
                                   mutate(disease = diseases$disease[x]), simplify = FALSE))
-
-#Plot cases
-full_df <- full_df %>%
-  left_join(
-    cases_of_interest %>%
-      select(disease_description, year, cases),
-    by = c("disease" = "disease_description", "year" = "year")
-  )
-
-#Plot
-full_time <- ggplot() +
-  geom_line(
-    data = full_df %>%
-      subset(state == "new_case" & age == "All" & year >= 1956),
-    mapping = aes(
-      x = year,
-      y = value,
-      color = str_to_sentence(disease)
-    )
-  ) +
-  geom_ribbon(
-    data = full_df %>%
-      subset(state == "new_case" & age == "All" & year >= 1956),
-    mapping = aes(
-      x = year,
-      y = value,
-      ymin = value_min,
-      ymax = value_max,
-      fill = str_to_sentence(disease)
-    )
-  ) +
-  scale_y_continuous(labels = scales::comma) +
-  theme_bw() +
-  labs(x = "",
-       y = "Annual cases",
-       color = "",
-       fill = "") +
-  theme(legend.position = c(0.75, 0.7))
-
-
-full_time
-
-last_25 <- ggplot() +
-  geom_line(
-    data = full_df %>%
-      subset(state == "new_case" & age == "All" & year >= 2000),
-    mapping = aes(
-      x = year,
-      y = value,
-      color = str_to_sentence(disease)
-    )
-  ) +
-  geom_ribbon(
-    data = full_df %>%
-      subset(state == "new_case" & age == "All" & year >= 2000),
-    mapping = aes(
-      x = year,
-      y = value,
-      ymin = value_min,
-      ymax = value_max,
-      fill = str_to_sentence(disease)
-    )
-  ) +
-  geom_bar(
-    stat = "identity",
-    position = position_dodge(),
-    data = full_df %>%
-      subset(state == "new_case" & age == "All" & year >= 2000),
-    mapping = aes(
-      x = year,
-      y = cases,
-      fill = str_to_sentence(disease)
-    )
-  ) +
-  scale_y_continuous(labels = scales::comma) +
-  theme_bw() +
-  labs(x = "",
-       y = "",
-       color = "",
-       fill = "") +
-  theme(legend.position = c(0.75, 0.7))
-
-cases_save <- ggarrange(full_time, last_25, common.legend = T, legend = "bottom", widths = c(2, 1))
-ggsave("figs/per_dip_mea_cases.jpg", cases_save, height = 3, width = 9)
+# 
+# #Plot cases
+# full_df <- full_df %>%
+#   left_join(
+#     cases_of_interest %>%
+#       select(disease_description, year, cases),
+#     by = c("disease" = "disease_description", "year" = "year")
+#   )
+# 
+# #Plot
+# full_time <- ggplot() +
+#   geom_line(
+#     data = full_df %>%
+#       subset(state == "new_case" & age == "All" & year >= 1956),
+#     mapping = aes(
+#       x = year,
+#       y = value,
+#       color = str_to_sentence(disease)
+#     )
+#   ) +
+#   geom_ribbon(
+#     data = full_df %>%
+#       subset(state == "new_case" & age == "All" & year >= 1956),
+#     mapping = aes(
+#       x = year,
+#       y = value,
+#       ymin = value_min,
+#       ymax = value_max,
+#       fill = str_to_sentence(disease)
+#     )
+#   ) +
+#   scale_y_continuous(labels = scales::comma) +
+#   theme_bw() +
+#   labs(x = "",
+#        y = "Annual cases",
+#        color = "",
+#        fill = "") +
+#   theme(legend.position = c(0.75, 0.7))
+# 
+# 
+# full_time
+# 
+# last_25 <- ggplot() +
+#   geom_line(
+#     data = full_df %>%
+#       subset(state == "new_case" & age == "All" & year >= 2000),
+#     mapping = aes(
+#       x = year,
+#       y = value,
+#       color = str_to_sentence(disease)
+#     )
+#   ) +
+#   geom_ribbon(
+#     data = full_df %>%
+#       subset(state == "new_case" & age == "All" & year >= 2000),
+#     mapping = aes(
+#       x = year,
+#       y = value,
+#       ymin = value_min,
+#       ymax = value_max,
+#       fill = str_to_sentence(disease)
+#     )
+#   ) +
+#   geom_bar(
+#     stat = "identity",
+#     position = position_dodge(),
+#     data = full_df %>%
+#       subset(state == "new_case" & age == "All" & year >= 2000),
+#     mapping = aes(
+#       x = year,
+#       y = cases,
+#       fill = str_to_sentence(disease)
+#     )
+#   ) +
+#   scale_y_continuous(labels = scales::comma) +
+#   theme_bw() +
+#   labs(x = "",
+#        y = "",
+#        color = "",
+#        fill = "") +
+#   theme(legend.position = c(0.75, 0.7))
+# 
+# cases_save <- ggarrange(full_time, last_25, common.legend = T, legend = "bottom", widths = c(2, 1))
+# ggsave("figs/per_dip_mea_cases.jpg", cases_save, height = 3, width = 9)
 
 
 
@@ -173,23 +173,23 @@ susc_agg <- full_susceptibility %>%
     !grepl("vaccine", status, ignore.case = T) ~ "Susceptible"
   ))
 
-# Exposure
-protection_2023 <- ggplot(
-  data = subset(susc_agg, year == max(year)),
-  mapping = aes(
-    x = as.numeric(age),
-    y = value,
-    fill = status
-  )
-) +
-  geom_bar(stat = "identity") +
-  theme_bw() +
-  labs(x = "", y = "Proportion of the population", fill = "", title = "Age-specific protection levels in 2023") +
-  facet_wrap(~disease) +
-  scale_y_continuous() +
-  theme(legend.position = "bottom")
-
-ggsave("figs/protection_2023_3_diseases_upd.jpg", height = 4, width = 7)
+# # Exposure
+# protection_2023 <- ggplot(
+#   data = subset(susc_agg, year == max(year)),
+#   mapping = aes(
+#     x = as.numeric(age),
+#     y = value,
+#     fill = status
+#   )
+# ) +
+#   geom_bar(stat = "identity") +
+#   theme_bw() +
+#   labs(x = "", y = "Proportion of the population", fill = "", title = "Age-specific protection levels in 2023") +
+#   facet_wrap(~disease) +
+#   scale_y_continuous() +
+#   theme(legend.position = "bottom")
+# 
+# ggsave("figs/protection_2023_3_diseases_upd.jpg", height = 4, width = 7)
 
 
 compare <- subset(susc_agg, year == 2023) %>%

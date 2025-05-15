@@ -31,13 +31,7 @@ data_load_process_wrapper <- function(
   disease_parameters <- import("data/processed/model_parameters/disease_parameters_table.xlsx") %>%
     rename(disease_n = disease) %>%
     subset(disease_n == disease) %>%
-    mutate(value = replace_na(as.numeric(value), 0)) #%>%
-    # mutate(value = case_when(
-    #   # parameter == "natural immunity waning" ~ 0,
-    #   # parameter == "incubation period" ~ 8,
-    #   parameter == "infectious period" ~ 8,
-    #   TRUE ~ value
-    # ))
+    mutate(value = replace_na(as.numeric(value), 0))
   
   vaccine_parameters <- import("data/processed/vaccination/vaccine_protection.xlsx") %>%
     rename(disease_n = disease) %>%
