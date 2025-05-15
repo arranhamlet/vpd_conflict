@@ -49,6 +49,7 @@ all_run <- sapply(1:nrow(diseases), function(x){
     vaccine = diseases$disease[x],
     R0 = diseases$R0[x],
     timestep = "year",
+    year_end = 1990,
     WHO_seed_switch = F
   )
   
