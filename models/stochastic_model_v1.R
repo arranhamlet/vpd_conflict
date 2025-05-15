@@ -35,13 +35,13 @@ update(total_pop) <- N
 #Death
 S_death[, , ] <- if(S[i, j, k] <= 0) 0 else Binomial(S[i, j, k], max(min(background_death[i, k], 1), 0))
 E_death[, , ] <- if(E[i, j, k] <= 0) 0 else Binomial(E[i, j, k], max(min(background_death[i, k], 1), 0))
-# I_death[, , ] <- if(I[i, j, k] <= 0) 0 else Binomial(I[i, j, k], max(min(background_death[i, k], 1), 0) + max(cfr_normal[i], 0))
+I_death[, , ] <- if(I[i, j, k] <= 0) 0 else Binomial(I[i, j, k], max(min(background_death[i, k], 1), 0) + max(cfr_normal[i], 0))
 R_death[, , ] <- if(R[i, j, k] <= 0) 0 else Binomial(R[i, j, k], max(min(background_death[i, k], 1), 0))
-# Is_death[, , ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i, j, k], max(min(background_death[i, k], 1), 0) + max(cfr_severe[i], 0))
+Is_death[, , ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i, j, k], max(min(background_death[i, k], 1), 0) + max(cfr_severe[i], 0))
 Rc_death[, , ] <- if(Rc[i, j, k] <= 0) 0 else Binomial(Rc[i, j, k], max(min(background_death[i, k], 1), 0))
 
 #S sampling
-lambda_S[, , ] <- if(S[i, j, k] <= 0) 0 else Binomial(S[i, j, k], max(min(lambda[i, j, k], 1), 0))
+lambda_S[, , ] <- if(S[i, j, k] <= 0) 0 else Binomial(S_after_waning[i, j, k], max(min(lambda[i, j, k], 1), 0))
 waning_R[, , ] <- if(R[i, j, k] <= 0) 0 else Binomial(R[i, j, k], max(min(natural_immunity_waning, 1), 0))
 waning_Rc[, , ] <- if(Rc[i, j, k] <= 0) 0 else Binomial(Rc[i, j, k], max(min(natural_immunity_waning, 1), 0))
 
@@ -55,28 +55,13 @@ dim(new_case) <- c(n_age, n_vacc, n_risk)
 #I sampling
 into_I[, , ] <- if(incubated[i, j, k] <= 0) 0 else Binomial(incubated[i, j, k], max(min(1 - prop_severe[i, j, k], 1), 0))
 into_Is[, , ] <- max(incubated[i, j, k] - into_I[i, j, k], 0)
-# Mass-balanced I recovery and death using single Binomial and partitioning
-p_out_I <- max(min(recovery_rate + cfr_normal[i] + background_death[i, j], 1), 0)
-I_total_out[, , ] <- if(I[i, j, k] <= 0) 0 else Binomial(I[i, j, k], p_out_I)
-p_recover <- if(p_out_I <= 0) 0 else recovery_rate / p_out_I
-recovered_I_to_R[, , ] <- if(I_total_out[i, j, k] <= 0) 0 else Binomial(I_total_out[i, j, k], p_recover)
-I_death[, , ] <- max(I_total_out[i, j, k] - recovered_I_to_R[i, j, k], 0)
-dim(remaining_I_after_recovery) <- c(n_age, n_vacc, n_risk)
-dim(death_prob) <- c(n_age, n_risk)
+recovered_I_to_R[, , ] <- if(I[i, j, k] <= 0) 0 else Binomial(I[i, j, k], max(min(recovery_rate, 1), 0))
 
 #Is sampling
-# recovered_from_Is[, , ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i, j, k], max(min(severe_recovery_rate, 1), 0))# Sequential recovery and death from Is
-recover_prob_Is <- max(min(severe_recovery_rate, 1), 0)
-recovered_from_Is[, , ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i, j, k], recover_prob_Is)
-complication_prob[] <- max(min(prop_complications[i], 1), 0)
-recovered_Is_to_Rc[, , ] <- if(recovered_from_Is[i, j, k] <= 0) 0 else Binomial(recovered_from_Is[i, j, k], complication_prob[i])
-recovered_Is_to_R[, , ] <- max(recovered_from_Is[i, j, k] - recovered_Is_to_Rc[i, j, k], 0)
-remaining_Is_after_recovery[, , ] <- max(Is[i, j, k] - recovered_from_Is[i, j, k], 0)
-death_prob_Is[, ] <- max(min(background_death[i, j] + cfr_severe[i], 1), 0)
-Is_death[, , ] <- if(remaining_Is_after_recovery[i, j, k] <= 0) 0 else Binomial(remaining_Is_after_recovery[i, j, k], death_prob_Is[i, j])
-dim(remaining_Is_after_recovery) <- c(n_age, n_vacc, n_risk)
-dim(death_prob_Is) <- c(n_age, n_risk)
-dim(complication_prob) <- n_age
+recovered_from_Is[, , ] <- if(Is[i, j, k] <= 0) 0 else Binomial(Is[i, j, k], max(min(severe_recovery_rate, 1), 0))
+recovered_Is_to_R[, , ] <- if(recovered_from_Is[i, j, k] <= 0) 0 else Binomial(recovered_from_Is[i, j, k], max(min(1 - prop_complications[i], 1), 0))
+recovered_Is_to_Rc[, , ] <- max(recovered_from_Is[i, j, k] - recovered_Is_to_R[i, j, k], 0)
+
 # dim(total_S_in) <- c(n_age, n_vacc, n_risk)
 # dim(total_S_out) <- c(n_age, n_vacc, n_risk)
 # dim(S_left) <- c(n_age, n_vacc, n_risk)
@@ -162,84 +147,75 @@ Rc_after_aging[, , ] <- Rc[i, j, k] + aging_into_Rc[i, j, k] - aging_out_of_Rc[i
 # For S compartment
 vaccinating_out_of_S[, , ] <- if(n_vacc == 1 || j >= n_vacc - 1 || aging_into_S[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(aging_into_S[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
 vaccinating_into_S[, , ] <- if(j == 3) vaccinating_out_of_S[i, 1, k] else if(j > 3 && j %% 2 == 1) vaccinating_out_of_S[i, j - 2, k] + vaccinating_out_of_S[i, j - 3, k] else 0
-S_after_vaccinating[, , ] <- S_after_aging[i, j, k] + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k]
+S_after_vaccination[, , ] <- S_after_aging[i, j, k] + vaccinating_into_S[i, j, k] - vaccinating_out_of_S[i, j, k]
 
 # For E compartment
 vaccinating_out_of_E[, , ] <- if(1 == 1) 0 else if(n_vacc == 1 || j > n_vacc - 2 || aging_into_E[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(aging_into_E[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
 vaccinating_into_E[, , ] <- if(1 == 1) 0 else if(j == 3) vaccinating_out_of_E[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_E[i, j - 2, k] + vaccinating_out_of_E[i, j - 3, k] else 0
-E_after_vaccinating[, , ] <- E_after_aging[i, j, k] + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k]
+E_after_vaccination[, , ] <- E_after_aging[i, j, k] + vaccinating_into_E[i, j, k] - vaccinating_out_of_E[i, j, k]
 
 # For I compartment
 vaccinating_out_of_I[, , ] <- if(1 == 1) 0 else if(n_vacc == 1 || j > n_vacc - 2 || aging_into_I[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(aging_into_I[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
 vaccinating_into_I[, , ] <- if(1 == 1) 0 else if(j == 3) vaccinating_out_of_I[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_I[i, j - 2, k] + vaccinating_out_of_I[i, j - 3, k] else 0
-I_after_vaccinating[, , ] <- I_after_aging[i, j, k] + vaccinating_into_I[i, j, k] - vaccinating_out_of_I[i, j, k]
+I_after_vaccination[, , ] <- I_after_aging[i, j, k] + vaccinating_into_I[i, j, k] - vaccinating_out_of_I[i, j, k]
 
 # For R compartment
 vaccinating_out_of_R[, , ] <- if(1 == 1) 0 else if(n_vacc == 1 || j > n_vacc - 2 || aging_into_R[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(aging_into_R[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
 vaccinating_into_R[, , ] <- if(1 == 1) 0 else if(j == 3) vaccinating_out_of_R[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_R[i, j - 2, k] + vaccinating_out_of_R[i, j - 3, k] else 0
-R_after_vaccinating[, , ] <- R_after_aging[i, j, k] + vaccinating_into_R[i, j, k] - vaccinating_out_of_R[i, j, k]
+R_after_vaccination[, , ] <- R_after_aging[i, j, k] + vaccinating_into_R[i, j, k] - vaccinating_out_of_R[i, j, k]
 
 # For Is compartment
 vaccinating_out_of_Is[, , ] <- if(1 == 1) 0 else if(n_vacc == 1 || j > n_vacc - 2 || aging_into_Is[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(aging_into_Is[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
 vaccinating_into_Is[, , ] <- if(1 == 1) 0 else if(j == 3) vaccinating_out_of_Is[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_Is[i, j - 2, k] + vaccinating_out_of_Is[i, j - 3, k] else 0
-Is_after_vaccinating[, , ] <- Is_after_aging[i, j, k] + vaccinating_into_Is[i, j, k] - vaccinating_out_of_Is[i, j, k]
+Is_after_vaccination[, , ] <- Is_after_aging[i, j, k] + vaccinating_into_Is[i, j, k] - vaccinating_out_of_Is[i, j, k]
 
 # For Rc compartment
 vaccinating_out_of_Rc[, , ] <- if(1 == 1) 0 else if(n_vacc == 1 || j > n_vacc - 2 || aging_into_Rc[i, j, k] <= 0 || vaccination_prop[i, j, k] <= 0) 0 else Binomial(aging_into_Rc[i, j, k], max(min(vaccination_prop[i, j, k], 1), 0))
 vaccinating_into_Rc[, , ] <- if(1 == 1) 0 else if(j == 3) vaccinating_out_of_Rc[i, 1, k] else if(j >= 5 && j %% 2 == 1) vaccinating_out_of_Rc[i, j - 2, k] + vaccinating_out_of_Rc[i, j - 3, k] else 0
-Rc_after_vaccinating[, , ] <- Rc_after_aging[i, j, k] + vaccinating_into_Rc[i, j, k] - vaccinating_out_of_Rc[i, j, k]
+Rc_after_vaccination[, , ] <- Rc_after_aging[i, j, k] + vaccinating_into_Rc[i, j, k] - vaccinating_out_of_Rc[i, j, k]
 
 # STEP 3: WANING - Apply waning to the results after vaccination
 # Waning for S
-waning_from_S_short[, , ] <- if(j %% 2 == 1 && j > 1 && S_after_vaccinating[i, j, k] > 0) Binomial(S_after_vaccinating[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
+waning_from_S_short[, , ] <- if(j %% 2 == 1 && j > 1 && S_after_vaccination[i, j, k] > 0) Binomial(S_after_vaccination[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
 waning_to_S_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_S_short[i, j + 1, k] else 0
-waning_from_S_long[, , ] <- if(j %% 2 == 0 && j > 1 && S_after_vaccinating[i, j, k] > 0) Binomial(S_after_vaccinating[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
+waning_from_S_long[, , ] <- if(j %% 2 == 0 && j > 1 && S_after_vaccination[i, j, k] > 0) Binomial(S_after_vaccination[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
 waning_to_S_unvaccinated[, , ] <- if(j == 1) sum(waning_from_S_long[i, 2:n_vacc, k]) else 0
-S_after_waning[, , ] <- S_after_vaccinating[i, j, k] + waning_to_S_long[i, j, k] + waning_to_S_unvaccinated[i, j, k] - waning_from_S_short[i, j, k] - waning_from_S_long[i, j, k]
+S_after_waning[, , ] <- S_after_vaccination[i, j, k] + waning_to_S_long[i, j, k] + waning_to_S_unvaccinated[i, j, k] - waning_from_S_short[i, j, k] - waning_from_S_long[i, j, k]
 
 # Waning for E
-waning_from_E_short[, , ] <- if(j %% 2 == 1 && j > 1 && E_after_vaccinating[i, j, k] > 0) Binomial(E_after_vaccinating[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
+waning_from_E_short[, , ] <- if(j %% 2 == 1 && j > 1 && E_after_vaccination[i, j, k] > 0) Binomial(E_after_vaccination[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
 waning_to_E_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_E_short[i, j + 1, k] else 0
-waning_from_E_long[, , ] <- if(j %% 2 == 0 && j > 1 && E_after_vaccinating[i, j, k] > 0) Binomial(E_after_vaccinating[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
+waning_from_E_long[, , ] <- if(j %% 2 == 0 && j > 1 && E_after_vaccination[i, j, k] > 0) Binomial(E_after_vaccination[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
 waning_to_E_unvaccinated[, , ] <- if(j == 1) sum(waning_from_E_long[i, 2:n_vacc, k]) else 0
-E_after_waning[, , ] <- E_after_vaccinating[i, j, k] + waning_to_E_long[i, j, k] + waning_to_E_unvaccinated[i, j, k] - waning_from_E_short[i, j, k] - waning_from_E_long[i, j, k]
+E_after_waning[, , ] <- E_after_vaccination[i, j, k] + waning_to_E_long[i, j, k] + waning_to_E_unvaccinated[i, j, k] - waning_from_E_short[i, j, k] - waning_from_E_long[i, j, k]
 
 # Waning for I
-waning_from_I_short[, , ] <- if(j %% 2 == 1 && j > 1 && I_after_vaccinating[i, j, k] > 0) Binomial(I_after_vaccinating[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
+waning_from_I_short[, , ] <- if(j %% 2 == 1 && j > 1 && I_after_vaccination[i, j, k] > 0) Binomial(I_after_vaccination[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
 waning_to_I_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_I_short[i, j + 1, k] else 0
-waning_from_I_long[, , ] <- if(j %% 2 == 0 && j > 1 && I_after_vaccinating[i, j, k] > 0) Binomial(I_after_vaccinating[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
+waning_from_I_long[, , ] <- if(j %% 2 == 0 && j > 1 && I_after_vaccination[i, j, k] > 0) Binomial(I_after_vaccination[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
 waning_to_I_unvaccinated[, , ] <- if(j == 1) sum(waning_from_I_long[i, 2:n_vacc, k]) else 0
-I_after_waning[, , ] <- I_after_vaccinating[i, j, k] + waning_to_I_long[i, j, k] + waning_to_I_unvaccinated[i, j, k] - waning_from_I_short[i, j, k] - waning_from_I_long[i, j, k]
+I_after_waning[, , ] <- I_after_vaccination[i, j, k] + waning_to_I_long[i, j, k] + waning_to_I_unvaccinated[i, j, k] - waning_from_I_short[i, j, k] - waning_from_I_long[i, j, k]
 
 # Waning for R
-waning_from_R_short[, , ] <- if(j %% 2 == 1 && j > 1 && R_after_vaccinating[i, j, k] > 0) Binomial(R_after_vaccinating[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
+waning_from_R_short[, , ] <- if(j %% 2 == 1 && j > 1 && R_after_vaccination[i, j, k] > 0) Binomial(R_after_vaccination[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
 waning_to_R_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_R_short[i, j + 1, k] else 0
-waning_from_R_long[, , ] <- if(j %% 2 == 0 && j > 1 && R_after_vaccinating[i, j, k] > 0) Binomial(R_after_vaccinating[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
+waning_from_R_long[, , ] <- if(j %% 2 == 0 && j > 1 && R_after_vaccination[i, j, k] > 0) Binomial(R_after_vaccination[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
 waning_to_R_unvaccinated[, , ] <- if(j == 1) sum(waning_from_R_long[i, 2:n_vacc, k]) else 0
-R_after_waning[, , ] <- R_after_vaccinating[i, j, k] + waning_to_R_long[i, j, k] + waning_to_R_unvaccinated[i, j, k] - waning_from_R_short[i, j, k] - waning_from_R_long[i, j, k]
+R_after_waning[, , ] <- R_after_vaccination[i, j, k] + waning_to_R_long[i, j, k] + waning_to_R_unvaccinated[i, j, k] - waning_from_R_short[i, j, k] - waning_from_R_long[i, j, k]
 
 # Waning for Is
-waning_from_Is_short[, , ] <- if(j %% 2 == 1 && j > 1 && Is_after_vaccinating[i, j, k] > 0) Binomial(Is_after_vaccinating[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
+waning_from_Is_short[, , ] <- if(j %% 2 == 1 && j > 1 && Is_after_vaccination[i, j, k] > 0) Binomial(Is_after_vaccination[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
 waning_to_Is_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_Is_short[i, j + 1, k] else 0
-waning_from_Is_long[, , ] <- if(j %% 2 == 0 && j > 1 && Is_after_vaccinating[i, j, k] > 0) Binomial(Is_after_vaccinating[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
+waning_from_Is_long[, , ] <- if(j %% 2 == 0 && j > 1 && Is_after_vaccination[i, j, k] > 0) Binomial(Is_after_vaccination[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
 waning_to_Is_unvaccinated[, , ] <- if(j == 1) sum(waning_from_Is_long[i, 2:n_vacc, k]) else 0
-Is_after_waning[, , ] <- Is_after_vaccinating[i, j, k] + waning_to_Is_long[i, j, k] + waning_to_Is_unvaccinated[i, j, k] - waning_from_Is_short[i, j, k] - waning_from_Is_long[i, j, k]
+Is_after_waning[, , ] <- Is_after_vaccination[i, j, k] + waning_to_Is_long[i, j, k] + waning_to_Is_unvaccinated[i, j, k] - waning_from_Is_short[i, j, k] - waning_from_Is_long[i, j, k]
 
 # Waning for Rc
-waning_from_Rc_short[, , ] <- if(j %% 2 == 1 && j > 1 && Rc_after_vaccinating[i, j, k] > 0) Binomial(Rc_after_vaccinating[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
+waning_from_Rc_short[, , ] <- if(j %% 2 == 1 && j > 1 && Rc_after_vaccination[i, j, k] > 0) Binomial(Rc_after_vaccination[i, j, k], max(min(short_term_waning[j], 1), 0)) else 0
 waning_to_Rc_long[, 1:(n_vacc - 1), ] <- if(j %% 2 == 0 && j > 1) waning_from_Rc_short[i, j + 1, k] else 0
-waning_from_Rc_long[, , ] <- if(j %% 2 == 0 && j > 1 && Rc_after_vaccinating[i, j, k] > 0) Binomial(Rc_after_vaccinating[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
+waning_from_Rc_long[, , ] <- if(j %% 2 == 0 && j > 1 && Rc_after_vaccination[i, j, k] > 0) Binomial(Rc_after_vaccination[i, j, k], max(min(long_term_waning[j], 1), 0)) else 0
 waning_to_Rc_unvaccinated[, , ] <- if(j == 1) sum(waning_from_Rc_long[i, 2:n_vacc, k]) else 0
-Rc_after_waning[, , ] <- Rc_after_vaccinating[i, j, k] + waning_to_Rc_long[i, j, k] + waning_to_Rc_unvaccinated[i, j, k] - waning_from_Rc_short[i, j, k] - waning_from_Rc_long[i, j, k]
-
-
-dim(S_after_vaccinating) <- c(n_age, n_vacc, n_risk)
-dim(E_after_vaccinating) <- c(n_age, n_vacc, n_risk)
-dim(I_after_vaccinating) <- c(n_age, n_vacc, n_risk)
-dim(R_after_vaccinating) <- c(n_age, n_vacc, n_risk)
-dim(Is_after_vaccinating) <- c(n_age, n_vacc, n_risk)
-dim(Rc_after_vaccinating) <- c(n_age, n_vacc, n_risk)
-
+Rc_after_waning[, , ] <- Rc_after_vaccination[i, j, k] + waning_to_Rc_long[i, j, k] + waning_to_Rc_unvaccinated[i, j, k] - waning_from_Rc_short[i, j, k] - waning_from_Rc_long[i, j, k]
 
 # STEP 4: RISK - Apply risk to the results after waning
 # Moving FROM each compartment - now using the population after previous transitions
@@ -679,6 +655,12 @@ dim(Is_after_aging) <- c(n_age, n_vacc, n_risk)
 dim(Rc_after_aging) <- c(n_age, n_vacc, n_risk)
 
 # Dimensions for vaccination transition output variables
+dim(S_after_vaccination) <- c(n_age, n_vacc, n_risk)
+dim(E_after_vaccination) <- c(n_age, n_vacc, n_risk)
+dim(I_after_vaccination) <- c(n_age, n_vacc, n_risk)
+dim(R_after_vaccination) <- c(n_age, n_vacc, n_risk)
+dim(Is_after_vaccination) <- c(n_age, n_vacc, n_risk)
+dim(Rc_after_vaccination) <- c(n_age, n_vacc, n_risk)
 
 # Dimensions for waning transition output variables
 dim(S_after_waning) <- c(n_age, n_vacc, n_risk)
@@ -687,6 +669,3 @@ dim(I_after_waning) <- c(n_age, n_vacc, n_risk)
 dim(R_after_waning) <- c(n_age, n_vacc, n_risk)
 dim(Is_after_waning) <- c(n_age, n_vacc, n_risk)
 dim(Rc_after_waning) <- c(n_age, n_vacc, n_risk)
-
-
-dim(I_total_out) <- c(n_age, n_vacc, n_risk)

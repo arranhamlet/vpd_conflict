@@ -48,9 +48,8 @@ all_run <- sapply(1:nrow(diseases), function(x){
     disease = diseases$disease[x],
     vaccine = diseases$disease[x],
     R0 = diseases$R0[x],
-    timestep = "year",
-    year_end = 1990,
-    WHO_seed_switch = F
+    timestep = "month",
+    WHO_seed_switch = T
   )
   
   #Process for plotting
@@ -58,7 +57,7 @@ all_run <- sapply(1:nrow(diseases), function(x){
     odin_model = model,
     params = model_data_processed$params,
     time = floor(model_data_processed$time),
-    no_runs = 10
+    no_runs = 1
   )
   
   process_for_plotting(model_ran, input_data = model_data_processed$input_data)
@@ -109,6 +108,9 @@ full_time <- ggplot() +
        color = "",
        fill = "") +
   theme(legend.position = c(0.75, 0.7))
+
+
+full_time
 
 last_25 <- ggplot() +
   geom_line(
@@ -173,7 +175,7 @@ susc_agg <- full_susceptibility %>%
 
 # Exposure
 protection_2023 <- ggplot(
-  data = subset(susc_agg, year == 2023),
+  data = subset(susc_agg, year == max(year)),
   mapping = aes(
     x = as.numeric(age),
     y = value,
