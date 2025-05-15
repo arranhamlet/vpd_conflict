@@ -33,8 +33,9 @@ model <- odin2::odin("models/stochastic_model_v1.R")
 #Run through diseases of interest
 diseases <- data.frame(
   disease = c("measles", "pertussis", "diphtheria"),
-  R0 = c(15, 12, 3)
-)
+  R0 = 15#c(15, 12, 3)
+) %>%
+  subset(disease %in% c("measles", "diphtheria"))
 
 #Loop
 all_run <- sapply(1:nrow(diseases), function(x){
@@ -48,7 +49,7 @@ all_run <- sapply(1:nrow(diseases), function(x){
     vaccine = diseases$disease[x],
     R0 = diseases$R0[x],
     timestep = "week",
-    WHO_seed_switch = T
+    WHO_seed_switch = F
   )
   
   #Process for plotting
@@ -56,7 +57,7 @@ all_run <- sapply(1:nrow(diseases), function(x){
     odin_model = model,
     params = model_data_processed$params,
     time = floor(model_data_processed$time),
-    no_runs = 4
+    no_runs = 1
   )
   
   process_for_plotting(model_ran, input_data = model_data_processed$input_data)
@@ -174,7 +175,7 @@ protection_2023 <- ggplot(
   data = subset(susc_agg, year == 2023),
   mapping = aes(
     x = as.numeric(age),
-    y = prop,
+    y = value,
     fill = status
   )
 ) +
