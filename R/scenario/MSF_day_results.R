@@ -36,7 +36,7 @@ model <- odin2::odin("models/stochastic_model_v1.R")
 #Run through diseases of interest
 diseases <- data.frame(
   disease = c("measles", "pertussis", "diphtheria"),
-  R0 = c(15, 12, 3)
+  R0 = c(15, 12, 4)
 )
 
 #Loop
@@ -45,7 +45,7 @@ double_run <- sapply(countries_interest, function(y){
   all_run <- sapply(1:nrow(diseases), function(x){
     print(x)
     
-    inside_run <- sapply((diseases$R0[x] - 1):(diseases$R0[x] + 1), function(R0){
+    inside_run <- sapply((diseases$R0[x] - 3):(diseases$R0[x] + 3), function(R0){
       
       #Run process
       model_data_processed <- data_load_process_wrapper(
@@ -62,7 +62,7 @@ double_run <- sapply(countries_interest, function(y){
         odin_model = model,
         params = model_data_processed$params,
         time = floor(model_data_processed$time),
-        no_runs = 10
+        no_runs = 8
       )
       
       deet <- process_for_plotting(model_ran, input_data = model_data_processed$input_data)
