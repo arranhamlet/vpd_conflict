@@ -7,7 +7,7 @@
 #' @param n_age Number of age groups.
 #' @param n_vacc Number of vaccination strata.
 #' @param n_risk Number of risk groups.
-#' @param N0 Initial population size (array or scalar).
+#' @param S0 Initial population size (array or scalar).
 #' @param I0 Initial number of infections (array or scalar).
 #' @param contact_matrix Contact matrix defining age-specific contact patterns.
 #' @param incubation_rate Incubation rate (E to I transition).
@@ -51,8 +51,9 @@ param_packager <- function(
   n_risk = 1,  
   
   #Initial values
-  N0 = 1000,
+  S0 = 1000,
   I0 = 0,
+  Rpop0 = 0,
   
   #Add in contact matrix
   contact_matrix = NULL,
@@ -182,15 +183,22 @@ param_packager <- function(
     array_from_df(dim1 = n_age, updates = prop_complications)
   }
 
-  N0_dims <- c(n_age, n_vacc, n_risk)
-  N0 <- if (length(N0) == 1) {
-    array(N0, dim = N0_dims)
+  S0_dims <- c(n_age, n_vacc, n_risk)
+  S0 <- if (length(S0) == 1) {
+    array(S0, dim = S0_dims)
   } else {
-    array_from_df(dim1 = n_age, dim2 = n_vacc, dim3 = n_risk, updates = N0)
+    array_from_df(dim1 = n_age, dim2 = n_vacc, dim3 = n_risk, updates = S0 %>% select(dim1:dim3, value) %>% subset(value != 0))
+  }
+  
+  Rpop0_dims <- c(n_age, n_vacc, n_risk)
+  Rpop0 <- if (length(Rpop0) == 1) {
+    array(Rpop0, dim = Rpop0_dims)
+  } else {
+    array_from_df(dim1 = n_age, dim2 = n_vacc, dim3 = n_risk, updates = Rpop0 %>% select(dim1:dim3, value) %>% subset(value != 0))
   }
   
   I0 <- if (length(I0) == 1) {
-    array(I0, dim = N0_dims)
+    array(I0, dim = S0_dims)
   } else {
     array_from_df(dim1 = n_age, dim2 = n_vacc, dim3 = n_risk, updates = I0)
   }
@@ -199,7 +207,7 @@ param_packager <- function(
   
   no_vacc_changes <- length(tt_vaccination_coverage)
   age_vaccination_beta_modifier <- if (length(age_vaccination_beta_modifier) == 1) {
-    array(age_vaccination_beta_modifier, dim = N0_dims)
+    array(age_vaccination_beta_modifier, dim = S0_dims)
   } else {
     array_from_df(dim1 = n_age, dim2 = n_vacc, dim3 = n_risk, updates = age_vaccination_beta_modifier)
   }
@@ -280,8 +288,9 @@ param_packager <- function(
     n_risk = n_risk,
     
     #Initial values
-    N0 = N0,
+    S0 = S0,
     I0 = I0,
+    Rpop0 = Rpop0,
     
     #Add in contact matrix
     contact_matrix = contact_matrix,
@@ -370,7 +379,7 @@ param_packager <- function(
     above_zero_and_an_integer <- export_list[c("n_age", "n_vacc", "n_risk", "age_maternal_protection_ends", "repro_low", "repro_high")]
     
     #Check if the sum is above 0 and an integer
-    sum_above_zero_and_an_integer <- export_list[c("N0")]
+    sum_above_zero_and_an_integer <- export_list[c("S0")]
     
     #These must be non-negative and integers
     non_neg_int <- export_list[c("tt_vaccination_coverage", "no_vacc_changes", "tt_R0", "no_R0_changes", "tt_birth_changes", "tt_death_changes", "no_birth_changes", "no_death_changes", "repro_low", "repro_high", "I0", "seeded", "tt_seeded", "tt_moving_risk", "no_moving_risk_changes", "tt_migration", "no_migration_changes", "user_specified_foi", "foi_turn_off_when_vaccinating", "migration_represent_current_pop")]

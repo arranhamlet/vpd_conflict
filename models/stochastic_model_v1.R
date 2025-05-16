@@ -1,15 +1,15 @@
 # Initial compartment values ----------------------------------------------
 
 #Compartments
-initial(S[, , ]) <- max(N0[i, j, k] - I0[i, j, k], 0)
+initial(S[, , ]) <- S0[i, j, k]
 initial(E[, , ]) <- 0
 initial(I[, , ]) <- I0[i, j, k]
-initial(R[, , ]) <- 0
+initial(R[, , ]) <- Rpop0[i, j, k]
 initial(Is[, , ]) <- 0
 initial(Rc[, , ]) <- 0
 
 #Additional outputs
-initial(total_pop) <- sum(N0)
+initial(total_pop) <- sum(S0) + sum(I0) + sum(Rpop0)
 
 # Compartments ------------------------------------------------------------
 
@@ -276,11 +276,10 @@ n_vacc <- parameter(1)
 #Number of risk population compartments
 n_risk <- parameter(1)
 
-#Initial populations
 #Initial total population
-N0 <- parameter()
-#Initial infected population
+S0 <- parameter()
 I0 <- parameter()
+Rpop0 <- parameter()
 
 #Disease specific parameters
 #Incubation rate
@@ -478,8 +477,9 @@ dim(I) <- c(n_age, n_vacc, n_risk)
 dim(R) <- c(n_age, n_vacc, n_risk)
 dim(Is) <- c(n_age, n_vacc, n_risk)
 dim(Rc) <- c(n_age, n_vacc, n_risk)
-dim(N0) <- c(n_age, n_vacc, n_risk)
+dim(S0) <- c(n_age, n_vacc, n_risk)
 dim(I0) <- c(n_age, n_vacc, n_risk)
+dim(Rpop0) <- c(n_age, n_vacc, n_risk)
 
 # Vaccination waning rate
 dim(prop_complications) <- c(n_age)

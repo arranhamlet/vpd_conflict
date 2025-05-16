@@ -54,7 +54,9 @@ case_vaccine_to_param <- function(
     #Subset to the row and work out the timing
     this_row <- processed_vaccination_upd[x, ]
     dose_to_use <- paste(unlist(strsplit(this_row$antigen_description, " ")), collapse = "|")
-    timing <- schedule_subset %>% subset(SCHEDULEROUNDS == this_row$dose_order) %>% pull(age_years)
+    timing <- schedule_subset %>% 
+      subset(SCHEDULEROUNDS == min(this_row$dose_order, max(SCHEDULEROUNDS))) %>% 
+      pull(age_years)
     
     target_vaccination <- if (this_row$dose_order == 1) {
       1
@@ -124,9 +126,12 @@ case_vaccine_to_param <- function(
       vaccination_combo_param_df[1, ] %>%
         mutate(dim4 = 1,
                value = 0)
-    )
+    ) %>%
+    group_by(dim1, dim2, dim3, dim4) %>%
+    summarise(value = max(value), .groups = "drop")
   
   #Seeded case
+  if(nrow(processed_case) != 0){
   processed_case_upd <- fill_missing_years_general(
     df = processed_case,
     year_col = "year",
@@ -182,9 +187,21 @@ case_vaccine_to_param <- function(
                value = 0)
     ) %>% filter(!(duplicated(dim1, dim4) & value == 0))
   
+  tt_seeded = c(0, which(years %in% processed_case_upd$year) - 1)
+  
+  } else {
+    
+  tt_seeded = 0
+  case_param_df = data.frame(dim1 = 1,
+                             dim2 = 1,
+                             dim3 = 1,
+                             dim4 = 1,
+                             value = 0)
+  }
+  
   list(tt_vaccination = c(0, which(years %in% processed_vaccination_upd$year)),
        vaccination_coverage = vaccination_combo_param_df,
-       tt_seeded = c(0, which(years %in% processed_case_upd$year) - 1),
+       tt_seeded = tt_seeded,
        seeded = case_param_df)
   
 }

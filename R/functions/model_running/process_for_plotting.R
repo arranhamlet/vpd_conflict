@@ -3,7 +3,7 @@ process_for_plotting <- function(run_model_output, input_data){
   
   #Aggregate across runs
   # Convert to data.table if needed
-  if(any(!colnames(run_model_output) %in% "run")){
+  if(all(!colnames(run_model_output) %in% "run")){
     run_model_output$run <- 0
   }
   
@@ -16,7 +16,7 @@ process_for_plotting <- function(run_model_output, input_data){
   # Define states to split
   state_groups <- list(
     new_case = "new_case",
-    rest = c("S", "E", "I", "R", "Is", "Rc", "total_pop", "Reff")
+    rest = c("S", "E", "I", "R", "Is", "Rc")
   )
   
   # Define fast quantile summariser
@@ -37,6 +37,12 @@ process_for_plotting <- function(run_model_output, input_data){
     
     dt <- run_model_output[state %in% states_subset]
     dt[, year := floor(year_start + (time * time_adj) / 365)]
+    
+    if(all(states_subset != "new_case")){
+      dt <- dt[year %in% max(year) & age != "All"]
+    } else {
+      dt <- dt[age == "All"]
+    }
     
     if (names(state_groups)[group]  == "new_case") {
       # First aggregate to yearly total per run
