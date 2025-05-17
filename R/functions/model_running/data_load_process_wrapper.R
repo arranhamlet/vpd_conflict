@@ -39,7 +39,7 @@ data_load_process_wrapper <- function(
   
   #Calculate number of vaccines
   number_of_vaccines <- routine_vaccination_data %>%
-    subset(CODE == iso & (grepl(vaccine, ANTIGEN_DESCRIPTION, ignore.case = T) | grepl(disease, Disease, ignore.case = T))) %>%
+    subset(CODE == iso & (grepl(vaccine, ANTIGEN_DESCRIPTION, ignore.case = T) | grepl(disease, Disease, ignore.case = T)) & !grepl("maternal", Disease, ignore.case = T)) %>%
     pull(ANTIGEN) %>%
     unique()
   
@@ -74,6 +74,9 @@ data_load_process_wrapper <- function(
     subset(tolower(disease_n) == disease & who_region == paste(c(get_WHO_region(iso3cs = iso), "O"), collapse = "") & income_group == as.character(get_income_group(iso)))
 
   #First year
+  model_data_preprocessed$processed_vaccination_data <- model_data_preprocessed$processed_vaccination_data %>%
+    subset(!grepl("birth|neonatal|pregnant|maternal", antigen_description, ignore.case = T))
+  
   first_year_vac <- model_data_preprocessed$processed_vaccination_data %>% 
     subset(year == min(year))
   

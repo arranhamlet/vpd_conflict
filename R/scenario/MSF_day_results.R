@@ -23,7 +23,7 @@ pacman::p_load(
 invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recursive = T), function(x) source(x)))
 
 #Countries of interest
-countries_interest <- c("SYR", "PSE", "YEM", "NGA", "ETH", "SDN", "MMR", "PNG", "AFG", "VEN", "HTI", "GTM", "TCD", "DRC", "SOM", "BFA")
+countries_interest <- c("SDN", "MMR", "PNG", "AFG", "VEN", "HTI", "GTM", "TCD", "DRC", "SOM", "BFA")
 
 #Load WHO disease data
 cases_of_interest <- import("data/processed/WHO/reported_cases_data.csv") %>%
