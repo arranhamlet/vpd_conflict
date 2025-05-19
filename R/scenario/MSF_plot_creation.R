@@ -205,9 +205,9 @@ generate_new_params <- sapply(c(1, 2, 3), function(x){
   }
   
   if(x == 3){
-    new_vaccination[, 1:3, 1, 1] <- new_vaccination[, 1:3, 1, 1]  * 0.25
-    new_vaccination[, 1:3, 1, 2] <- pmin(param_use$vaccination_coverage[, 1:3, 1, 1] * 2, 1)
-    new_vaccination[, 1:3, 1, 3] <- param_use$vaccination_coverage[, 1:3, 1, 1]
+    new_vaccination[, 1:3, 1, 1] <- param_use$vaccination_coverage[, 1:3, 1, 1] * 0.25
+    new_vaccination[, 1:3, 1, 2] <- param_use$vaccination_coverage[, 1:3, 1, 1] * 0.50
+    new_vaccination[, 1:3, 1, 3] <- param_use$vaccination_coverage[, 1:3, 1, 1] * 0.75
     new_vaccination[, 1:3, 1, 4] <- param_use$vaccination_coverage[, 1:3, 1, 1]
     new_vaccination[, 1:3, 1, 5] <- param_use$vaccination_coverage[, 1:3, 1, 1]
   }
