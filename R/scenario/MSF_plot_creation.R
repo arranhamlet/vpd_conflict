@@ -322,8 +322,7 @@ paste(max(sum_stats_size$value)/min(sum_stats_size$value),
 
 
 case_diff <- ggplot(
-  data = sum_stats_size %>%
-    subset(version != "Recover coverage"),
+  data = sum_stats_size,
   mapping = aes(
     x = version,
     y = value,
