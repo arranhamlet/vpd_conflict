@@ -23,7 +23,8 @@ pacman::p_load(
 invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recursive = T), function(x) source(x)))
 
 #Countries of interest
-countries_interest <- c("SDN", "MMR", "PNG", "AFG", "VEN", "HTI", "GTM", "TCD", "DRC", "SOM", "BFA")
+# countries_interest <- c("SDN", "MMR", "PNG", "AFG", "VEN", "HTI", "GTM", "TCD", "DRC", "SOM", "BFA", "GBR")
+countries_interest <- c("SOM", "BFA", "GBR")
 
 #Load WHO disease data
 cases_of_interest <- import("data/processed/WHO/reported_cases_data.csv") %>%
@@ -62,7 +63,7 @@ double_run <- sapply(countries_interest, function(y){
         odin_model = model,
         params = model_data_processed$params,
         time = floor(model_data_processed$time),
-        no_runs = 8
+        no_runs = 3
       )
       
       deet <- process_for_plotting(model_ran, input_data = model_data_processed$input_data)
@@ -118,7 +119,7 @@ full_starting_immunity <- Reduce(rbind, sapply(full, function(x) x[[1]], simplif
 full_cases <- Reduce(rbind, sapply(full, function(x) x[[2]], simplify = FALSE))
 
 ggplot(
-  data = full_cases %>% subset(year >= 1981),
+  data = full_cases %>% subset(year > 1960 & year < 1981),
   mapping = aes(
     x = year,
     y = value,
@@ -163,7 +164,7 @@ ggplot(
   geom_bar(stat = "identity") +
   theme_bw() +
   labs(x = "", y = "Prop", fill = "") +
-  facet_wrap(R0~iso)
+  facet_wrap(R0~iso, ncol = 4)
 
 #Output
 export(susceptibility, "output/model_run/MSF/processed/susceptibility.csv")

@@ -14,12 +14,12 @@ case_vaccine_to_param <- function(
   vaccination_type <- paste(unique(c(unique(processed_case$disease_description),
                                      processed_vaccination_sia$vaccination_name,
                                      processed_vaccination_sia$disease,
+                                     processed_vaccination$disease,
                                      processed_vaccination$antigen,
                                      processed_vaccination$antigen_description)), collapse = "|")
   
-  if(grepl("Diphtheria", vaccination_type, ignore.case = T)) vaccination_type <- paste0(vaccination_type, "|DTaP|DT|DTwP", collapse = "")
-  if(grepl("Pertussis", vaccination_type, ignore.case = T)) vaccination_type <- paste0(vaccination_type, "|DTaP|DT|DTwP", collapse = "")
-  
+  if(grepl("Diphtheria|Pertussis", vaccination_type, ignore.case = T)) vaccination_type <- paste0(vaccination_type, "|DTPCV1|DTPCV3|DTaP|DT|DTwP", collapse = "")
+
   ages <- 0:(n_age - 1)
   years <- demog_data$input_data$year_start:demog_data$input_data$year_end
   
@@ -33,9 +33,17 @@ case_vaccine_to_param <- function(
         grepl("W", AGEADMINISTERED) ~ as.numeric(gsub("[^0-9.-]", "", AGEADMINISTERED))/52,
       )
     ) %>%
-    arrange(age_years)
+    arrange(age_years) %>%
+    subset(!grepl("ADULTS", TARGETPOP, ignore.case = T) & !grepl("contact", AGEADMINISTERED) & VACCINECODE != "TD_S")
   
-  schedule_subset$SCHEDULEROUNDS <- 1:nrow(schedule_subset)
+  if(any(is.na(schedule_subset$SCHEDULEROUNDS))){
+    schedule_subset <- schedule_subset %>%
+      case_when(
+        is.na(SCHEDULEROUNDS) ~ max(SCHEDULEROUNDS) + 1,
+        TRUE ~ SCHEDULEROUNDS 
+      )
+  }
+  
 
   #Process vaccination first
   processed_vaccination_upd <- fill_missing_years_general(

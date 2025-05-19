@@ -38,11 +38,11 @@ setup_for_shiny <- function(
     subset(disease_n == disease)
   
   #Calculate number of vaccines
-  number_of_vaccines <- routine_vaccination_data %>%
-    subset(CODE == iso & (grepl(vaccine, ANTIGEN_DESCRIPTION, ignore.case = T) | grepl(disease, Disease, ignore.case = T))) %>%
-    pull(ANTIGEN) %>%
-    unique()
-  
+  number_of_vaccines <- ifelse(
+    disease == "measles", 2,
+    ifelse(disease == "diphtheria" | disease == "pertussis", 3, 0)
+  )
+
   #Run processing
   model_data_preprocessed <- model_input_formatter_wrapper(
     iso = iso,    
@@ -99,7 +99,8 @@ setup_for_shiny <- function(
   case_vaccination_ready <- case_vaccine_to_param(
     demog_data = model_data_preprocessed$processed_demographic_data,
     processed_vaccination = total_vac %>%
-      subset(year == max(year)),
+      subset(year == max(year)) %>%
+      mutate(disease = disease),
     processed_vaccination_sia = model_data_preprocessed$processed_vaccination_sia,
     processed_case = model_data_preprocessed$processed_case_data,
     vaccination_schedule = vaccination_schedule

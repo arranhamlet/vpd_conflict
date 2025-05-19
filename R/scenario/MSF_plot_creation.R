@@ -27,7 +27,7 @@ model <- odin2::odin("models/stochastic_model_v1.R")
 
 #UN demographics
 population_all <- import(here("data", "processed", "WPP", "age_both.csv"))
-population_NGA <- subset(population_all, iso3 == "NGA") %>% 
+population_PSE <- subset(population_all, iso3 == "PSE") %>% 
   select(x0:x100) %>% 
   tail(1) %>%
   gather() %>%
@@ -36,9 +36,9 @@ population_NGA <- subset(population_all, iso3 == "NGA") %>%
          population = population * 1000)
 
 #Prior vaccination coverage
-routine_vaccination_data <- import("data/raw/WHO/coverage-data_updated.xlsx")
+routine_vaccination_data <- import("data/WHO/coverage-data_updated.xlsx")
 routine_subset <- routine_vaccination_data %>%
-  subset(CODE == "NGA" & 
+  subset(CODE == "PSE" & 
            grepl("measles", ANTIGEN_DESCRIPTION, ignore.case = T) & COVERAGE_CATEGORY == "WUENIC") %>%
   clean_names() %>%
   select(code, name, year, antigen_description, coverage)
@@ -60,8 +60,8 @@ all_Rdata_loaded <- sapply(all_Rdata, function(x) import(x), simplify = FALSE)
 names(all_Rdata_loaded) <- all_Rdata_names
 
 #Now plot
-NGA_demographics <- ggplot(
-  data = population_NGA,
+PSE_demographics <- ggplot(
+  data = population_PSE,
   mapping = aes(x = age,
                 y = population)
 ) +
@@ -76,14 +76,15 @@ NGA_demographics <- ggplot(
   )
 
 
-NGA_measles <- ggplot(
-  data = prior_cases %>%
-    subset(iso == "NGA" & disease == "measles" & year >= 1980),
+full_disease_df <- import("data/processed/WHO/reported_cases_data.csv")
+
+
+PSE_measles <- ggplot(
+  data = full_disease_df %>%
+    subset(iso3 == "PSE" & disease_description == "Measles"),
   mapping = aes(
     x = year,
-    y = value,
-    ymin = value_min,
-    ymax = value_max
+    y = cases
   )
 ) +
   geom_bar(stat = "identity") +
@@ -96,9 +97,12 @@ NGA_measles <- ggplot(
     axis.title = element_text(size = 16)
   )
 
-NGA_measles
+PSE_measles
 
-NGA_vaccination <- ggplot(
+cols <- c("Susceptible" = "#F8766D", "Vaccine protected" = "#00BFC4", "Exposure protected" = "#7CAE00", "Vaccine and\n exposure protected" = "#C77CFF")
+
+
+PSE_vaccination <- ggplot(
   data = routine_subset,
   mapping = aes(
     x = year,
@@ -115,7 +119,7 @@ NGA_vaccination <- ggplot(
   ) +
   theme(
     legend.position = "inside",
-    legend.position.inside = c(0.5, 0.85),
+    legend.position.inside = c(0.5, 0.45),
     legend.background = element_rect(fill = NA,
                                      linetype = "solid", 
                                      color = NA)
@@ -131,7 +135,7 @@ NGA_vaccination <- ggplot(
 
 susceptibility <- ggplot(
   data = starting_immunity %>%
-    subset(iso == "NGA" & disease == "measles") %>%
+    subset(iso == "PSE" & disease == "measles") %>%
     mutate(status = gsub("and", "and\n", status),
            status = factor(status,
                            levels = c("Exposure protected",
@@ -165,11 +169,12 @@ susceptibility <- ggplot(
     legend.text = element_text(size = 16)
   ) +
   scale_x_continuous(expand = c(0, 0)) +
-  scale_y_continuous(expand = c(0, 0))
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_fill_manual(values = cols)
 
 
 
-patch <- NGA_demographics/ NGA_measles/ NGA_vaccination
+patch <- PSE_demographics/ PSE_measles/ PSE_vaccination
 
 total_information <- ggarrange(patch, susceptibility, ncol = 2, widths = c(1, 1.25))
 
@@ -177,7 +182,7 @@ total_information <- ggarrange(patch, susceptibility, ncol = 2, widths = c(1, 1.
 ggsave("figs/presentations/MSF/total_information.jpg", total_information, height = 7, width = 14)
 
 #Run Nigeria at different levesl
-param_use <- import("output/model_run/MSF/processed/NGA_measles_15.rds")
+param_use <- import("output/model_run/MSF/processed/PSE_measles_15.rds")
 
 generate_new_params <- sapply(c(1, 2, 3), function(x){
   
@@ -192,7 +197,7 @@ generate_new_params <- sapply(c(1, 2, 3), function(x){
   )
   
   if(x == 2){
-    new_vaccination[, 1:3, 1, 1] <- new_vaccination[, 1:3, 1, 1]  * 0.25
+    new_vaccination[, 1:3, 1, 1] <- param_use$vaccination_coverage[, 1:3, 1, 1]  * 0.25
     new_vaccination[, 1:3, 1, 2] <- 0
     new_vaccination[, 1:3, 1, 3] <- 0
     new_vaccination[, 1:3, 1, 4] <- 0
@@ -201,7 +206,7 @@ generate_new_params <- sapply(c(1, 2, 3), function(x){
   
   if(x == 3){
     new_vaccination[, 1:3, 1, 1] <- new_vaccination[, 1:3, 1, 1]  * 0.25
-    new_vaccination[, 1:3, 1, 2] <- 0
+    new_vaccination[, 1:3, 1, 2] <- pmin(param_use$vaccination_coverage[, 1:3, 1, 1] * 2, 1)
     new_vaccination[, 1:3, 1, 3] <- param_use$vaccination_coverage[, 1:3, 1, 1]
     new_vaccination[, 1:3, 1, 4] <- param_use$vaccination_coverage[, 1:3, 1, 1]
     new_vaccination[, 1:3, 1, 5] <- param_use$vaccination_coverage[, 1:3, 1, 1]
@@ -229,7 +234,7 @@ generate_new_params <- sapply(c(1, 2, 3), function(x){
   
   param_use$tt_seeded <- c(0, 
                            366, 367,
-                           1095, 1096)
+                           730, 731)
   param_use$seeded <- new_seeded
   param_use$no_seeded_changes <- 5
   
@@ -268,7 +273,7 @@ model_better <- run_model(
   time = 365 * 4,
   no_runs = 10
 )
-model_better$version <- "Increase coverage"
+model_better$version <- "Recover coverage"
 
 combo <- rbind(
   model_no_change,
@@ -306,8 +311,8 @@ sum_stats_outbreak_over_100 <- sum_stats %>%
 sum_stats_size <- sum_stats %>%
   group_by(version) %>%
   summarise(
-    value_min = get_95CI(x = value, type = "low"),
-    value_max = get_95CI(x = value, type = "high"),
+    value_min = pmax(get_95CI(x = value, type = "low"), 0),
+    value_max = pmax(get_95CI(x = value, type = "high"), 0),
     value = mean(value),
   )
 
@@ -318,7 +323,7 @@ paste(max(sum_stats_size$value)/min(sum_stats_size$value),
 
 case_diff <- ggplot(
   data = sum_stats_size %>%
-    subset(version != "Increase coverage"),
+    subset(version != "Recover coverage"),
   mapping = aes(
     x = version,
     y = value,
@@ -337,7 +342,8 @@ case_diff <- ggplot(
   ) +
   scale_y_continuous(labels = scales::comma) +
   scale_color_manual(values = c("No change" = "gray30",
-                                  "Reduction in coverage" = "tomato1")) +
+                                  "Reduction in coverage" = "tomato1",
+                                "Recover coverage" = "blue")) +
   theme(legend.position = "none",
         axis.text.x = element_blank()) 
 
@@ -346,7 +352,8 @@ ggsave("figs/presentations/MSF/case_difference.jpg", height = 3, width = 4)
 
 #Quick check
 outbreak_plot <- ggplot(
-  data = new_cases_go,
+  data = new_cases_go %>%
+    subset(version != "Recover coverage"),
   mapping = aes(
     x = time,
     y = value,
@@ -364,26 +371,29 @@ outbreak_plot <- ggplot(
        fill = "Scenario",
        color = "Scenario") +
   coord_cartesian(
-    xlim = c(1095, 1350) 
+    xlim = c(730, 1460) 
   ) +
-  geom_vline(xintercept = 1095,
+  geom_vline(xintercept = 730,
              linetype = "dashed") +
   geom_text(mapping = aes(
-    x = 1095 + 25,
-    y = 500
+    x = 730 + 65,
+    y = 100
   ), label = "Introduction",
   color = "black") +
   theme(
     legend.position = "inside",
-    legend.position.inside = c(.75, .4)
+    legend.position.inside = c(.225, .6),
+    legend.title = element_text(size = 8), 
+    legend.text = element_text(size = 8)
   ) +
+  guides(shape = guide_legend(override.aes = list(size = 0.5))) +
   scale_color_manual(values = c("No change" = "gray30",
                                 "Reduction in coverage" = "tomato1")) +
   scale_fill_manual(values = c("No change" = "gray30",
                                 "Reduction in coverage" = "tomato1"))
 
 outbreak_plot +
-  inset_element(case_diff, 0.5, 0.5, 0.95, .95)
+  inset_element(case_diff, 0.6, 0.35, .99, .85)
 
 ggsave("figs/presentations/MSF/outbreak_plot.jpg", height = 4, width = 6)
 
@@ -494,13 +504,15 @@ percent_vaccinated <- ggplot(
   labs(fill = "",
        x = "Days",
        y = "% of population") +
-  coord_cartesian(ylim = c(40, 50)) +
+  coord_cartesian(ylim = c(65, 80)) +
   geom_hline(
-    yintercept = subset(vac_protect, status_simple == "Vaccinated" & version == "Reduction in coverage" & time == 1) %>% pull(prop) * 100,
+    yintercept = subset(vac_protect_all, status_simple == "Vaccinated" & version == "Reduction in coverage" & time == 1) %>% pull(prop) * 100,
     linetype = "dashed"
   )
 
+percent_vaccinated
 
+ggsave("figs/presentations/MSF/susceptible_population_halt_vaccination.jpg", percent_vaccinated, height = 1500, width = 1800, units = "px")
 
 
 vac_protect_u18 <- susceptibility_data_under_18 %>%

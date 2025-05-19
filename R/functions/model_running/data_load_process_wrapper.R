@@ -38,10 +38,10 @@ data_load_process_wrapper <- function(
     subset(disease_n == disease)
   
   #Calculate number of vaccines
-  number_of_vaccines <- routine_vaccination_data %>%
-    subset(CODE == iso & (grepl(vaccine, ANTIGEN_DESCRIPTION, ignore.case = T) | grepl(disease, Disease, ignore.case = T)) & !grepl("maternal", Disease, ignore.case = T)) %>%
-    pull(ANTIGEN) %>%
-    unique()
+  number_of_vaccines <- ifelse(
+    disease == "measles", 2,
+    ifelse(disease == "diphtheria" | disease == "pertussis", 3, 0)
+  )
   
   #Run processing
   model_data_preprocessed <- model_input_formatter_wrapper(
