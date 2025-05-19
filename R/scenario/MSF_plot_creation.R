@@ -36,7 +36,7 @@ population_PSE <- subset(population_all, iso3 == "PSE") %>%
          population = population * 1000)
 
 #Prior vaccination coverage
-routine_vaccination_data <- import("data/WHO/coverage-data_updated.xlsx")
+routine_vaccination_data <- import("data/coverage-data_updated.xlsx")
 routine_subset <- routine_vaccination_data %>%
   subset(CODE == "PSE" & 
            grepl("measles", ANTIGEN_DESCRIPTION, ignore.case = T) & COVERAGE_CATEGORY == "WUENIC") %>%
