@@ -1,27 +1,4 @@
-options(scipen = 999)
-
-if(!require("pacman")) install.packages("pacman")
-
-#Load packages
-pacman::p_load(
-  odin2,
-  rio,
-  here,
-  dust2,
-  tidyverse,
-  reshape2,
-  collapse,
-  janitor,
-  ggpubr,
-  patchwork,
-  squire.page,
-  patchwork,
-  data.table
-)
-
-#Import functions
-invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recursive = T), function(x) source(x)))
-
+y 
 #Countries of interest
 # countries_interest <- c("SDN", "MMR", "PNG", "AFG", "VEN", "HTI", "GTM", "TCD", "DRC", "SOM", "BFA", "GBR")
 countries_interest <- c("SOM", "BFA", "GBR")
@@ -63,7 +40,7 @@ double_run <- sapply(countries_interest, function(y){
         odin_model = model,
         params = model_data_processed$params,
         time = floor(model_data_processed$time),
-        no_runs = 3
+        no_runs = 5
       )
       
       deet <- process_for_plotting(model_ran, input_data = model_data_processed$input_data)
@@ -154,7 +131,7 @@ susceptibility <- Reduce(rbind, sapply(list.files("output/model_run/MSF", patter
 
 ggplot(
   data = susceptibility %>%
-    subset(disease == "diphtheria" & iso %in% unique(susceptibility$iso)[1:4]),
+    subset(disease == "measles" & R0 == 15 & iso %in% "PSE"),
   mapping = aes(
     x = age,
     y = prop,
