@@ -389,46 +389,50 @@ beta[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else t_R0 / infectious_perio
 beta_updated[, , ] <- if(i <= age_maternal_protection_ends) beta[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k]) * (1 - (protection_weight_vacc * prop_maternal_vaccinated[k] + protection_weight_rec * prop_maternal_natural[k])) else (1 - age_vaccination_beta_modifier[i, j, k]) * beta[i, j, k]
 
 # # Step 1: Infectious contribution by age
-# inf_weighted[, , ] <- beta_updated[i, j, k] * (I[i, j, k] + Is[i, j, k])
-# dim(inf_weighted) <- c(n_age, n_vacc, n_risk)
-# 
-# infectious_source[] <- sum(inf_weighted[i, , ])
-# dim(infectious_source) <- n_age
-# 
-# # Step 2: Age-specific contact-weighted force of infection
-# lambda_contact[, ] <- contact_matrix[i, j] * infectious_source[j]
-# dim(lambda_contact) <- c(n_age, n_age)
-# 
-# denom <- sum(I[i, , ]) + sum(Is[i, , ])
-# dim(denom) <- n_age
-# 
-# lambda_raw[] <- if(denom[i] <= 0) 0 else sum(lambda_contact[i, ]) / denom[i]
-# dim(lambda_raw) <- n_age
-# 
-# lambda[, , ] <- if(N <= 0) 0 else max(0, lambda_raw[i]) * (1 - age_vaccination_beta_modifier[i, j, k])
+inf_weighted[, , ] <- beta_updated[i, j, k] * (I[i, j, k] + Is[i, j, k])
+dim(inf_weighted) <- c(n_age, n_vacc, n_risk)
 
-# 1. Calculate infectious individuals by age group (sum over vaccination and risk)
-infectious_by_age[] <- sum(I[i, , ]) + sum(Is[i, , ])
-dim(infectious_by_age) <- n_age
+infectious_source[] <- sum(inf_weighted[i, , ])
+dim(infectious_source) <- n_age
 
-# 2. Calculate total population by age group (sum over S, E, I, R, Is, Rc)
-total_by_age[] <- sum(S[i, , ]) + sum(E[i, , ]) + sum(I[i, , ]) + sum(R[i, , ]) + sum(Is[i, , ]) + sum(Rc[i, , ])
-dim(total_by_age) <- n_age
+# Step 2: Age-specific contact-weighted force of infection
+lambda_contact[, ] <- contact_matrix[i, j] * infectious_source[j]
+dim(lambda_contact) <- c(n_age, n_age)
 
-# 3. Proportion infectious in each age group
-prop_infectious_by_age[] <- if(total_by_age[i] <= 0) 0 else infectious_by_age[i] / total_by_age[i]
-dim(prop_infectious_by_age) <- n_age
+denom[] <- sum(I[i, , ]) + sum(Is[i, , ])
+dim(denom) <- n_age
 
-# 4. Age-specific contact-weighted infection pressure (λ_raw)
-lambda_contact_weighted[, ] <- contact_matrix[i, j] * prop_infectious_by_age[j]
-dim(lambda_contact_weighted) <- c(n_age, n_age)
-
-lambda_raw[] <- sum(lambda_contact_weighted[i, ])
+lambda_raw[] <- if(denom[i] <= 0) 0 else sum(lambda_contact[i, ]) / denom[i]
 dim(lambda_raw) <- n_age
 
-# 5. Apply age-, vaccination-, and risk-specific modifiers
-lambda[, , ] <- max(0, lambda_raw[i]) * (1 - age_vaccination_beta_modifier[i, j, k])
+lambda[, , ] <- if(N <= 0) 0 else max(0, lambda_raw[i]) * (1 - age_vaccination_beta_modifier[i, j, k])
 dim(lambda) <- c(n_age, n_vacc, n_risk)
+
+# 1. Calculate infectious individuals by age group (sum over vaccination and risk)
+# infectious_by_age_all[, , ] <- sum(I[i, , ]) + sum(Is[i, , ]) * beta_updated[i, j, k]
+# dim(infectious_by_age_all) <- c(n_age, n_vacc, n_risk)
+# 
+# infectious_by_age[] <- sum(infectious_by_age_all[i, , ])
+# dim(infectious_by_age) <- c(n_age)
+# 
+# # 2. Calculate total population by age group (sum over S, E, I, R, Is, Rc)
+# total_by_age[] <- sum(S[i, , ]) + sum(E[i, , ]) + sum(I[i, , ]) + sum(R[i, , ]) + sum(Is[i, , ]) + sum(Rc[i, , ])
+# dim(total_by_age) <- n_age
+# 
+# # 3. Proportion infectious in each age group
+# prop_infectious_by_age[] <- if(total_by_age[i] <= 0) 0 else infectious_by_age[i] / total_by_age[i]
+# dim(prop_infectious_by_age) <- n_age
+# 
+# # 4. Age-specific contact-weighted infection pressure (λ_raw)
+# lambda_contact_weighted[, ] <- contact_matrix[i, j] * prop_infectious_by_age[j]
+# dim(lambda_contact_weighted) <- c(n_age, n_age)
+# 
+# lambda_raw[] <- sum(lambda_contact_weighted[i, ])
+# dim(lambda_raw) <- n_age
+# 
+# # 5. Apply age-, vaccination-, and risk-specific modifiers
+# lambda[, , ] <- max(0, lambda_raw[i]) * (1 - age_vaccination_beta_modifier[i, j, k])
+# dim(lambda) <- c(n_age, n_vacc, n_risk)
 
 
 
