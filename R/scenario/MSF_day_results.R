@@ -1,7 +1,30 @@
-y 
+options(scipen = 999)
+
+if(!require("pacman")) install.packages("pacman")
+
+#Load packages
+pacman::p_load(
+  odin2,
+  rio,
+  here,
+  dust2,
+  tidyverse,
+  reshape2,
+  collapse,
+  janitor,
+  ggpubr,
+  patchwork,
+  squire.page,
+  patchwork,
+  data.table
+)
+
+#Import functions
+invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recursive = T), function(x) source(x)))
+
 #Countries of interest
 # countries_interest <- c("SDN", "MMR", "PNG", "AFG", "VEN", "HTI", "GTM", "TCD", "DRC", "SOM", "BFA", "GBR")
-countries_interest <- c("SOM", "BFA", "GBR")
+countries_interest <- c("GBR")
 
 #Load WHO disease data
 cases_of_interest <- import("data/processed/WHO/reported_cases_data.csv") %>%
@@ -25,29 +48,32 @@ double_run <- sapply(countries_interest, function(y){
     
     inside_run <- sapply((diseases$R0[x] - 3):(diseases$R0[x] + 3), function(R0){
       
-      #Run process
-      model_data_processed <- data_load_process_wrapper(
-        iso = y,
-        disease = diseases$disease[x],
-        vaccine = diseases$disease[x],
-        R0 = R0,
-        timestep = "week",
-        WHO_seed_switch = T
-      )
-      
-      #Process for plotting
-      model_ran <- run_model(
-        odin_model = model,
-        params = model_data_processed$params,
-        time = floor(model_data_processed$time),
-        no_runs = 5
-      )
-      
-      deet <- process_for_plotting(model_ran, input_data = model_data_processed$input_data)
-      
-      export(x = deet[[1]], file = paste0("output/model_run/MSF/", y, "_", diseases$disease[x], "_R0", R0, "_full.csv"))
-      export(x = deet[[2]], file = paste0("output/model_run/MSF/", y, "_", diseases$disease[x], "_R0", R0, "_susceptibility.csv"))
-      
+      tryCatch({
+        
+        #Run process
+        model_data_processed <- data_load_process_wrapper(
+          iso = y,
+          disease = diseases$disease[x],
+          vaccine = diseases$disease[x],
+          R0 = R0,
+          timestep = "week",
+          WHO_seed_switch = T
+        )
+        
+        #Process for plotting
+        model_ran <- run_model(
+          odin_model = model,
+          params = model_data_processed$params,
+          time = floor(model_data_processed$time),
+          no_runs = 5
+        )
+        
+        deet <- process_for_plotting(model_ran, input_data = model_data_processed$input_data)
+        
+        export(x = deet[[1]], file = paste0("output/model_run/MSF/", y, "_", diseases$disease[x], "_R0", R0, "_full.csv"))
+        export(x = deet[[2]], file = paste0("output/model_run/MSF/", y, "_", diseases$disease[x], "_R0", R0, "_susceptibility.csv"))
+        
+      })
       
     }, simplify = FALSE)
     
@@ -96,7 +122,8 @@ full_starting_immunity <- Reduce(rbind, sapply(full, function(x) x[[1]], simplif
 full_cases <- Reduce(rbind, sapply(full, function(x) x[[2]], simplify = FALSE))
 
 ggplot(
-  data = full_cases %>% subset(year > 1960 & year < 1981),
+  data = full_cases %>% 
+    subset(disease == "diphtheria" & iso == "SDN" & year > 1960 & year < 1981),
   mapping = aes(
     x = year,
     y = value,
@@ -131,7 +158,7 @@ susceptibility <- Reduce(rbind, sapply(list.files("output/model_run/MSF", patter
 
 ggplot(
   data = susceptibility %>%
-    subset(disease == "measles" & R0 == 15 & iso %in% "PSE"),
+    subset(disease == "measles" & iso %in% "GBR" & R0 == 15 & status == "Susceptible"),
   mapping = aes(
     x = age,
     y = prop,
@@ -150,12 +177,13 @@ export(full_starting_immunity, "output/model_run/MSF/processed/full_starting_imm
 
 #Prepare params for starting
 full_starting_immunity_go <- full_starting_immunity %>%
-  mutate(id = paste0(iso, "_", disease, "_", R0))
+  mutate(id = paste0(iso, "_", disease, "_", R0)) %>%
+  subset(iso != "GTM")
+  
 
-sapply(unique(full_starting_immunity_go$id), function(x){
+total_params <- sapply(unique(full_starting_immunity_go$id), function(x){
   
   print(x)
-  
   this_data <- subset(full_starting_immunity_go, id == x)
   
   data_out <- setup_for_shiny(
@@ -170,8 +198,19 @@ sapply(unique(full_starting_immunity_go$id), function(x){
   )
   
   saveRDS(data_out$params, paste0("output/model_run/MSF/processed/", x, ".rds"))
-  
-})
+
+}, simplify = FALSE)
+
+#Load all again
+all_files_loaded <- list.files("output/model_run/MSF/processed/", pattern = ".rds", full.names = T)
+
+all_together <- sapply(all_files_loaded, function(x){
+  readRDS(x)
+}, simplify = FALSE)
+
+names(all_together) <- gsub(".rds", "", sapply(strsplit(all_files_loaded, "/"), function(x) last(x)))
+
+export(x = all_together, file = "output/model_run/MSF/processed/full_rds.rds")
 
 params <- data_out$params
 new_seed <- data_out$params$seeded

@@ -34,7 +34,23 @@ case_vaccine_to_param <- function(
       )
     ) %>%
     arrange(age_years) %>%
-    subset(!grepl("ADULTS", TARGETPOP, ignore.case = T) & !grepl("contact", AGEADMINISTERED) & VACCINECODE != "TD_S")
+    subset(!grepl("ADULTS|CATCHUP_C", TARGETPOP, ignore.case = T) & !grepl("contact", AGEADMINISTERED) & VACCINECODE != "TD_S")
+  
+  if(any(is.na(schedule_subset$age_years))){
+    schedule_subset <- schedule_subset %>%
+      group_by(VACCINECODE, SCHEDULEROUNDS, AGEADMINISTERED) %>%
+      mutate(
+        unit = case_when(
+          grepl("Y", AGEADMINISTERED) ~ 1,
+          grepl("M", AGEADMINISTERED) ~ 12,
+          grepl("W", AGEADMINISTERED) ~ 52
+        ),
+        age_years = case_when(
+          is.na(age_years) ~ median(as.numeric(unlist(strsplit(gsub("[^0-9.-]", "", AGEADMINISTERED), "-"))))/unit,
+          TRUE ~ age_years
+        )
+      )
+  }
   
   if(any(is.na(schedule_subset$SCHEDULEROUNDS))){
     schedule_subset <- schedule_subset %>%
