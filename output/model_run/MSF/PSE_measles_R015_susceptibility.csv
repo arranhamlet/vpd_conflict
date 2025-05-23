@@ -1,93 +1,93 @@
 state,age,vaccination,risk,year,value,value_min,value_max,status
-S,1,1,1,2023,162279.5,99904,259271,Susceptible
-S,2,1,1,2023,12873,7285,13713,Susceptible
-S,3,1,1,2023,7003,4463,9606,Susceptible
-S,4,1,1,2023,4087.5,2891,5818,Susceptible
-S,5,1,1,2023,3077.5,2564,3953,Susceptible
-S,6,1,1,2023,3208.5,2923,3580,Susceptible
-S,7,1,1,2023,3925.5,3659,4101,Susceptible
-S,8,1,1,2023,4848.5,4561,5051,Susceptible
-S,9,1,1,2023,5890,5667,6108,Susceptible
-S,10,1,1,2023,6898,6740,7126,Susceptible
-S,11,1,1,2023,7908.5,7758,8460,Susceptible
-S,12,1,1,2023,9006,8848,9737,Susceptible
-S,13,1,1,2023,9937.5,9823,10567,Susceptible
-S,14,1,1,2023,10961.5,10777,11642,Susceptible
-S,15,1,1,2023,11975,11785,12493,Susceptible
-S,16,1,1,2023,12790.5,12620,13325,Susceptible
-S,17,1,1,2023,13942,13594,14348,Susceptible
-S,18,1,1,2023,14937,14582,15512,Susceptible
-S,19,1,1,2023,16021,15638,16734,Susceptible
-S,20,1,1,2023,17187,16998,17811,Susceptible
-S,21,1,1,2023,18338.5,18055,18963,Susceptible
-S,22,1,1,2023,19786,19335,20323,Susceptible
-S,23,1,1,2023,21260,20919,21493,Susceptible
-S,24,1,1,2023,22548,22246,23123,Susceptible
-S,25,1,1,2023,23789,23249,24551,Susceptible
-S,26,1,1,2023,24957.5,24011,25963,Susceptible
-S,27,1,1,2023,25805.5,25415,26938,Susceptible
-S,28,1,1,2023,26798.5,26385,27763,Susceptible
-S,29,1,1,2023,27506,26902,29006,Susceptible
-S,30,1,1,2023,28088.5,26985,29463,Susceptible
-S,31,1,1,2023,28023.5,27098,29139,Susceptible
-S,32,1,1,2023,27780.5,27003,28811,Susceptible
-S,33,1,1,2023,27392.5,26711,28170,Susceptible
-S,34,1,1,2023,26770,25947,27719,Susceptible
-S,35,1,1,2023,26215.5,25160,27040,Susceptible
-S,36,1,1,2023,25664,24740,26609,Susceptible
-S,37,1,1,2023,24789,23821,25841,Susceptible
-S,38,1,1,2023,23715,22749,24737,Susceptible
-S,39,1,1,2023,22813,21863,23874,Susceptible
-S,40,1,1,2023,21865.5,20784,22851,Susceptible
-S,41,1,1,2023,20936.5,19828,22060,Susceptible
-S,42,1,1,2023,19875,18708,21045,Susceptible
-S,43,1,1,2023,18843.5,17888,19839,Susceptible
-S,44,1,1,2023,17830.5,16859,18778,Susceptible
-S,45,1,1,2023,16528,15693,17619,Susceptible
-S,46,1,1,2023,15456.5,14518,16503,Susceptible
-S,47,1,1,2023,14322.5,13422,15223,Susceptible
-S,48,1,1,2023,13145.5,12315,14033,Susceptible
-S,49,1,1,2023,11972.5,11199,12718,Susceptible
-S,50,1,1,2023,10866.5,9867,11777,Susceptible
-S,51,1,1,2023,9777,8899,10640,Susceptible
-S,52,1,1,2023,8690,7904,9523,Susceptible
-S,53,1,1,2023,7740,7012,8581,Susceptible
-S,54,1,1,2023,6704,6048,7443,Susceptible
-S,55,1,1,2023,5820,5205,6478,Susceptible
-S,56,1,1,2023,4997,4394,5637,Susceptible
-S,57,1,1,2023,4253,3676,4927,Susceptible
-S,58,1,1,2023,3528.5,2916,4128,Susceptible
-S,59,1,1,2023,2943,2441,3467,Susceptible
-S,60,1,1,2023,2400.5,2020,2868,Susceptible
-S,61,1,1,2023,1929.5,1622,2333,Susceptible
-S,62,1,1,2023,1542.5,1288,1865,Susceptible
-S,63,1,1,2023,1225.5,1013,1436,Susceptible
-S,64,1,1,2023,958.5,813,1131,Susceptible
-S,65,1,1,2023,749.5,601,934,Susceptible
-S,66,1,1,2023,576.5,450,685,Susceptible
-S,67,1,1,2023,445,309,545,Susceptible
-S,68,1,1,2023,329,182,422,Susceptible
-S,69,1,1,2023,230,135,326,Susceptible
-S,70,1,1,2023,169,114,257,Susceptible
-S,71,1,1,2023,123.5,73,165,Susceptible
-S,72,1,1,2023,82.5,38,132,Susceptible
-S,73,1,1,2023,56,33,111,Susceptible
-S,74,1,1,2023,35,22,71,Susceptible
-S,75,1,1,2023,23,14,49,Susceptible
-S,76,1,1,2023,17,3,28,Susceptible
-S,77,1,1,2023,7,3,12,Susceptible
-S,78,1,1,2023,5,0,11,Susceptible
-S,79,1,1,2023,1,0,12,Susceptible
-S,80,1,1,2023,1,0,8,Susceptible
-S,81,1,1,2023,0,0,5,Susceptible
-S,82,1,1,2023,0,0,2,Susceptible
+S,1,1,1,2023,161600,100126,260015,Susceptible
+S,2,1,1,2023,12975.5,7276,13716,Susceptible
+S,3,1,1,2023,7014.5,4450,9566,Susceptible
+S,4,1,1,2023,4035.5,2827,5842,Susceptible
+S,5,1,1,2023,3053,2534,3953,Susceptible
+S,6,1,1,2023,3150.5,2863,3480,Susceptible
+S,7,1,1,2023,3865.5,3713,4032,Susceptible
+S,8,1,1,2023,4873,4557,5117,Susceptible
+S,9,1,1,2023,5878,5432,6192,Susceptible
+S,10,1,1,2023,6976,6446,7233,Susceptible
+S,11,1,1,2023,8048,7552,8347,Susceptible
+S,12,1,1,2023,9059.5,8570,9272,Susceptible
+S,13,1,1,2023,10156,9464,10339,Susceptible
+S,14,1,1,2023,11159,10383,11433,Susceptible
+S,15,1,1,2023,11936,11353,12443,Susceptible
+S,16,1,1,2023,12877,12183,13293,Susceptible
+S,17,1,1,2023,13837.5,13021,14267,Susceptible
+S,18,1,1,2023,14626.5,14030,15144,Susceptible
+S,19,1,1,2023,15679,15251,16266,Susceptible
+S,20,1,1,2023,16845,16363,17486,Susceptible
+S,21,1,1,2023,18245.5,17421,18804,Susceptible
+S,22,1,1,2023,19896.5,18803,20363,Susceptible
+S,23,1,1,2023,21406.5,20428,21840,Susceptible
+S,24,1,1,2023,22745,21784,23359,Susceptible
+S,25,1,1,2023,23858,22762,24779,Susceptible
+S,26,1,1,2023,24963.5,24174,25753,Susceptible
+S,27,1,1,2023,26111,25586,26721,Susceptible
+S,28,1,1,2023,26946.5,26402,27587,Susceptible
+S,29,1,1,2023,27699,26864,28055,Susceptible
+S,30,1,1,2023,28199,27405,28681,Susceptible
+S,31,1,1,2023,28146,27226,28807,Susceptible
+S,32,1,1,2023,27936,26878,28948,Susceptible
+S,33,1,1,2023,27394,26103,28347,Susceptible
+S,34,1,1,2023,26783.5,25561,27944,Susceptible
+S,35,1,1,2023,26200,25310,27088,Susceptible
+S,36,1,1,2023,25659,24424,26594,Susceptible
+S,37,1,1,2023,24884,23605,25947,Susceptible
+S,38,1,1,2023,24153,22766,25245,Susceptible
+S,39,1,1,2023,23224,22237,24372,Susceptible
+S,40,1,1,2023,22120,20993,23195,Susceptible
+S,41,1,1,2023,21136,20059,22344,Susceptible
+S,42,1,1,2023,20108.5,19145,21268,Susceptible
+S,43,1,1,2023,18977.5,18059,20139,Susceptible
+S,44,1,1,2023,17729,16772,19027,Susceptible
+S,45,1,1,2023,16706,15589,18024,Susceptible
+S,46,1,1,2023,15536,14614,16739,Susceptible
+S,47,1,1,2023,14390,13525,15382,Susceptible
+S,48,1,1,2023,13285.5,12203,14204,Susceptible
+S,49,1,1,2023,12120,11199,12991,Susceptible
+S,50,1,1,2023,11030,10063,11967,Susceptible
+S,51,1,1,2023,9957.5,8920,10744,Susceptible
+S,52,1,1,2023,8783.5,7979,9575,Susceptible
+S,53,1,1,2023,7826.5,7129,8479,Susceptible
+S,54,1,1,2023,6796,6238,7514,Susceptible
+S,55,1,1,2023,5877,5189,6618,Susceptible
+S,56,1,1,2023,5044,4409,5638,Susceptible
+S,57,1,1,2023,4167.5,3673,4679,Susceptible
+S,58,1,1,2023,3436.5,2840,4009,Susceptible
+S,59,1,1,2023,2818.5,2264,3238,Susceptible
+S,60,1,1,2023,2297,1844,2624,Susceptible
+S,61,1,1,2023,1858.5,1475,2171,Susceptible
+S,62,1,1,2023,1476.5,1149,1735,Susceptible
+S,63,1,1,2023,1194,936,1458,Susceptible
+S,64,1,1,2023,944,676,1157,Susceptible
+S,65,1,1,2023,721,568,909,Susceptible
+S,66,1,1,2023,543,433,708,Susceptible
+S,67,1,1,2023,416.5,317,512,Susceptible
+S,68,1,1,2023,317,224,409,Susceptible
+S,69,1,1,2023,214,158,288,Susceptible
+S,70,1,1,2023,166.5,129,207,Susceptible
+S,71,1,1,2023,124,80,155,Susceptible
+S,72,1,1,2023,86,57,118,Susceptible
+S,73,1,1,2023,56,41,84,Susceptible
+S,74,1,1,2023,34,25,53,Susceptible
+S,75,1,1,2023,24,7,36,Susceptible
+S,76,1,1,2023,15,3,27,Susceptible
+S,77,1,1,2023,8,2,22,Susceptible
+S,78,1,1,2023,3,1,14,Susceptible
+S,79,1,1,2023,1,0,10,Susceptible
+S,80,1,1,2023,0,0,5,Susceptible
+S,81,1,1,2023,0,0,3,Susceptible
+S,82,1,1,2023,0,0,1,Susceptible
 S,83,1,1,2023,0,0,2,Susceptible
-S,84,1,1,2023,0,0,2,Susceptible
-S,85,1,1,2023,0,0,2,Susceptible
-S,86,1,1,2023,0,0,2,Susceptible
-S,87,1,1,2023,0,0,1,Susceptible
-S,88,1,1,2023,0,0,0,Susceptible
-S,89,1,1,2023,0,0,0,Susceptible
+S,84,1,1,2023,0,0,5,Susceptible
+S,85,1,1,2023,0,0,4,Susceptible
+S,86,1,1,2023,0,0,4,Susceptible
+S,87,1,1,2023,0,0,2,Susceptible
+S,88,1,1,2023,0,0,1,Susceptible
+S,89,1,1,2023,0,0,1,Susceptible
 S,90,1,1,2023,0,0,0,Susceptible
 S,91,1,1,2023,0,0,0,Susceptible
 S,92,1,1,2023,0,0,0,Susceptible
@@ -101,92 +101,92 @@ S,99,1,1,2023,0,0,0,Susceptible
 S,100,1,1,2023,0,0,0,Susceptible
 S,101,1,1,2023,0,0,0,Susceptible
 S,1,2,1,2023,0,0,0,Vaccine protected
-S,2,2,1,2023,9328,8621,9818,Vaccine protected
-S,3,2,1,2023,18517,18063,19039,Vaccine protected
-S,4,2,1,2023,27130,26780,27656,Vaccine protected
-S,5,2,1,2023,34868.5,34512,36005,Vaccine protected
-S,6,2,1,2023,41993,41542,43398,Vaccine protected
-S,7,2,1,2023,48462,47906,50498,Vaccine protected
-S,8,2,1,2023,54067,53211,55879,Vaccine protected
-S,9,2,1,2023,59051.5,57972,60781,Vaccine protected
-S,10,2,1,2023,63490.5,61846,65291,Vaccine protected
-S,11,2,1,2023,67316,65092,68930,Vaccine protected
-S,12,2,1,2023,70305.5,68487,72232,Vaccine protected
-S,13,2,1,2023,72859,71458,75286,Vaccine protected
-S,14,2,1,2023,75269,73507,77223,Vaccine protected
-S,15,2,1,2023,77016.5,75818,79959,Vaccine protected
-S,16,2,1,2023,78754.5,77449,81417,Vaccine protected
-S,17,2,1,2023,80152.5,78205,82822,Vaccine protected
-S,18,2,1,2023,80874.5,79735,84061,Vaccine protected
-S,19,2,1,2023,81534.5,80189,84153,Vaccine protected
-S,20,2,1,2023,81913,80222,85849,Vaccine protected
-S,21,2,1,2023,82286,80725,86032,Vaccine protected
-S,22,2,1,2023,82168.5,80651,85808,Vaccine protected
-S,23,2,1,2023,81694.5,79969,84439,Vaccine protected
-S,24,2,1,2023,81101,79587,83279,Vaccine protected
-S,25,2,1,2023,80402.5,78657,82725,Vaccine protected
-S,26,2,1,2023,79225,77757,81197,Vaccine protected
-S,27,2,1,2023,77641.5,75926,80019,Vaccine protected
-S,28,2,1,2023,76105.5,74071,78758,Vaccine protected
-S,29,2,1,2023,74390.5,71768,77062,Vaccine protected
-S,30,2,1,2023,72527,70524,74447,Vaccine protected
-S,31,2,1,2023,70749,68930,72898,Vaccine protected
-S,32,2,1,2023,68993.5,67508,71064,Vaccine protected
-S,33,2,1,2023,67134,65618,68839,Vaccine protected
-S,34,2,1,2023,64971.5,63446,67038,Vaccine protected
-S,35,2,1,2023,62950,61014,64780,Vaccine protected
-S,36,2,1,2023,60595.5,58835,63011,Vaccine protected
-S,37,2,1,2023,58474.5,56526,61111,Vaccine protected
-S,38,2,1,2023,56091,54430,58497,Vaccine protected
-S,39,2,1,2023,53859.5,52236,56008,Vaccine protected
-S,40,2,1,2023,51704.5,50267,54190,Vaccine protected
-S,41,2,1,2023,49686,48077,52015,Vaccine protected
-S,42,2,1,2023,47499.5,45575,49954,Vaccine protected
-S,43,2,1,2023,45076,42955,47326,Vaccine protected
-S,44,2,1,2023,42431.5,40458,44604,Vaccine protected
-S,45,2,1,2023,40018.5,37940,41830,Vaccine protected
-S,46,2,1,2023,37006,35067,38960,Vaccine protected
-S,47,2,1,2023,34188,32453,36620,Vaccine protected
-S,48,2,1,2023,31675,29568,34221,Vaccine protected
-S,49,2,1,2023,29031.5,27279,31359,Vaccine protected
-S,50,2,1,2023,26503.5,24962,28709,Vaccine protected
-S,51,2,1,2023,24043.5,22142,25992,Vaccine protected
-S,52,2,1,2023,21547.5,20254,23316,Vaccine protected
-S,53,2,1,2023,19106,17663,20538,Vaccine protected
-S,54,2,1,2023,16721,15273,18142,Vaccine protected
-S,55,2,1,2023,14530.5,12956,15717,Vaccine protected
-S,56,2,1,2023,12406.5,10940,13669,Vaccine protected
-S,57,2,1,2023,10528,9304,11703,Vaccine protected
-S,58,2,1,2023,8802,7862,9759,Vaccine protected
-S,59,2,1,2023,7288.5,6453,8295,Vaccine protected
-S,60,2,1,2023,6022.5,5239,6863,Vaccine protected
-S,61,2,1,2023,4910,4222,5818,Vaccine protected
-S,62,2,1,2023,3915,3143,4676,Vaccine protected
-S,63,2,1,2023,3097.5,2478,3722,Vaccine protected
-S,64,2,1,2023,2444.5,1909,2995,Vaccine protected
-S,65,2,1,2023,1880,1460,2376,Vaccine protected
-S,66,2,1,2023,1417,1062,1860,Vaccine protected
-S,67,2,1,2023,1074.5,772,1289,Vaccine protected
-S,68,2,1,2023,792,610,1014,Vaccine protected
-S,69,2,1,2023,590,418,771,Vaccine protected
-S,70,2,1,2023,421,311,549,Vaccine protected
-S,71,2,1,2023,290.5,213,415,Vaccine protected
-S,72,2,1,2023,203.5,124,295,Vaccine protected
-S,73,2,1,2023,141,99,212,Vaccine protected
-S,74,2,1,2023,96,53,169,Vaccine protected
-S,75,2,1,2023,65,42,116,Vaccine protected
-S,76,2,1,2023,54,29,88,Vaccine protected
-S,77,2,1,2023,41,12,59,Vaccine protected
-S,78,2,1,2023,24,5,46,Vaccine protected
-S,79,2,1,2023,12,2,37,Vaccine protected
-S,80,2,1,2023,6,3,31,Vaccine protected
-S,81,2,1,2023,6,0,29,Vaccine protected
-S,82,2,1,2023,4,0,17,Vaccine protected
-S,83,2,1,2023,3,0,10,Vaccine protected
-S,84,2,1,2023,0,0,5,Vaccine protected
-S,85,2,1,2023,0,0,1,Vaccine protected
-S,86,2,1,2023,0,0,0,Vaccine protected
-S,87,2,1,2023,0,0,0,Vaccine protected
+S,2,2,1,2023,9373,8635,9730,Vaccine protected
+S,3,2,1,2023,18651.5,17970,19036,Vaccine protected
+S,4,2,1,2023,27202.5,26420,27542,Vaccine protected
+S,5,2,1,2023,35228,34314,35721,Vaccine protected
+S,6,2,1,2023,42399.5,41009,43423,Vaccine protected
+S,7,2,1,2023,48901.5,47541,49798,Vaccine protected
+S,8,2,1,2023,54466,53095,55589,Vaccine protected
+S,9,2,1,2023,59199,57951,60884,Vaccine protected
+S,10,2,1,2023,63676,61799,65416,Vaccine protected
+S,11,2,1,2023,66895,65123,69139,Vaccine protected
+S,12,2,1,2023,70258.5,68210,71995,Vaccine protected
+S,13,2,1,2023,72986,71041,74636,Vaccine protected
+S,14,2,1,2023,75517,73291,77402,Vaccine protected
+S,15,2,1,2023,77756.5,75084,79589,Vaccine protected
+S,16,2,1,2023,79468.5,77046,80976,Vaccine protected
+S,17,2,1,2023,80774.5,77910,82762,Vaccine protected
+S,18,2,1,2023,81616,79401,83511,Vaccine protected
+S,19,2,1,2023,82437,80366,84063,Vaccine protected
+S,20,2,1,2023,82782,80015,84579,Vaccine protected
+S,21,2,1,2023,82774.5,80406,84919,Vaccine protected
+S,22,2,1,2023,82602.5,80475,84512,Vaccine protected
+S,23,2,1,2023,82177,79843,84049,Vaccine protected
+S,24,2,1,2023,81242,78737,83218,Vaccine protected
+S,25,2,1,2023,80511,77698,81963,Vaccine protected
+S,26,2,1,2023,79140.5,76903,81272,Vaccine protected
+S,27,2,1,2023,77811.5,75198,79470,Vaccine protected
+S,28,2,1,2023,76194.5,74226,78280,Vaccine protected
+S,29,2,1,2023,74496,72566,76739,Vaccine protected
+S,30,2,1,2023,72829,71078,75193,Vaccine protected
+S,31,2,1,2023,71089.5,69175,73343,Vaccine protected
+S,32,2,1,2023,69169.5,67358,71222,Vaccine protected
+S,33,2,1,2023,67354.5,65331,69233,Vaccine protected
+S,34,2,1,2023,65332,62938,67325,Vaccine protected
+S,35,2,1,2023,63043,60811,64740,Vaccine protected
+S,36,2,1,2023,61188,58845,62800,Vaccine protected
+S,37,2,1,2023,59019,56625,60515,Vaccine protected
+S,38,2,1,2023,56990.5,54312,58448,Vaccine protected
+S,39,2,1,2023,54528.5,51843,56574,Vaccine protected
+S,40,2,1,2023,52058.5,50234,54233,Vaccine protected
+S,41,2,1,2023,49909.5,48315,51301,Vaccine protected
+S,42,2,1,2023,47589.5,46017,48881,Vaccine protected
+S,43,2,1,2023,45243,43306,46913,Vaccine protected
+S,44,2,1,2023,42689.5,41152,44315,Vaccine protected
+S,45,2,1,2023,40144.5,38672,41881,Vaccine protected
+S,46,2,1,2023,37387,35395,39060,Vaccine protected
+S,47,2,1,2023,34841,32935,36242,Vaccine protected
+S,48,2,1,2023,32123.5,30409,33673,Vaccine protected
+S,49,2,1,2023,29616.5,27957,31064,Vaccine protected
+S,50,2,1,2023,27077.5,25145,28518,Vaccine protected
+S,51,2,1,2023,24282.5,22923,25828,Vaccine protected
+S,52,2,1,2023,21578.5,20402,23040,Vaccine protected
+S,53,2,1,2023,19174,17781,20766,Vaccine protected
+S,54,2,1,2023,16727.5,15212,18185,Vaccine protected
+S,55,2,1,2023,14486,13260,15853,Vaccine protected
+S,56,2,1,2023,12418,11246,13731,Vaccine protected
+S,57,2,1,2023,10674,9584,11639,Vaccine protected
+S,58,2,1,2023,8942,8010,10081,Vaccine protected
+S,59,2,1,2023,7386.5,6612,8233,Vaccine protected
+S,60,2,1,2023,6117,5361,6799,Vaccine protected
+S,61,2,1,2023,4932.5,4257,5586,Vaccine protected
+S,62,2,1,2023,3964.5,3378,4571,Vaccine protected
+S,63,2,1,2023,3133.5,2716,3767,Vaccine protected
+S,64,2,1,2023,2423.5,2080,2887,Vaccine protected
+S,65,2,1,2023,1864,1591,2222,Vaccine protected
+S,66,2,1,2023,1438,1204,1730,Vaccine protected
+S,67,2,1,2023,1109.5,912,1343,Vaccine protected
+S,68,2,1,2023,835.5,661,995,Vaccine protected
+S,69,2,1,2023,654,489,757,Vaccine protected
+S,70,2,1,2023,494,374,593,Vaccine protected
+S,71,2,1,2023,336,259,429,Vaccine protected
+S,72,2,1,2023,240,184,302,Vaccine protected
+S,73,2,1,2023,171,129,234,Vaccine protected
+S,74,2,1,2023,119,87,154,Vaccine protected
+S,75,2,1,2023,81,57,108,Vaccine protected
+S,76,2,1,2023,55,42,89,Vaccine protected
+S,77,2,1,2023,35,19,49,Vaccine protected
+S,78,2,1,2023,22,14,39,Vaccine protected
+S,79,2,1,2023,17,5,27,Vaccine protected
+S,80,2,1,2023,8,4,17,Vaccine protected
+S,81,2,1,2023,6,1,15,Vaccine protected
+S,82,2,1,2023,3,0,7,Vaccine protected
+S,83,2,1,2023,2,0,6,Vaccine protected
+S,84,2,1,2023,0,0,4,Vaccine protected
+S,85,2,1,2023,0,0,2,Vaccine protected
+S,86,2,1,2023,0,0,1,Vaccine protected
+S,87,2,1,2023,0,0,1,Vaccine protected
 S,88,2,1,2023,0,0,0,Vaccine protected
 S,89,2,1,2023,0,0,0,Vaccine protected
 S,90,2,1,2023,0,0,0,Vaccine protected
@@ -202,90 +202,90 @@ S,99,2,1,2023,0,0,0,Vaccine protected
 S,100,2,1,2023,0,0,0,Vaccine protected
 S,101,2,1,2023,0,0,0,Vaccine protected
 S,1,3,1,2023,0,0,0,Vaccine protected
-S,2,3,1,2023,215430,173127,242996,Vaccine protected
-S,3,3,1,2023,228388.5,211139,238420,Vaccine protected
-S,4,3,1,2023,222423.5,217543,230371,Vaccine protected
-S,5,3,1,2023,214139.5,212227,220700,Vaccine protected
-S,6,3,1,2023,204584.5,203221,210640,Vaccine protected
-S,7,3,1,2023,194982.5,192453,200395,Vaccine protected
-S,8,3,1,2023,184799.5,181563,189959,Vaccine protected
-S,9,3,1,2023,174085,171137,179564,Vaccine protected
-S,10,3,1,2023,164162,160772,169530,Vaccine protected
-S,11,3,1,2023,154097,151503,159905,Vaccine protected
-S,12,3,1,2023,144563,142087,149893,Vaccine protected
-S,13,3,1,2023,135863,132884,140444,Vaccine protected
-S,14,3,1,2023,127469.5,124749,131819,Vaccine protected
-S,15,3,1,2023,119967.5,117751,122694,Vaccine protected
-S,16,3,1,2023,113122.5,110377,116080,Vaccine protected
-S,17,3,1,2023,106673,103690,108511,Vaccine protected
-S,18,3,1,2023,100287.5,98477,102303,Vaccine protected
-S,19,3,1,2023,94081,92729,96384,Vaccine protected
-S,20,3,1,2023,88725.5,87581,91354,Vaccine protected
-S,21,3,1,2023,83621,81591,85569,Vaccine protected
-S,22,3,1,2023,78296,75971,80240,Vaccine protected
-S,23,3,1,2023,73302.5,70704,76236,Vaccine protected
-S,24,3,1,2023,68432.5,65975,71643,Vaccine protected
-S,25,3,1,2023,63940,62004,67440,Vaccine protected
-S,26,3,1,2023,59621,58333,62566,Vaccine protected
-S,27,3,1,2023,55729.5,54607,57374,Vaccine protected
-S,28,3,1,2023,52147,50863,53330,Vaccine protected
-S,29,3,1,2023,48714,47456,50171,Vaccine protected
-S,30,3,1,2023,45248,44117,46840,Vaccine protected
-S,31,3,1,2023,42166,40942,43428,Vaccine protected
-S,32,3,1,2023,39196.5,38086,40877,Vaccine protected
-S,33,3,1,2023,36551,35440,38242,Vaccine protected
-S,34,3,1,2023,33638,32958,35339,Vaccine protected
-S,35,3,1,2023,30977,30309,32019,Vaccine protected
-S,36,3,1,2023,28714.5,27779,29679,Vaccine protected
-S,37,3,1,2023,26776.5,25803,27691,Vaccine protected
-S,38,3,1,2023,24839,23860,25755,Vaccine protected
-S,39,3,1,2023,22802,21963,23853,Vaccine protected
-S,40,3,1,2023,20913,20090,21837,Vaccine protected
-S,41,3,1,2023,19272.5,18446,20046,Vaccine protected
-S,42,3,1,2023,17603.5,17109,18302,Vaccine protected
-S,43,3,1,2023,16150.5,15582,16744,Vaccine protected
-S,44,3,1,2023,14813.5,14202,15378,Vaccine protected
-S,45,3,1,2023,13431.5,12813,13895,Vaccine protected
-S,46,3,1,2023,12242,11592,12620,Vaccine protected
-S,47,3,1,2023,10988.5,10509,11656,Vaccine protected
-S,48,3,1,2023,9815.5,9187,10405,Vaccine protected
-S,49,3,1,2023,8797.5,8182,9356,Vaccine protected
-S,50,3,1,2023,7835.5,7351,8338,Vaccine protected
-S,51,3,1,2023,6938.5,6416,7392,Vaccine protected
-S,52,3,1,2023,6015.5,5525,6663,Vaccine protected
-S,53,3,1,2023,5217.5,4810,5685,Vaccine protected
-S,54,3,1,2023,4494.5,4084,4866,Vaccine protected
-S,55,3,1,2023,3851,3442,4165,Vaccine protected
-S,56,3,1,2023,3282,2834,3594,Vaccine protected
-S,57,3,1,2023,2710,2350,2962,Vaccine protected
-S,58,3,1,2023,2199.5,1864,2518,Vaccine protected
-S,59,3,1,2023,1786,1473,2064,Vaccine protected
-S,60,3,1,2023,1449,1246,1660,Vaccine protected
-S,61,3,1,2023,1189,1016,1399,Vaccine protected
-S,62,3,1,2023,919,779,1082,Vaccine protected
-S,63,3,1,2023,720,603,872,Vaccine protected
-S,64,3,1,2023,565.5,450,702,Vaccine protected
-S,65,3,1,2023,412.5,345,605,Vaccine protected
-S,66,3,1,2023,315,239,431,Vaccine protected
-S,67,3,1,2023,240,187,338,Vaccine protected
-S,68,3,1,2023,184,136,265,Vaccine protected
-S,69,3,1,2023,139,116,223,Vaccine protected
-S,70,3,1,2023,102.5,73,147,Vaccine protected
-S,71,3,1,2023,73,45,120,Vaccine protected
-S,72,3,1,2023,50,38,85,Vaccine protected
-S,73,3,1,2023,35,16,64,Vaccine protected
-S,74,3,1,2023,21,11,39,Vaccine protected
-S,75,3,1,2023,13,6,19,Vaccine protected
-S,76,3,1,2023,9,2,24,Vaccine protected
-S,77,3,1,2023,5,0,19,Vaccine protected
-S,78,3,1,2023,3,0,18,Vaccine protected
-S,79,3,1,2023,1,0,9,Vaccine protected
-S,80,3,1,2023,1,0,5,Vaccine protected
-S,81,3,1,2023,2,0,4,Vaccine protected
-S,82,3,1,2023,1,0,4,Vaccine protected
-S,83,3,1,2023,0,0,6,Vaccine protected
+S,2,3,1,2023,216137,173602,243021,Vaccine protected
+S,3,3,1,2023,228627.5,212387,236666,Vaccine protected
+S,4,3,1,2023,224947.5,216427,227278,Vaccine protected
+S,5,3,1,2023,216808.5,210667,218106,Vaccine protected
+S,6,3,1,2023,206408.5,201429,208249,Vaccine protected
+S,7,3,1,2023,195471,191059,198311,Vaccine protected
+S,8,3,1,2023,185153,180925,187975,Vaccine protected
+S,9,3,1,2023,174905.5,170576,177893,Vaccine protected
+S,10,3,1,2023,164689,160526,167314,Vaccine protected
+S,11,3,1,2023,154831.5,151531,157744,Vaccine protected
+S,12,3,1,2023,145417.5,142095,148902,Vaccine protected
+S,13,3,1,2023,136783,132821,139593,Vaccine protected
+S,14,3,1,2023,128157.5,124269,130839,Vaccine protected
+S,15,3,1,2023,120617.5,116967,122880,Vaccine protected
+S,16,3,1,2023,113341.5,109561,115724,Vaccine protected
+S,17,3,1,2023,106602,103252,108557,Vaccine protected
+S,18,3,1,2023,100228.5,96935,102556,Vaccine protected
+S,19,3,1,2023,94687,91476,96244,Vaccine protected
+S,20,3,1,2023,88704.5,85324,90963,Vaccine protected
+S,21,3,1,2023,83532,80009,85209,Vaccine protected
+S,22,3,1,2023,78275,75407,80163,Vaccine protected
+S,23,3,1,2023,73271.5,70127,75184,Vaccine protected
+S,24,3,1,2023,68583,65108,70471,Vaccine protected
+S,25,3,1,2023,64171.5,61548,65645,Vaccine protected
+S,26,3,1,2023,60085.5,56902,61492,Vaccine protected
+S,27,3,1,2023,56336.5,53329,57451,Vaccine protected
+S,28,3,1,2023,52578.5,49572,53452,Vaccine protected
+S,29,3,1,2023,48760,46321,50148,Vaccine protected
+S,30,3,1,2023,45442.5,43053,46644,Vaccine protected
+S,31,3,1,2023,42043,40029,43236,Vaccine protected
+S,32,3,1,2023,38909.5,37365,40104,Vaccine protected
+S,33,3,1,2023,36124,34620,37355,Vaccine protected
+S,34,3,1,2023,33451.5,31831,34687,Vaccine protected
+S,35,3,1,2023,30986,29686,32140,Vaccine protected
+S,36,3,1,2023,28793,27338,30046,Vaccine protected
+S,37,3,1,2023,26517.5,25515,27646,Vaccine protected
+S,38,3,1,2023,24375.5,23703,25676,Vaccine protected
+S,39,3,1,2023,22603.5,21809,23698,Vaccine protected
+S,40,3,1,2023,20982.5,20087,21614,Vaccine protected
+S,41,3,1,2023,19302,18318,20032,Vaccine protected
+S,42,3,1,2023,17771.5,16791,18563,Vaccine protected
+S,43,3,1,2023,16261.5,15607,17260,Vaccine protected
+S,44,3,1,2023,14860.5,14222,15857,Vaccine protected
+S,45,3,1,2023,13562.5,13052,14207,Vaccine protected
+S,46,3,1,2023,12237,11596,13058,Vaccine protected
+S,47,3,1,2023,11028,10377,11847,Vaccine protected
+S,48,3,1,2023,9855,9271,10624,Vaccine protected
+S,49,3,1,2023,8780.5,8316,9615,Vaccine protected
+S,50,3,1,2023,7842.5,7376,8485,Vaccine protected
+S,51,3,1,2023,6844.5,6373,7347,Vaccine protected
+S,52,3,1,2023,5964.5,5593,6526,Vaccine protected
+S,53,3,1,2023,5262.5,4844,5753,Vaccine protected
+S,54,3,1,2023,4503,4102,5008,Vaccine protected
+S,55,3,1,2023,3841.5,3487,4332,Vaccine protected
+S,56,3,1,2023,3238.5,2935,3635,Vaccine protected
+S,57,3,1,2023,2717.5,2417,3074,Vaccine protected
+S,58,3,1,2023,2247.5,2007,2510,Vaccine protected
+S,59,3,1,2023,1870,1668,2149,Vaccine protected
+S,60,3,1,2023,1556,1384,1754,Vaccine protected
+S,61,3,1,2023,1242.5,1086,1421,Vaccine protected
+S,62,3,1,2023,985,863,1129,Vaccine protected
+S,63,3,1,2023,783.5,682,930,Vaccine protected
+S,64,3,1,2023,583.5,509,685,Vaccine protected
+S,65,3,1,2023,452.5,388,553,Vaccine protected
+S,66,3,1,2023,353.5,295,418,Vaccine protected
+S,67,3,1,2023,261,194,311,Vaccine protected
+S,68,3,1,2023,189,143,232,Vaccine protected
+S,69,3,1,2023,131,91,176,Vaccine protected
+S,70,3,1,2023,81,63,135,Vaccine protected
+S,71,3,1,2023,63,31,120,Vaccine protected
+S,72,3,1,2023,47,22,87,Vaccine protected
+S,73,3,1,2023,40,13,69,Vaccine protected
+S,74,3,1,2023,24,7,40,Vaccine protected
+S,75,3,1,2023,16,10,26,Vaccine protected
+S,76,3,1,2023,13,5,21,Vaccine protected
+S,77,3,1,2023,9,0,24,Vaccine protected
+S,78,3,1,2023,5,0,19,Vaccine protected
+S,79,3,1,2023,2,0,14,Vaccine protected
+S,80,3,1,2023,1,0,10,Vaccine protected
+S,81,3,1,2023,1,0,6,Vaccine protected
+S,82,3,1,2023,0,0,2,Vaccine protected
+S,83,3,1,2023,0,0,2,Vaccine protected
 S,84,3,1,2023,0,0,2,Vaccine protected
-S,85,3,1,2023,0,0,0,Vaccine protected
+S,85,3,1,2023,0,0,1,Vaccine protected
 S,86,3,1,2023,0,0,0,Vaccine protected
 S,87,3,1,2023,0,0,0,Vaccine protected
 S,88,3,1,2023,0,0,0,Vaccine protected
@@ -615,7 +615,7 @@ I,7,1,1,2023,0,0,0,Exposure protected
 I,8,1,1,2023,0,0,0,Exposure protected
 I,9,1,1,2023,0,0,0,Exposure protected
 I,10,1,1,2023,0,0,0,Exposure protected
-I,11,1,1,2023,0,0,0,Exposure protected
+I,11,1,1,2023,0,0,1,Exposure protected
 I,12,1,1,2023,0,0,0,Exposure protected
 I,13,1,1,2023,0,0,0,Exposure protected
 I,14,1,1,2023,0,0,0,Exposure protected
@@ -908,107 +908,107 @@ I,98,3,1,2023,0,0,0,Vaccine and exposure protected
 I,99,3,1,2023,0,0,0,Vaccine and exposure protected
 I,100,3,1,2023,0,0,0,Vaccine and exposure protected
 I,101,3,1,2023,0,0,0,Vaccine and exposure protected
-R,1,1,1,2023,1,0,2,Exposure protected
-R,2,1,1,2023,4,2,9,Exposure protected
-R,3,1,1,2023,10,5,19,Exposure protected
-R,4,1,1,2023,19,10,29,Exposure protected
-R,5,1,1,2023,32,13,40,Exposure protected
-R,6,1,1,2023,34,19,64,Exposure protected
-R,7,1,1,2023,33,16,60,Exposure protected
-R,8,1,1,2023,36,23,59,Exposure protected
-R,9,1,1,2023,41,27,57,Exposure protected
-R,10,1,1,2023,42,24,48,Exposure protected
-R,11,1,1,2023,43,26,52,Exposure protected
-R,12,1,1,2023,35,29,44,Exposure protected
-R,13,1,1,2023,37.5,27,53,Exposure protected
-R,14,1,1,2023,39,29,50,Exposure protected
-R,15,1,1,2023,57,39,74,Exposure protected
-R,16,1,1,2023,75,55,90,Exposure protected
-R,17,1,1,2023,103,79,131,Exposure protected
-R,18,1,1,2023,161,124,212,Exposure protected
-R,19,1,1,2023,244.5,182,324,Exposure protected
-R,20,1,1,2023,372,274,473,Exposure protected
-R,21,1,1,2023,539,424,713,Exposure protected
-R,22,1,1,2023,748,619,956,Exposure protected
-R,23,1,1,2023,1052,861,1296,Exposure protected
-R,24,1,1,2023,1466.5,1218,1740,Exposure protected
-R,25,1,1,2023,1950.5,1637,2257,Exposure protected
-R,26,1,1,2023,2472,2117,2865,Exposure protected
-R,27,1,1,2023,3155,2732,3571,Exposure protected
-R,28,1,1,2023,3810,3319,4263,Exposure protected
-R,29,1,1,2023,4483,4046,4942,Exposure protected
-R,30,1,1,2023,5169,4724,5762,Exposure protected
-R,31,1,1,2023,5838,5255,6411,Exposure protected
-R,32,1,1,2023,6587,6032,7103,Exposure protected
-R,33,1,1,2023,7343,6929,7892,Exposure protected
-R,34,1,1,2023,8070.5,7606,8541,Exposure protected
-R,35,1,1,2023,8800,8341,9138,Exposure protected
-R,36,1,1,2023,9483,9100,9877,Exposure protected
-R,37,1,1,2023,10083.5,9659,10574,Exposure protected
-R,38,1,1,2023,10731,10131,11404,Exposure protected
-R,39,1,1,2023,11273.5,10682,12055,Exposure protected
-R,40,1,1,2023,12035,11213,12624,Exposure protected
-R,41,1,1,2023,12688,11826,13282,Exposure protected
-R,42,1,1,2023,13434.5,12552,14097,Exposure protected
-R,43,1,1,2023,14303,13159,14757,Exposure protected
-R,44,1,1,2023,14999.5,14204,15429,Exposure protected
-R,45,1,1,2023,15635,15036,16214,Exposure protected
-R,46,1,1,2023,16698,15962,17275,Exposure protected
-R,47,1,1,2023,17613.5,16795,18166,Exposure protected
-R,48,1,1,2023,18839,17537,19401,Exposure protected
-R,49,1,1,2023,19869,18679,20701,Exposure protected
-R,50,1,1,2023,21082,19957,22019,Exposure protected
-R,51,1,1,2023,22326,21180,23030,Exposure protected
-R,52,1,1,2023,23489.5,22592,24314,Exposure protected
-R,53,1,1,2023,24616.5,23685,25643,Exposure protected
-R,54,1,1,2023,25934,24919,26877,Exposure protected
-R,55,1,1,2023,26946.5,26114,27723,Exposure protected
-R,56,1,1,2023,27983,27334,28871,Exposure protected
-R,57,1,1,2023,28781,28040,29962,Exposure protected
-R,58,1,1,2023,29551,28775,30674,Exposure protected
-R,59,1,1,2023,30202,29481,31314,Exposure protected
-R,60,1,1,2023,30564.5,29849,31228,Exposure protected
-R,61,1,1,2023,30736,30202,31656,Exposure protected
-R,62,1,1,2023,31081,30492,31365,Exposure protected
-R,63,1,1,2023,30962.5,29813,31279,Exposure protected
-R,64,1,1,2023,30674,29044,31104,Exposure protected
-R,65,1,1,2023,30307.5,28745,30728,Exposure protected
-R,66,1,1,2023,29522,28123,30203,Exposure protected
-R,67,1,1,2023,28676,27575,29455,Exposure protected
-R,68,1,1,2023,27901,27135,28462,Exposure protected
-R,69,1,1,2023,26989,26417,27699,Exposure protected
-R,70,1,1,2023,26171.5,25562,26923,Exposure protected
-R,71,1,1,2023,25109.5,24308,25806,Exposure protected
-R,72,1,1,2023,23832,23046,24888,Exposure protected
-R,73,1,1,2023,22641.5,21868,23793,Exposure protected
-R,74,1,1,2023,21550.5,20734,22710,Exposure protected
-R,75,1,1,2023,20216.5,19501,21304,Exposure protected
-R,76,1,1,2023,19011,18060,19862,Exposure protected
-R,77,1,1,2023,17768.5,17013,18686,Exposure protected
-R,78,1,1,2023,16435,15655,17089,Exposure protected
-R,79,1,1,2023,15120.5,14480,15831,Exposure protected
-R,80,1,1,2023,13894,13158,14618,Exposure protected
-R,81,1,1,2023,12578,11660,13359,Exposure protected
-R,82,1,1,2023,11114.5,10285,11930,Exposure protected
-R,83,1,1,2023,9834.5,8885,10654,Exposure protected
-R,84,1,1,2023,8592.5,7957,9345,Exposure protected
-R,85,1,1,2023,7490,6718,8204,Exposure protected
-R,86,1,1,2023,6232,5531,6965,Exposure protected
-R,87,1,1,2023,5221.5,4598,5799,Exposure protected
-R,88,1,1,2023,4265,3795,4877,Exposure protected
-R,89,1,1,2023,3456.5,3088,3918,Exposure protected
-R,90,1,1,2023,2788,2392,3147,Exposure protected
-R,91,1,1,2023,2169,1855,2500,Exposure protected
-R,92,1,1,2023,1700,1432,1971,Exposure protected
-R,93,1,1,2023,1270.5,1031,1492,Exposure protected
-R,94,1,1,2023,904.5,718,1128,Exposure protected
-R,95,1,1,2023,665.5,505,842,Exposure protected
-R,96,1,1,2023,447,332,605,Exposure protected
-R,97,1,1,2023,297.5,226,404,Exposure protected
-R,98,1,1,2023,201,154,268,Exposure protected
-R,99,1,1,2023,137,102,202,Exposure protected
-R,100,1,1,2023,85.5,67,115,Exposure protected
-R,101,1,1,2023,153,104,233,Exposure protected
+R,1,1,1,2023,1,0,3,Exposure protected
+R,2,1,1,2023,3,1,7,Exposure protected
+R,3,1,1,2023,11.5,6,18,Exposure protected
+R,4,1,1,2023,20,13,27,Exposure protected
+R,5,1,1,2023,20,10,42,Exposure protected
+R,6,1,1,2023,24,15,42,Exposure protected
+R,7,1,1,2023,29,22,59,Exposure protected
+R,8,1,1,2023,37,29,48,Exposure protected
+R,9,1,1,2023,41,34,48,Exposure protected
+R,10,1,1,2023,42,36,53,Exposure protected
+R,11,1,1,2023,39,30,53,Exposure protected
+R,12,1,1,2023,40,24,52,Exposure protected
+R,13,1,1,2023,41,27,59,Exposure protected
+R,14,1,1,2023,44.5,31,62,Exposure protected
+R,15,1,1,2023,58,47,73,Exposure protected
+R,16,1,1,2023,74.5,53,103,Exposure protected
+R,17,1,1,2023,101,77,142,Exposure protected
+R,18,1,1,2023,165,128,216,Exposure protected
+R,19,1,1,2023,240.5,200,292,Exposure protected
+R,20,1,1,2023,372,296,453,Exposure protected
+R,21,1,1,2023,560,447,689,Exposure protected
+R,22,1,1,2023,818,639,959,Exposure protected
+R,23,1,1,2023,1111,929,1285,Exposure protected
+R,24,1,1,2023,1467,1259,1695,Exposure protected
+R,25,1,1,2023,1938,1682,2160,Exposure protected
+R,26,1,1,2023,2452.5,2184,2695,Exposure protected
+R,27,1,1,2023,3069.5,2705,3403,Exposure protected
+R,28,1,1,2023,3747,3338,4106,Exposure protected
+R,29,1,1,2023,4452.5,4032,4784,Exposure protected
+R,30,1,1,2023,5145,4795,5517,Exposure protected
+R,31,1,1,2023,5823.5,5471,6289,Exposure protected
+R,32,1,1,2023,6555,6080,7115,Exposure protected
+R,33,1,1,2023,7203,6690,7963,Exposure protected
+R,34,1,1,2023,8049,7389,8744,Exposure protected
+R,35,1,1,2023,8735.5,8193,9233,Exposure protected
+R,36,1,1,2023,9338.5,8913,9816,Exposure protected
+R,37,1,1,2023,9872,9384,10385,Exposure protected
+R,38,1,1,2023,10451.5,9907,11021,Exposure protected
+R,39,1,1,2023,11134.5,10570,11886,Exposure protected
+R,40,1,1,2023,11748.5,11169,12355,Exposure protected
+R,41,1,1,2023,12538.5,11944,12960,Exposure protected
+R,42,1,1,2023,13167,12396,13668,Exposure protected
+R,43,1,1,2023,13681,12956,14272,Exposure protected
+R,44,1,1,2023,14491.5,13979,14997,Exposure protected
+R,45,1,1,2023,15392,14859,16000,Exposure protected
+R,46,1,1,2023,16183.5,15734,16833,Exposure protected
+R,47,1,1,2023,17154,16524,17841,Exposure protected
+R,48,1,1,2023,18251,17460,19137,Exposure protected
+R,49,1,1,2023,19528.5,18736,20392,Exposure protected
+R,50,1,1,2023,20778,19914,21636,Exposure protected
+R,51,1,1,2023,22002.5,21265,22941,Exposure protected
+R,52,1,1,2023,23419.5,22391,24315,Exposure protected
+R,53,1,1,2023,24758,23756,25505,Exposure protected
+R,54,1,1,2023,26009.5,25120,26972,Exposure protected
+R,55,1,1,2023,27098.5,25978,28012,Exposure protected
+R,56,1,1,2023,28126.5,27117,28963,Exposure protected
+R,57,1,1,2023,28856.5,28126,29879,Exposure protected
+R,58,1,1,2023,29533,28654,30447,Exposure protected
+R,59,1,1,2023,30264,28937,31239,Exposure protected
+R,60,1,1,2023,30713,29750,31637,Exposure protected
+R,61,1,1,2023,31108,29831,31836,Exposure protected
+R,62,1,1,2023,31090.5,30568,31779,Exposure protected
+R,63,1,1,2023,31035.5,30481,31532,Exposure protected
+R,64,1,1,2023,30692.5,30380,31303,Exposure protected
+R,65,1,1,2023,30241.5,29743,31171,Exposure protected
+R,66,1,1,2023,29809,29194,30574,Exposure protected
+R,67,1,1,2023,29016.5,28330,29883,Exposure protected
+R,68,1,1,2023,28318,27376,29106,Exposure protected
+R,69,1,1,2023,27305.5,26492,28225,Exposure protected
+R,70,1,1,2023,26416,25194,27426,Exposure protected
+R,71,1,1,2023,25321.5,23998,26276,Exposure protected
+R,72,1,1,2023,24221,23173,25220,Exposure protected
+R,73,1,1,2023,23033,22055,23995,Exposure protected
+R,74,1,1,2023,21924.5,21104,22905,Exposure protected
+R,75,1,1,2023,20685,19815,21498,Exposure protected
+R,76,1,1,2023,19411,18559,20225,Exposure protected
+R,77,1,1,2023,18112.5,17221,19135,Exposure protected
+R,78,1,1,2023,16727.5,15965,17605,Exposure protected
+R,79,1,1,2023,15430,14685,16243,Exposure protected
+R,80,1,1,2023,14044,13273,14797,Exposure protected
+R,81,1,1,2023,12604.5,11738,13341,Exposure protected
+R,82,1,1,2023,11151,10412,12054,Exposure protected
+R,83,1,1,2023,9835,9095,10583,Exposure protected
+R,84,1,1,2023,8481,7812,9287,Exposure protected
+R,85,1,1,2023,7307,6666,8033,Exposure protected
+R,86,1,1,2023,6212.5,5521,6875,Exposure protected
+R,87,1,1,2023,5153.5,4660,5691,Exposure protected
+R,88,1,1,2023,4248.5,3765,4756,Exposure protected
+R,89,1,1,2023,3475,3031,3910,Exposure protected
+R,90,1,1,2023,2770,2384,3145,Exposure protected
+R,91,1,1,2023,2177.5,1902,2487,Exposure protected
+R,92,1,1,2023,1730.5,1418,1998,Exposure protected
+R,93,1,1,2023,1314,1087,1532,Exposure protected
+R,94,1,1,2023,948.5,808,1144,Exposure protected
+R,95,1,1,2023,698.5,560,844,Exposure protected
+R,96,1,1,2023,495.5,393,626,Exposure protected
+R,97,1,1,2023,357,242,464,Exposure protected
+R,98,1,1,2023,237,155,307,Exposure protected
+R,99,1,1,2023,160,105,236,Exposure protected
+R,100,1,1,2023,110,73,155,Exposure protected
+R,101,1,1,2023,166,113,264,Exposure protected
 R,1,2,1,2023,0,0,0,Vaccine and exposure protected
 R,2,2,1,2023,0,0,0,Vaccine and exposure protected
 R,3,2,1,2023,0,0,0,Vaccine and exposure protected
@@ -1022,84 +1022,84 @@ R,10,2,1,2023,0,0,0,Vaccine and exposure protected
 R,11,2,1,2023,0,0,0,Vaccine and exposure protected
 R,12,2,1,2023,0,0,0,Vaccine and exposure protected
 R,13,2,1,2023,0,0,0,Vaccine and exposure protected
-R,14,2,1,2023,0,0,2,Vaccine and exposure protected
-R,15,2,1,2023,0,0,5,Vaccine and exposure protected
-R,16,2,1,2023,1,0,9,Vaccine and exposure protected
-R,17,2,1,2023,2,0,12,Vaccine and exposure protected
-R,18,2,1,2023,3,0,9,Vaccine and exposure protected
-R,19,2,1,2023,9,4,14,Vaccine and exposure protected
-R,20,2,1,2023,16,8,32,Vaccine and exposure protected
-R,21,2,1,2023,25,10,43,Vaccine and exposure protected
-R,22,2,1,2023,45,25,85,Vaccine and exposure protected
-R,23,2,1,2023,71,44,123,Vaccine and exposure protected
-R,24,2,1,2023,131,89,168,Vaccine and exposure protected
-R,25,2,1,2023,172.5,141,201,Vaccine and exposure protected
-R,26,2,1,2023,226,183,289,Vaccine and exposure protected
-R,27,2,1,2023,293.5,250,354,Vaccine and exposure protected
-R,28,2,1,2023,371.5,323,488,Vaccine and exposure protected
-R,29,2,1,2023,456,380,602,Vaccine and exposure protected
-R,30,2,1,2023,564,495,666,Vaccine and exposure protected
-R,31,2,1,2023,684,585,766,Vaccine and exposure protected
-R,32,2,1,2023,796,676,895,Vaccine and exposure protected
-R,33,2,1,2023,965,856,1047,Vaccine and exposure protected
-R,34,2,1,2023,1094.5,990,1271,Vaccine and exposure protected
-R,35,2,1,2023,1218,1116,1484,Vaccine and exposure protected
-R,36,2,1,2023,1389,1279,1618,Vaccine and exposure protected
-R,37,2,1,2023,1552.5,1410,1731,Vaccine and exposure protected
-R,38,2,1,2023,1724,1604,1878,Vaccine and exposure protected
-R,39,2,1,2023,1853,1757,1964,Vaccine and exposure protected
-R,40,2,1,2023,1988.5,1871,2089,Vaccine and exposure protected
-R,41,2,1,2023,2055.5,1998,2146,Vaccine and exposure protected
-R,42,2,1,2023,2154,2079,2307,Vaccine and exposure protected
-R,43,2,1,2023,2263.5,2141,2400,Vaccine and exposure protected
-R,44,2,1,2023,2339,2170,2462,Vaccine and exposure protected
-R,45,2,1,2023,2390,2279,2496,Vaccine and exposure protected
-R,46,2,1,2023,2381,2263,2519,Vaccine and exposure protected
-R,47,2,1,2023,2359,2288,2452,Vaccine and exposure protected
-R,48,2,1,2023,2309.5,2173,2389,Vaccine and exposure protected
-R,49,2,1,2023,2267,2174,2351,Vaccine and exposure protected
-R,50,2,1,2023,2140.5,1991,2252,Vaccine and exposure protected
-R,51,2,1,2023,2020.5,1957,2211,Vaccine and exposure protected
-R,52,2,1,2023,1895,1809,1961,Vaccine and exposure protected
-R,53,2,1,2023,1759.5,1593,1847,Vaccine and exposure protected
-R,54,2,1,2023,1631,1439,1857,Vaccine and exposure protected
-R,55,2,1,2023,1486,1317,1692,Vaccine and exposure protected
-R,56,2,1,2023,1368.5,1215,1578,Vaccine and exposure protected
-R,57,2,1,2023,1216.5,1115,1372,Vaccine and exposure protected
-R,58,2,1,2023,1086,969,1210,Vaccine and exposure protected
-R,59,2,1,2023,932,805,1090,Vaccine and exposure protected
-R,60,2,1,2023,796.5,638,934,Vaccine and exposure protected
-R,61,2,1,2023,711.5,529,869,Vaccine and exposure protected
-R,62,2,1,2023,588.5,490,713,Vaccine and exposure protected
-R,63,2,1,2023,472.5,404,604,Vaccine and exposure protected
-R,64,2,1,2023,384,318,506,Vaccine and exposure protected
-R,65,2,1,2023,341.5,232,418,Vaccine and exposure protected
-R,66,2,1,2023,269,213,343,Vaccine and exposure protected
-R,67,2,1,2023,214,177,282,Vaccine and exposure protected
-R,68,2,1,2023,164,137,200,Vaccine and exposure protected
-R,69,2,1,2023,125,103,163,Vaccine and exposure protected
-R,70,2,1,2023,98,76,134,Vaccine and exposure protected
-R,71,2,1,2023,75,59,100,Vaccine and exposure protected
-R,72,2,1,2023,63,47,81,Vaccine and exposure protected
-R,73,2,1,2023,49,31,77,Vaccine and exposure protected
-R,74,2,1,2023,40,27,62,Vaccine and exposure protected
-R,75,2,1,2023,22,14,42,Vaccine and exposure protected
-R,76,2,1,2023,16,6,39,Vaccine and exposure protected
-R,77,2,1,2023,13,3,31,Vaccine and exposure protected
-R,78,2,1,2023,11,3,32,Vaccine and exposure protected
-R,79,2,1,2023,7,2,28,Vaccine and exposure protected
-R,80,2,1,2023,4,2,18,Vaccine and exposure protected
-R,81,2,1,2023,4,0,13,Vaccine and exposure protected
-R,82,2,1,2023,2,0,7,Vaccine and exposure protected
-R,83,2,1,2023,1,0,6,Vaccine and exposure protected
-R,84,2,1,2023,1,0,3,Vaccine and exposure protected
-R,85,2,1,2023,1,0,2,Vaccine and exposure protected
-R,86,2,1,2023,0,0,2,Vaccine and exposure protected
-R,87,2,1,2023,0,0,1,Vaccine and exposure protected
-R,88,2,1,2023,0,0,0,Vaccine and exposure protected
-R,89,2,1,2023,0,0,0,Vaccine and exposure protected
-R,90,2,1,2023,0,0,0,Vaccine and exposure protected
-R,91,2,1,2023,0,0,0,Vaccine and exposure protected
+R,14,2,1,2023,0,0,1,Vaccine and exposure protected
+R,15,2,1,2023,0,0,3,Vaccine and exposure protected
+R,16,2,1,2023,1,0,6,Vaccine and exposure protected
+R,17,2,1,2023,4,0,9,Vaccine and exposure protected
+R,18,2,1,2023,7,1,13,Vaccine and exposure protected
+R,19,2,1,2023,15,5,30,Vaccine and exposure protected
+R,20,2,1,2023,22,13,43,Vaccine and exposure protected
+R,21,2,1,2023,42,22,70,Vaccine and exposure protected
+R,22,2,1,2023,56.5,37,79,Vaccine and exposure protected
+R,23,2,1,2023,76,56,96,Vaccine and exposure protected
+R,24,2,1,2023,105,78,139,Vaccine and exposure protected
+R,25,2,1,2023,146,115,187,Vaccine and exposure protected
+R,26,2,1,2023,217.5,168,267,Vaccine and exposure protected
+R,27,2,1,2023,297,247,375,Vaccine and exposure protected
+R,28,2,1,2023,406,321,453,Vaccine and exposure protected
+R,29,2,1,2023,482,406,572,Vaccine and exposure protected
+R,30,2,1,2023,578.5,493,652,Vaccine and exposure protected
+R,31,2,1,2023,715.5,591,781,Vaccine and exposure protected
+R,32,2,1,2023,798,716,929,Vaccine and exposure protected
+R,33,2,1,2023,937.5,777,1042,Vaccine and exposure protected
+R,34,2,1,2023,1062,869,1221,Vaccine and exposure protected
+R,35,2,1,2023,1243,1062,1377,Vaccine and exposure protected
+R,36,2,1,2023,1378,1182,1511,Vaccine and exposure protected
+R,37,2,1,2023,1522.5,1375,1758,Vaccine and exposure protected
+R,38,2,1,2023,1664,1551,1931,Vaccine and exposure protected
+R,39,2,1,2023,1761.5,1590,2103,Vaccine and exposure protected
+R,40,2,1,2023,1836,1691,2179,Vaccine and exposure protected
+R,41,2,1,2023,1991.5,1807,2343,Vaccine and exposure protected
+R,42,2,1,2023,2054,1924,2453,Vaccine and exposure protected
+R,43,2,1,2023,2146,2029,2517,Vaccine and exposure protected
+R,44,2,1,2023,2186.5,2055,2436,Vaccine and exposure protected
+R,45,2,1,2023,2265.5,2149,2408,Vaccine and exposure protected
+R,46,2,1,2023,2330.5,2274,2430,Vaccine and exposure protected
+R,47,2,1,2023,2383.5,2237,2520,Vaccine and exposure protected
+R,48,2,1,2023,2326,2260,2465,Vaccine and exposure protected
+R,49,2,1,2023,2268,2188,2341,Vaccine and exposure protected
+R,50,2,1,2023,2207,2109,2273,Vaccine and exposure protected
+R,51,2,1,2023,2095.5,1921,2250,Vaccine and exposure protected
+R,52,2,1,2023,1958,1835,2095,Vaccine and exposure protected
+R,53,2,1,2023,1850.5,1753,1952,Vaccine and exposure protected
+R,54,2,1,2023,1711,1542,1790,Vaccine and exposure protected
+R,55,2,1,2023,1527,1398,1659,Vaccine and exposure protected
+R,56,2,1,2023,1396,1285,1475,Vaccine and exposure protected
+R,57,2,1,2023,1244,1149,1349,Vaccine and exposure protected
+R,58,2,1,2023,1104,1008,1233,Vaccine and exposure protected
+R,59,2,1,2023,963.5,822,1095,Vaccine and exposure protected
+R,60,2,1,2023,817,675,923,Vaccine and exposure protected
+R,61,2,1,2023,685,560,808,Vaccine and exposure protected
+R,62,2,1,2023,565,463,657,Vaccine and exposure protected
+R,63,2,1,2023,485.5,328,559,Vaccine and exposure protected
+R,64,2,1,2023,421,247,495,Vaccine and exposure protected
+R,65,2,1,2023,320.5,223,401,Vaccine and exposure protected
+R,66,2,1,2023,243,168,307,Vaccine and exposure protected
+R,67,2,1,2023,186.5,135,268,Vaccine and exposure protected
+R,68,2,1,2023,146,110,208,Vaccine and exposure protected
+R,69,2,1,2023,109,87,182,Vaccine and exposure protected
+R,70,2,1,2023,94,59,118,Vaccine and exposure protected
+R,71,2,1,2023,73,42,98,Vaccine and exposure protected
+R,72,2,1,2023,53.5,29,91,Vaccine and exposure protected
+R,73,2,1,2023,37,16,64,Vaccine and exposure protected
+R,74,2,1,2023,26,16,41,Vaccine and exposure protected
+R,75,2,1,2023,21,12,32,Vaccine and exposure protected
+R,76,2,1,2023,16,8,27,Vaccine and exposure protected
+R,77,2,1,2023,9,2,21,Vaccine and exposure protected
+R,78,2,1,2023,8,1,13,Vaccine and exposure protected
+R,79,2,1,2023,5,1,14,Vaccine and exposure protected
+R,80,2,1,2023,5,0,21,Vaccine and exposure protected
+R,81,2,1,2023,3.5,1,14,Vaccine and exposure protected
+R,82,2,1,2023,4,0,12,Vaccine and exposure protected
+R,83,2,1,2023,3,0,10,Vaccine and exposure protected
+R,84,2,1,2023,3,0,12,Vaccine and exposure protected
+R,85,2,1,2023,2,0,6,Vaccine and exposure protected
+R,86,2,1,2023,1,0,7,Vaccine and exposure protected
+R,87,2,1,2023,1,0,9,Vaccine and exposure protected
+R,88,2,1,2023,1,0,3,Vaccine and exposure protected
+R,89,2,1,2023,1,0,5,Vaccine and exposure protected
+R,90,2,1,2023,0,0,2,Vaccine and exposure protected
+R,91,2,1,2023,0,0,1,Vaccine and exposure protected
 R,92,2,1,2023,0,0,0,Vaccine and exposure protected
 R,93,2,1,2023,0,0,0,Vaccine and exposure protected
 R,94,2,1,2023,0,0,0,Vaccine and exposure protected
@@ -1125,78 +1125,78 @@ R,12,3,1,2023,0,0,0,Vaccine and exposure protected
 R,13,3,1,2023,0,0,0,Vaccine and exposure protected
 R,14,3,1,2023,0,0,0,Vaccine and exposure protected
 R,15,3,1,2023,0,0,0,Vaccine and exposure protected
-R,16,3,1,2023,0,0,4,Vaccine and exposure protected
-R,17,3,1,2023,0,0,12,Vaccine and exposure protected
-R,18,3,1,2023,1.5,0,10,Vaccine and exposure protected
-R,19,3,1,2023,5,0,16,Vaccine and exposure protected
-R,20,3,1,2023,9,5,20,Vaccine and exposure protected
-R,21,3,1,2023,14,7,22,Vaccine and exposure protected
-R,22,3,1,2023,23,12,39,Vaccine and exposure protected
-R,23,3,1,2023,37,16,57,Vaccine and exposure protected
-R,24,3,1,2023,58,24,79,Vaccine and exposure protected
-R,25,3,1,2023,90,54,122,Vaccine and exposure protected
-R,26,3,1,2023,113,79,153,Vaccine and exposure protected
-R,27,3,1,2023,154,109,219,Vaccine and exposure protected
-R,28,3,1,2023,196,147,263,Vaccine and exposure protected
-R,29,3,1,2023,238,175,314,Vaccine and exposure protected
-R,30,3,1,2023,300,207,390,Vaccine and exposure protected
-R,31,3,1,2023,362,260,431,Vaccine and exposure protected
-R,32,3,1,2023,401,335,487,Vaccine and exposure protected
-R,33,3,1,2023,471.5,406,530,Vaccine and exposure protected
-R,34,3,1,2023,532.5,487,605,Vaccine and exposure protected
-R,35,3,1,2023,592,504,730,Vaccine and exposure protected
-R,36,3,1,2023,630,553,706,Vaccine and exposure protected
-R,37,3,1,2023,667,611,737,Vaccine and exposure protected
-R,38,3,1,2023,727.5,602,803,Vaccine and exposure protected
-R,39,3,1,2023,769.5,614,875,Vaccine and exposure protected
-R,40,3,1,2023,804,656,896,Vaccine and exposure protected
-R,41,3,1,2023,806.5,668,895,Vaccine and exposure protected
-R,42,3,1,2023,810.5,720,889,Vaccine and exposure protected
-R,43,3,1,2023,839,716,911,Vaccine and exposure protected
-R,44,3,1,2023,841,671,902,Vaccine and exposure protected
-R,45,3,1,2023,837,720,887,Vaccine and exposure protected
-R,46,3,1,2023,844,761,916,Vaccine and exposure protected
-R,47,3,1,2023,842.5,793,886,Vaccine and exposure protected
-R,48,3,1,2023,812.5,747,857,Vaccine and exposure protected
-R,49,3,1,2023,768.5,705,838,Vaccine and exposure protected
-R,50,3,1,2023,725,671,810,Vaccine and exposure protected
-R,51,3,1,2023,677,614,746,Vaccine and exposure protected
-R,52,3,1,2023,620,575,669,Vaccine and exposure protected
-R,53,3,1,2023,586,496,612,Vaccine and exposure protected
-R,54,3,1,2023,537,515,573,Vaccine and exposure protected
-R,55,3,1,2023,491,428,515,Vaccine and exposure protected
-R,56,3,1,2023,421,368,467,Vaccine and exposure protected
-R,57,3,1,2023,377,303,431,Vaccine and exposure protected
-R,58,3,1,2023,331,285,360,Vaccine and exposure protected
-R,59,3,1,2023,267,240,329,Vaccine and exposure protected
-R,60,3,1,2023,229,197,269,Vaccine and exposure protected
-R,61,3,1,2023,195,165,234,Vaccine and exposure protected
-R,62,3,1,2023,156,139,190,Vaccine and exposure protected
-R,63,3,1,2023,130,98,161,Vaccine and exposure protected
-R,64,3,1,2023,109,82,135,Vaccine and exposure protected
-R,65,3,1,2023,88,67,108,Vaccine and exposure protected
-R,66,3,1,2023,69,58,98,Vaccine and exposure protected
-R,67,3,1,2023,57,38,73,Vaccine and exposure protected
-R,68,3,1,2023,43,25,56,Vaccine and exposure protected
-R,69,3,1,2023,33,22,61,Vaccine and exposure protected
-R,70,3,1,2023,26,9,44,Vaccine and exposure protected
-R,71,3,1,2023,16,5,40,Vaccine and exposure protected
-R,72,3,1,2023,9,5,32,Vaccine and exposure protected
-R,73,3,1,2023,7,4,19,Vaccine and exposure protected
-R,74,3,1,2023,4,1,9,Vaccine and exposure protected
-R,75,3,1,2023,2,0,10,Vaccine and exposure protected
-R,76,3,1,2023,2,0,9,Vaccine and exposure protected
-R,77,3,1,2023,2,0,11,Vaccine and exposure protected
-R,78,3,1,2023,1,0,9,Vaccine and exposure protected
-R,79,3,1,2023,0,0,6,Vaccine and exposure protected
-R,80,3,1,2023,0,0,4,Vaccine and exposure protected
-R,81,3,1,2023,0,0,5,Vaccine and exposure protected
-R,82,3,1,2023,0,0,5,Vaccine and exposure protected
-R,83,3,1,2023,0,0,7,Vaccine and exposure protected
-R,84,3,1,2023,0,0,4,Vaccine and exposure protected
-R,85,3,1,2023,0,0,2,Vaccine and exposure protected
-R,86,3,1,2023,0,0,2,Vaccine and exposure protected
-R,87,3,1,2023,0,0,0,Vaccine and exposure protected
+R,16,3,1,2023,0,0,2,Vaccine and exposure protected
+R,17,3,1,2023,1,0,5,Vaccine and exposure protected
+R,18,3,1,2023,5,1,9,Vaccine and exposure protected
+R,19,3,1,2023,7,4,15,Vaccine and exposure protected
+R,20,3,1,2023,15,4,24,Vaccine and exposure protected
+R,21,3,1,2023,23,9,33,Vaccine and exposure protected
+R,22,3,1,2023,31,15,43,Vaccine and exposure protected
+R,23,3,1,2023,48,30,63,Vaccine and exposure protected
+R,24,3,1,2023,63,42,86,Vaccine and exposure protected
+R,25,3,1,2023,85,50,106,Vaccine and exposure protected
+R,26,3,1,2023,111,82,147,Vaccine and exposure protected
+R,27,3,1,2023,141.5,119,197,Vaccine and exposure protected
+R,28,3,1,2023,195,124,258,Vaccine and exposure protected
+R,29,3,1,2023,244.5,182,291,Vaccine and exposure protected
+R,30,3,1,2023,302.5,221,360,Vaccine and exposure protected
+R,31,3,1,2023,355,283,420,Vaccine and exposure protected
+R,32,3,1,2023,390,331,513,Vaccine and exposure protected
+R,33,3,1,2023,455,355,573,Vaccine and exposure protected
+R,34,3,1,2023,512,440,588,Vaccine and exposure protected
+R,35,3,1,2023,561.5,459,656,Vaccine and exposure protected
+R,36,3,1,2023,610.5,524,757,Vaccine and exposure protected
+R,37,3,1,2023,624,554,831,Vaccine and exposure protected
+R,38,3,1,2023,650,567,844,Vaccine and exposure protected
+R,39,3,1,2023,726,598,838,Vaccine and exposure protected
+R,40,3,1,2023,780,637,888,Vaccine and exposure protected
+R,41,3,1,2023,792,697,980,Vaccine and exposure protected
+R,42,3,1,2023,795,745,995,Vaccine and exposure protected
+R,43,3,1,2023,817,729,1052,Vaccine and exposure protected
+R,44,3,1,2023,869,759,1027,Vaccine and exposure protected
+R,45,3,1,2023,848,730,1031,Vaccine and exposure protected
+R,46,3,1,2023,859,769,1101,Vaccine and exposure protected
+R,47,3,1,2023,843.5,743,1014,Vaccine and exposure protected
+R,48,3,1,2023,817.5,742,932,Vaccine and exposure protected
+R,49,3,1,2023,762,717,840,Vaccine and exposure protected
+R,50,3,1,2023,723.5,647,810,Vaccine and exposure protected
+R,51,3,1,2023,680.5,599,752,Vaccine and exposure protected
+R,52,3,1,2023,624.5,551,710,Vaccine and exposure protected
+R,53,3,1,2023,580.5,505,655,Vaccine and exposure protected
+R,54,3,1,2023,534.5,474,638,Vaccine and exposure protected
+R,55,3,1,2023,500,463,534,Vaccine and exposure protected
+R,56,3,1,2023,453.5,404,475,Vaccine and exposure protected
+R,57,3,1,2023,387,330,450,Vaccine and exposure protected
+R,58,3,1,2023,340.5,301,421,Vaccine and exposure protected
+R,59,3,1,2023,303,262,340,Vaccine and exposure protected
+R,60,3,1,2023,251,218,280,Vaccine and exposure protected
+R,61,3,1,2023,211,162,261,Vaccine and exposure protected
+R,62,3,1,2023,182,127,217,Vaccine and exposure protected
+R,63,3,1,2023,153,82,182,Vaccine and exposure protected
+R,64,3,1,2023,115,72,172,Vaccine and exposure protected
+R,65,3,1,2023,86,53,151,Vaccine and exposure protected
+R,66,3,1,2023,61.5,34,118,Vaccine and exposure protected
+R,67,3,1,2023,43,33,76,Vaccine and exposure protected
+R,68,3,1,2023,38.5,16,64,Vaccine and exposure protected
+R,69,3,1,2023,32,17,48,Vaccine and exposure protected
+R,70,3,1,2023,27.5,10,47,Vaccine and exposure protected
+R,71,3,1,2023,18,5,35,Vaccine and exposure protected
+R,72,3,1,2023,11,3,28,Vaccine and exposure protected
+R,73,3,1,2023,7,1,22,Vaccine and exposure protected
+R,74,3,1,2023,3,0,15,Vaccine and exposure protected
+R,75,3,1,2023,4,0,12,Vaccine and exposure protected
+R,76,3,1,2023,2,0,14,Vaccine and exposure protected
+R,77,3,1,2023,3,0,15,Vaccine and exposure protected
+R,78,3,1,2023,2,0,9,Vaccine and exposure protected
+R,79,3,1,2023,1,0,3,Vaccine and exposure protected
+R,80,3,1,2023,0,0,7,Vaccine and exposure protected
+R,81,3,1,2023,0,0,9,Vaccine and exposure protected
+R,82,3,1,2023,0,0,10,Vaccine and exposure protected
+R,83,3,1,2023,0,0,11,Vaccine and exposure protected
+R,84,3,1,2023,0,0,3,Vaccine and exposure protected
+R,85,3,1,2023,0,0,1,Vaccine and exposure protected
+R,86,3,1,2023,0,0,1,Vaccine and exposure protected
+R,87,3,1,2023,0,0,2,Vaccine and exposure protected
 R,88,3,1,2023,0,0,0,Vaccine and exposure protected
 R,89,3,1,2023,0,0,0,Vaccine and exposure protected
 R,90,3,1,2023,0,0,0,Vaccine and exposure protected

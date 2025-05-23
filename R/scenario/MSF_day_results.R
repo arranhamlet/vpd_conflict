@@ -24,7 +24,7 @@ invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recur
 
 #Countries of interest
 # countries_interest <- c("SDN", "MMR", "PNG", "AFG", "VEN", "HTI", "GTM", "TCD", "DRC", "SOM", "BFA", "GBR")
-countries_interest <- c("GBR")
+countries_interest <- c("PSE")
 
 #Load WHO disease data
 cases_of_interest <- import("data/processed/WHO/reported_cases_data.csv") %>%
@@ -82,7 +82,6 @@ double_run <- sapply(countries_interest, function(y){
   
 })
 
-
 #Load and process
 full <- sapply(list.files("output/model_run/MSF", pattern = "full.csv", full.names = T), function(x){
   
@@ -123,7 +122,7 @@ full_cases <- Reduce(rbind, sapply(full, function(x) x[[2]], simplify = FALSE))
 
 ggplot(
   data = full_cases %>% 
-    subset(disease == "diphtheria" & iso == "SDN" & year > 1960 & year < 1981),
+    subset(disease == "diphtheria" & iso == "PSE" & year > 1960 & year < 1981),
   mapping = aes(
     x = year,
     y = value,
