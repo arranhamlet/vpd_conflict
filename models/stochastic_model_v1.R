@@ -64,30 +64,6 @@ recovered_from_Is[, , ] <- if(Is_after_aging[i, j, k] <= 0) 0 else Binomial(Is_a
 recovered_Is_to_R[, , ] <- if(recovered_from_Is[i, j, k] <= 0) 0 else Binomial(recovered_from_Is[i, j, k], max(min(1 - prop_complications[i], 1), 0))
 recovered_Is_to_Rc[, , ] <- max(recovered_from_Is[i, j, k] - recovered_Is_to_R[i, j, k], 0)
 
-# dim(total_S_in) <- c(n_age, n_vacc, n_risk)
-# dim(total_S_out) <- c(n_age, n_vacc, n_risk)
-# dim(S_left) <- c(n_age, n_vacc, n_risk)
-# 
-# dim(total_E_in) <- c(n_age, n_vacc, n_risk)
-# dim(total_E_out) <- c(n_age, n_vacc, n_risk)
-# dim(E_left) <- c(n_age, n_vacc, n_risk)
-# 
-# dim(total_I_in) <- c(n_age, n_vacc, n_risk)
-# dim(total_I_out) <- c(n_age, n_vacc, n_risk)
-# dim(I_left) <- c(n_age, n_vacc, n_risk)
-# 
-# dim(total_Is_in) <- c(n_age, n_vacc, n_risk)
-# dim(total_Is_out) <- c(n_age, n_vacc, n_risk)
-# dim(Is_left) <- c(n_age, n_vacc, n_risk)
-# 
-# dim(total_R_in) <- c(n_age, n_vacc, n_risk)
-# dim(total_R_out) <- c(n_age, n_vacc, n_risk)
-# dim(R_left) <- c(n_age, n_vacc, n_risk)
-# 
-# dim(total_Rc_in) <- c(n_age, n_vacc, n_risk)
-# dim(total_Rc_out) <- c(n_age, n_vacc, n_risk)
-# dim(Rc_left) <- c(n_age, n_vacc, n_risk)
-
 # STEP 1: AGING - Apply aging
 # For S compartment
 aging_into_S[1, 1, ] <- Births[k]
