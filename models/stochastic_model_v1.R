@@ -34,38 +34,35 @@ update(total_pop) <- N
 
 #Death
 # Susceptible deaths
-S_available[, , ] <- S_after_waning[i, j, k] +
-  moving_risk_to_S[i, j, k] - moving_risk_from_S[i, j, k] +
-  migration_S[i, j, k] * pos_neg_migration - aging_out_of_S[i, j, k]
+S_available[, , ] <- S_after_moving_risk[i, j, k] + migration_occuring_S[i, j, k] * pos_neg_migration
 dim(S_available) <- c(n_age, n_vacc, n_risk)
 
-E_available[, , ] <- E_after_waning[i, j, k] +
-  moving_risk_to_E[i, j, k] - moving_risk_from_E[i, j, k] +
-  migration_E[i, j, k] * pos_neg_migration - aging_out_of_E[i, j, k]
+E_available[, , ] <- E_after_moving_risk[i, j, k] +
+  migration_E[i, j, k] * pos_neg_migration
 dim(E_available) <- c(n_age, n_vacc, n_risk)
 
-I_available[, , ] <- I_after_waning[i, j, k] +
-  moving_risk_to_I[i, j, k] - moving_risk_from_I[i, j, k] +
-  migration_I[i, j, k] * pos_neg_migration + t_seeded[i, j, k] - aging_out_of_I[i, j, k]
+I_available[, , ] <- I_after_moving_risk[i, j, k] +
+  migration_I[i, j, k] * pos_neg_migration
 dim(I_available) <- c(n_age, n_vacc, n_risk)
 
-Is_available[, , ] <- Is_after_waning[i, j, k] +
-  moving_risk_to_Is[i, j, k] - moving_risk_from_Is[i, j, k] +
-  migration_Is[i, j, k] * pos_neg_migration - aging_out_of_Is[i, j, k]
-dim(Is_available) <- c(n_age, n_vacc, n_risk)
-
-R_available[, , ] <- R_after_waning[i, j, k] +
-  moving_risk_to_R[i, j, k] - moving_risk_from_R[i, j, k] +
-  migration_R[i, j, k] * pos_neg_migration - aging_out_of_R[i, j, k]
+R_available[, , ] <- R_after_moving_risk[i, j, k] +
+  migration_R[i, j, k] * pos_neg_migration
 dim(R_available) <- c(n_age, n_vacc, n_risk)
 
-Rc_available[, , ] <- Rc_after_waning[i, j, k] +
-  moving_risk_to_Rc[i, j, k] - moving_risk_from_Rc[i, j, k] +
-  migration_Rc[i, j, k] * pos_neg_migration - aging_out_of_Rc[i, j, k]
+Rc_available[, , ] <- Rc_after_moving_risk[i, j, k] +
+  migration_Rc[i, j, k] * pos_neg_migration
 dim(Rc_available) <- c(n_age, n_vacc, n_risk)
+
+Is_available[, , ] <- Is_after_moving_risk[i, j, k] +
+  migration_Is[i, j, k] * pos_neg_migration
+dim(Is_available) <- c(n_age, n_vacc, n_risk)
 
 # Update stochastic processes using aligned compartments
 lambda_S[, , ] <- if(S_available[i, j, k] <= 0) 0 else Binomial(S_available[i, j, k], max(min(lambda[i, j, k], 1), 0))
+
+update(lambda_So) <- sum(lambda_S)
+initial(lambda_So) <- 0
+
 incubated[, , ] <- if(E_available[i, j, k] <= 0) 0 else Binomial(E_available[i, j, k], max(min(incubation_rate, 1), 0))
 recovered_I_to_R[, , ] <- if(I_available[i, j, k] <= 0) 0 else Binomial(I_available[i, j, k], max(min(recovery_rate, 1), 0))
 recovered_from_Is[, , ] <- if(Is_available[i, j, k] <= 0) 0 else Binomial(Is_available[i, j, k], max(min(severe_recovery_rate, 1), 0))
@@ -205,12 +202,25 @@ Rc_after_waning[, , ] <- Rc_after_vaccination[i, j, k] + waning_to_Rc_long[i, j,
 
 # STEP 4: RISK - Apply risk to the results after waning
 # Moving FROM each compartment - now using the population after previous transitions
-moving_risk_from_S[, , ] <- if(S_after_aging[i, j, k] <= 0) 0 else Binomial(S_after_aging[i, j, k], max(min(moving_risk_prop[i, j, k], 1), 0))
-moving_risk_from_E[, , ] <- if(E_after_aging[i, j, k] <= 0) 0 else Binomial(E_after_aging[i, j, k], max(min(moving_risk_prop[i, j, k], 1), 0))
-moving_risk_from_I[, , ] <- if(I_after_aging[i, j, k] <= 0) 0 else Binomial(I_after_aging[i, j, k], max(min(moving_risk_prop[i, j, k], 1), 0))
-moving_risk_from_R[, , ] <- if(R_after_aging[i, j, k] <= 0) 0 else Binomial(R_after_aging[i, j, k], max(min(moving_risk_prop[i, j, k], 1), 0))
-moving_risk_from_Is[, , ] <- if(Is_after_aging[i, j, k] <= 0) 0 else Binomial(Is_after_aging[i, j, k], max(min(moving_risk_prop[i, j, k], 1), 0))
-moving_risk_from_Rc[, , ] <- if(Rc_after_aging[i, j, k] <= 0) 0 else Binomial(Rc_after_aging[i, j, k], max(min(moving_risk_prop[i, j, k], 1), 0))
+moving_risk_from_S[, , ] <- if(S_after_waning[i, j, k] <= 0) 0 else Binomial(S_after_waning[i, j, k], max(min(moving_risk_prop[i, j, k], 1), 0))
+moving_risk_from_E[, , ] <- if(E_after_waning[i, j, k] <= 0) 0 else Binomial(E_after_waning[i, j, k], max(min(moving_risk_prop[i, j, k], 1), 0))
+moving_risk_from_I[, , ] <- if(I_after_waning[i, j, k] <= 0) 0 else Binomial(I_after_waning[i, j, k], max(min(moving_risk_prop[i, j, k], 1), 0))
+moving_risk_from_R[, , ] <- if(R_after_waning[i, j, k] <= 0) 0 else Binomial(R_after_waning[i, j, k], max(min(moving_risk_prop[i, j, k], 1), 0))
+moving_risk_from_Is[, , ] <- if(Is_after_waning[i, j, k] <= 0) 0 else Binomial(Is_after_waning[i, j, k], max(min(moving_risk_prop[i, j, k], 1), 0))
+moving_risk_from_Rc[, , ] <- if(Rc_after_waning[i, j, k] <= 0) 0 else Binomial(Rc_after_waning[i, j, k], max(min(moving_risk_prop[i, j, k], 1), 0))
+
+S_after_moving_risk[, , ] <- S_after_waning[i, j, k] - moving_risk_from_S[i, j, k]
+E_after_moving_risk[, , ] <- E_after_waning[i, j, k] - moving_risk_from_E[i, j, k]
+I_after_moving_risk[, , ] <- I_after_waning[i, j, k] - moving_risk_from_I[i, j, k]
+R_after_moving_risk[, , ] <- R_after_waning[i, j, k] - moving_risk_from_R[i, j, k]
+Is_after_moving_risk[, , ] <- Is_after_waning[i, j, k] - moving_risk_from_Is[i, j, k]
+Rc_after_moving_risk[, , ] <- Rc_after_waning[i, j, k] - moving_risk_from_Rc[i, j, k]
+dim(S_after_moving_risk) <- c(n_age, n_vacc, n_risk)
+dim(E_after_moving_risk) <- c(n_age, n_vacc, n_risk)
+dim(I_after_moving_risk) <- c(n_age, n_vacc, n_risk)
+dim(R_after_moving_risk) <- c(n_age, n_vacc, n_risk)
+dim(Is_after_moving_risk) <- c(n_age, n_vacc, n_risk)
+dim(Rc_after_moving_risk) <- c(n_age, n_vacc, n_risk)
 
 # Moving INTO each compartment with specified distribution
 moving_risk_to_S[, , ] <- if(sum(moving_risk_distribution[i, j, ]) <= 0) moving_risk_from_S[i, j, k] else sum(moving_risk_from_S[i, j, ]) * moving_risk_distribution[i, j, k]/sum(moving_risk_distribution[i, j, ])
@@ -371,69 +381,25 @@ beta[, , ] <- if(infectious_period[i, j, k] <= 0) 0 else t_R0 / infectious_perio
 
 #Update with vaccination and age mediation
 beta_updated[, , ] <- if(i <= age_maternal_protection_ends) beta[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k]) * (1 - (protection_weight_vacc * prop_maternal_vaccinated[k] + protection_weight_rec * prop_maternal_natural[k])) else (1 - age_vaccination_beta_modifier[i, j, k]) * beta[i, j, k]
-# 
-# # # Step 1: Infectious contribution by age
-# inf_weighted[, , ] <- beta_updated[i, j, k] * (I[i, j, k] + Is[i, j, k])
-# dim(inf_weighted) <- c(n_age, n_vacc, n_risk)
-# 
-# infectious_source[] <- sum(inf_weighted[i, , ])
-# dim(infectious_source) <- n_age
-# 
-# # Step 2: Age-specific contact-weighted force of infection
-# lambda_contact[, ] <- contact_matrix[i, j] * infectious_source[j]
-# dim(lambda_contact) <- c(n_age, n_age)
-# 
-# denom[] <- sum(I[i, , ]) + sum(Is[i, , ])
-# dim(denom) <- n_age
-# 
-# lambda_raw[] <- if(denom[i] <= 0) 0 else sum(lambda_contact[i, ]) / denom[i]
-# dim(lambda_raw) <- n_age
-# 
-# lambda[, , ] <- if(N <= 0) 0 else max(0, lambda_raw[i]) * (1 - age_vaccination_beta_modifier[i, j, k])
-# dim(lambda) <- c(n_age, n_vacc, n_risk)
-# 
-
-
-#Update with vaccination and age mediation
-
-beta_updated[, , ] <- if(i <= age_maternal_protection_ends) beta[i, j, k] * (1 - age_vaccination_beta_modifier[i, j, k]) * (1 - (protection_weight_vacc * prop_maternal_vaccinated[k] + protection_weight_rec * prop_maternal_natural[k])) else (1 - age_vaccination_beta_modifier[i, j, k]) * beta[i, j, k]
-
-
 
 # Step 1: Infectious contribution by age
-
-inf_weighted[, , ] <- beta_updated[i, j, k] * (I[i, j, k] + Is[i, j, k])
-
+inf_weighted[, , ] <- beta_updated[i, j, k] * (I_available[i, j, k] + Is_available[i, j, k])
 dim(inf_weighted) <- c(n_age, n_vacc, n_risk)
 
-
-
 infectious_source[] <- sum(inf_weighted[i, , ])
-
 dim(infectious_source) <- n_age
 
-
-
 # Step 2: Age-specific contact-weighted force of infection
-
 lambda_contact[, ] <- contact_matrix[i, j] * infectious_source[j]
-
 dim(lambda_contact) <- c(n_age, n_age)
 
-
-
 lambda_raw[] <- if(Npop_age[i] <= 0) 0 else sum(lambda_contact[i, ]) / Npop_age[i]
-
 dim(lambda_raw) <- n_age
-
-
 
 lambda[, , ] <- if(N <= 0) 0 else max(0, lambda_raw[i]) * (1 - age_vaccination_beta_modifier[i, j, k])
 
-
-
 # Calculate next-generation matrix elements
-ngm_unfolded[, , , ] <- S[i, k, l] * beta_updated[i, k, l] * infectious_period[i, k, l] * contact_matrix[i, j]
+ngm_unfolded[, , , ] <- S_available[i, k, l] * beta_updated[i, k, l] * infectious_period[i, k, l] * contact_matrix[i, j]
 dim(ngm_unfolded) <- c(n_age, n_age, n_vacc, n_risk)
 
 ngm[] <- if(Npop_age[i] <= 0) 0 else sum(ngm_unfolded[i, , , ])/Npop_age[i]
@@ -453,7 +419,8 @@ t_seeded <- interpolate(tt_seeded, seeded, "constant")
 #Calculate populations
 N <- sum(S) + sum(E) + sum(I) + sum(R) + sum(Is) + sum(Rc)
 Npop_age_risk[, ] <- sum(S[i, , j]) + sum(E[i, , j]) + sum(I[i, , j]) + sum(R[i, , j]) + sum(Is[i, , j]) + sum(Rc[i, , j])
-Npop_age[] <- sum(S[i, , ]) + sum(E[i, , ]) + sum(I[i, , ]) + sum(R[i, , ]) + sum(Is[i, , ]) + sum(Rc[i, , ])
+Npop_age[] <- sum(S_available[i, , ]) + sum(E_available[i, , ]) + sum(I_available[i, , ]) + sum(R_available[i, , ]) + sum(Is_available[i, , ]) + sum(Rc_available[i, , ])
+
 dim(Npop_age) <- n_age
 
 #Calculate death rates
