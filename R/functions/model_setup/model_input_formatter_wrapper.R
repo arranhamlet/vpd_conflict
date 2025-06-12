@@ -19,10 +19,6 @@
 #' @param n_age Number of age groups in the model.
 #' @param n_vacc Number of vaccination groups in the model.
 #' @param n_risk Number of risk groups in the model.
-#' @param population_modifier A scalar to multiply all population values (default: 1).
-#' @param fertility_modifier A scalar to multiply fertility rates (default: 1).
-#' @param death_modifier A scalar to multiply death rates (currently unused, default: 1).
-#' @param migration_modifier A scalar to multiply migration rates (default: 1).
 #'
 #' @return A named list containing:
 #' \describe{
@@ -60,11 +56,7 @@ model_input_formatter_wrapper <- function(
   year_end = "",
   n_age = 1,
   number_of_vaccines = 1,
-  n_risk = 1,
-  population_modifier = 1, 
-  fertility_modifier = 1, 
-  death_modifier = 1,
-  migration_modifier = 1
+  n_risk = 1
 ) {
   
   # Step 1: Calculate demographics
@@ -80,10 +72,6 @@ model_input_formatter_wrapper <- function(
     n_age = n_age,
     number_of_vaccines = number_of_vaccines,
     n_risk = n_risk,
-    population_modifier = population_modifier, 
-    fertility_modifier = fertility_modifier, 
-    death_modifier = death_modifier,
-    migration_modifier = migration_modifier,
     contact_matricies = contact_matricies
   )
   
@@ -110,13 +98,7 @@ model_input_formatter_wrapper <- function(
     iso = demographic_data_calculated$input_data$iso,
     year_start = demographic_data_calculated$input_data$year_start,
     year_end = demographic_data_calculated$input_data$year_end
-  ) %>%
-    mutate(dose_order = case_when(
-      grepl("4th", antigen_description) ~ 4,
-      grepl("5th", antigen_description) ~ 5,
-      grepl("6th", antigen_description) ~ 6,
-      TRUE ~ dose_order
-    ))
+  )
   
   # Step 4: Process supplemental immunization activities
   processed_vaccination_sia <- process_vaccination_sia(
@@ -127,28 +109,13 @@ model_input_formatter_wrapper <- function(
     year_end = demographic_data_calculated$input_data$year_end
   )
 
-  # Step 5: Generate plots
-  case_vaccination_plots <- plot_case_vaccination_routine(
-    case_data = processed_disease,
-    vaccination_data = processed_vaccination
-  )
-  
-  demographic_plots <- plot_demographic_data(
-    demographic_data = demographic_data_calculated
-  )
-  
-  plotting <- patchwork::wrap_elements(case_vaccination_plots) /
-    patchwork::wrap_elements(demographic_plots) +
-    patchwork::plot_layout(heights = c(1.5, 2))
-  
-  # Step 6: Return formatted objects
+  # Step 5: Return formatted objects
   find_maximum_year <- max(c(demographic_data_calculated$year, processed_disease$year, processed_vaccination$year))
   
   list(
     processed_demographic_data = demographic_data_calculated,
     processed_case_data = processed_disease,
     processed_vaccination_data = processed_vaccination,
-    processed_vaccination_sia = processed_vaccination_sia,
-    demographic_plots = plotting
+    processed_vaccination_sia = processed_vaccination_sia
   )
 }

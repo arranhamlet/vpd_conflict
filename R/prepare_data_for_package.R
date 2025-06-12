@@ -4,8 +4,8 @@ if(!require("pacman")) install.packages("pacman")
 
 #Load packages
 pacman::p_load(
-  feather,
   rio,
+  usethis,
   here,
   tidyverse
 )
@@ -51,6 +51,6 @@ write_rds(vaccination_pre1980, "output/for_package/vaccination_pre1980.rds")
 write_rds(disease_parameters, "output/for_package/disease_parameters.rds")
 write_rds(vaccine_parameters, "output/for_package/vaccine_parameters.rds")
 
-
-
+usethis::use_data(migration %>%
+                    select(area, iso3, year, migration_rate_1000), overwrite = TRUE)
 

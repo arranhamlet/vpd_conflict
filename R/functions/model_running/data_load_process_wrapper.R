@@ -64,39 +64,68 @@ data_load_process_wrapper <- function(
     year_end = year_end
   )
   
-  #Set up pre-1980 vaccination
+  # -----------------------------------------------
+  # Estimate Pre-1980 Vaccination Coverage
+  # -----------------------------------------------
+  
+  # Filter relevant row from historical pre-1980 vaccination assumptions
   vac_pre1980_sub <- vaccination_pre1980 %>%
     rownames_to_column() %>%
-    group_by(rowname) %>%
     clean_names() %>%
-    mutate(income_group = paste(c(sapply(unlist(strsplit(income_group, " |-")), function(x) substring(x, 1, 1)), "C"), collapse = "")) %>%
+    group_by(rowname) %>%
+    mutate(
+      income_group = paste0(
+        paste0(sapply(unlist(strsplit(income_group, " |-")), \(x) substr(x, 1, 1)), collapse = ""),
+        "C"
+      )
+    ) %>%
     rename(disease_n = disease) %>%
-    subset(tolower(disease_n) == disease & who_region == paste(c(get_WHO_region(iso3cs = iso), "O"), collapse = "") & income_group == as.character(get_income_group(iso)))
-
-  #First year
-  model_data_preprocessed$processed_vaccination_data <- model_data_preprocessed$processed_vaccination_data %>%
-    subset(!grepl("birth|neonatal|pregnant|maternal", antigen_description, ignore.case = T))
+    filter(
+      tolower(disease_n) == disease,
+      who_region == paste0(get_WHO_region(iso3cs = iso), "O"),
+      income_group == as.character(get_income_group(iso))
+    ) %>%
+    ungroup()
   
-  first_year_vac <- model_data_preprocessed$processed_vaccination_data %>% 
-    subset(year == min(year))
+  # -----------------------------------------------
+  # Remove special populations from routine data
+  # -----------------------------------------------
+  model_data_preprocessed$processed_vaccination_data <- model_data_preprocessed$processed_vaccination_data %>%
+    filter(!grepl("birth|neonatal|pregnant|maternal", antigen_description, ignore.case = TRUE))
+  
+  # -----------------------------------------------
+  # Get earliest year of coverage for routine vaccination
+  # -----------------------------------------------
+  first_year_vac <- model_data_preprocessed$processed_vaccination_data %>%
+    filter(year == min(year))
   
   year_diff <- min(first_year_vac$year) - vac_pre1980_sub$introduction_year
-  vac_prop <- sapply(first_year_vac$coverage, function(e) seq(vac_pre1980_sub$starting_coverage_percent, max(vac_pre1980_sub$starting_coverage_percent, e), length.out = 6), simplify = FALSE)
   
-  
-  #Add in this pre-1980 vaccination
-  pre_1980 <- Reduce(rbind, sapply(1:year_diff, function(x){
-    Reduce(rbind, sapply(1:nrow(first_year_vac), function(k){
-      here <- first_year_vac[k, ]
-      here$year <- vac_pre1980_sub$introduction_year + (x - 1)
-      here$coverage <- vac_prop[[k]][min(c(x, length(vac_prop[[k]])))]
-      here      
-    }, simplify = FALSE)
+  # Interpolate linear coverage ramp-up for pre-1980 period
+  vac_prop <- lapply(first_year_vac$coverage, function(e) {
+    seq(
+      from = vac_pre1980_sub$starting_coverage_percent,
+      to   = max(vac_pre1980_sub$starting_coverage_percent, e),
+      length.out = 6
     )
-  }, simplify = FALSE))
+  })
   
-  total_vac <- rbind(pre_1980,
-                     model_data_preprocessed$processed_vaccination_data)
+  # -----------------------------------------------
+  # Construct pre-1980 coverage rows
+  # -----------------------------------------------
+  pre_1980 <- do.call(rbind, lapply(seq_len(year_diff), function(x) {
+    do.call(rbind, lapply(seq_len(nrow(first_year_vac)), function(k) {
+      row <- first_year_vac[k, ]
+      row$year <- vac_pre1980_sub$introduction_year + (x - 1)
+      row$coverage <- vac_prop[[k]][min(x, length(vac_prop[[k]]))]
+      row
+    }))
+  }))
+  
+  # -----------------------------------------------
+  # Append pre-1980 vaccination estimates to observed data
+  # -----------------------------------------------
+  total_vac <- bind_rows(pre_1980, model_data_preprocessed$processed_vaccination_data)
   
   #Take pre-processed case and vaccination data and get it ready for params
   case_vaccination_ready <- case_vaccine_to_param(
@@ -104,57 +133,63 @@ data_load_process_wrapper <- function(
     processed_vaccination = total_vac,
     processed_vaccination_sia = model_data_preprocessed$processed_vaccination_sia,
     processed_case = model_data_preprocessed$processed_case_data,
-    vaccination_schedule = vaccination_schedule
+    vaccination_schedule = vaccination_schedule %>%
+      subset(ISO_3_CODE == iso)
   )
   
-  #Add in vaccine provided protection
+  # --------------------------------------------
+  # Vaccine-Derived Protection Parameters
+  # --------------------------------------------
+  
   n_vacc <- model_data_preprocessed$processed_demographic_data$input_data$n_vacc
-  
   vacc_order <- seq(2, n_vacc, by = 2)
-  age_vaccination_beta_modifier <- Reduce(rbind, sapply(vacc_order, function(j){
-    
+  
+  age_vaccination_beta_modifier <- purrr::map_dfr(vacc_order, function(j) {
     dose_details <- vaccine_parameters %>%
-      mutate(order = abs(j - vaccine_parameters$dose)) %>%
-      subset(order == min(order))
+      mutate(order = abs(j - dose)) %>%
+      filter(order == min(order))
     
-    rbind(
-      expand.grid(
-        dim1 = 1:101,
-        dim2 = j,
-        dim3 = 1,
-        value = dose_details %>% subset(parameter == "short_term_protection") %>% pull(value)
-      ),
-      expand.grid(
-        dim1 = 1:101,
-        dim2 = j + 1,
-        dim3 = 1,
-        value = dose_details %>% subset(parameter == "long_term_protection") %>% pull(value)
-      )
+    short_term <- dose_details %>%
+      filter(parameter == "short_term_protection") %>%
+      pull(value)
+    
+    long_term <- dose_details %>%
+      filter(parameter == "long_term_protection") %>%
+      pull(value)
+    
+    dplyr::bind_rows(
+      expand.grid(dim1 = 1:101, dim2 = j,     dim3 = 1, value = short_term),
+      expand.grid(dim1 = 1:101, dim2 = j + 1, dim3 = 1, value = long_term)
     )
-    
-  }, simplify = FALSE))
+  })
   
+  # --------------------------------------------
+  # Time Step Conversion
+  # --------------------------------------------
   
-  time_adjust <- if(timestep == "day"){
-    1
-  } else if(timestep == "week"){
-    7
-  } else if(timestep == "month"){
-    30 
-  } else if(timestep == "quarter"){
-    91.25
-  } else if(timestep == "year"){
-    365
-  }
+  time_adjust <- dplyr::case_when(
+    timestep == "day"     ~ 1,
+    timestep == "week"    ~ 7,
+    timestep == "month"   ~ 30,
+    timestep == "quarter" ~ 91.25,
+    timestep == "year"    ~ 365
+  )
   
-  #Set up model
-  time_changes_mig <- model_data_preprocessed$processed_demographic_data$tt_migration * 365/time_adjust
-  time_changes_mig <- floor(c(time_changes_mig, max(time_changes_mig) + 1))
+  # --------------------------------------------
+  # Time Changes for Events (Migration, Vaccination, Seeding)
+  # --------------------------------------------
   
-  time_changes_vac <- case_vaccination_ready$tt_vaccination * 365/time_adjust
-  time_changes_vac <- floor(c(time_changes_vac, max(time_changes_vac) + 1))
+  time_changes_mig <- floor(c(
+    model_data_preprocessed$processed_demographic_data$tt_migration * 365 / time_adjust,
+    max(model_data_preprocessed$processed_demographic_data$tt_migration * 365 / time_adjust) + 1
+  ))
   
-  time_changes_seeded <- case_vaccination_ready$tt_seeded * 365/time_adjust
+  time_changes_vac <- floor(c(
+    case_vaccination_ready$tt_vaccination * 365 / time_adjust,
+    max(case_vaccination_ready$tt_vaccination * 365 / time_adjust) + 1
+  ))
+  
+  time_changes_seeded <- case_vaccination_ready$tt_seeded * 365 / time_adjust
   R0_switch_time <- time_changes_seeded[2]
   
   if(WHO_seed_switch == T){
@@ -186,10 +221,12 @@ data_load_process_wrapper <- function(
           TRUE ~ value
         )
       )
- 
+    
   } else{
     time_changes_seeded <- sort(floor(c(time_changes_seeded, max(time_changes_seeded) + 1)))
   }
+  
+  
   
   waning_immunity <- subset(disease_parameters, parameter == "natural immunity waning") %>% pull(value) %>% as.numeric() * 365
   

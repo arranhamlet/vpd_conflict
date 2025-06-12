@@ -12,10 +12,6 @@
 #' @param iso A 3-letter ISO country code to subset the data.
 #' @param year_start First year to include (default: earliest year in migration data).
 #' @param year_end Final year to include (default: latest year in migration data).
-#' @param population_modifier A scalar to multiply all population values (default: 1).
-#' @param fertility_modifier A scalar to multiply fertility rates (default: 1).
-#' @param death_modifier A scalar to multiply death rates (currently not applied, default: 1).
-#' @param migration_modifier A scalar to multiply migration rates (default: 1).
 #' @param n_age Number of collapsed age bins for output data (e.g., 5-year bins).
 #' @param n_vacc Number of vaccination strata (used for model structure).
 #' @param n_risk Number of risk strata (used for model structure).
@@ -50,10 +46,6 @@ process_demography <- function(
     iso,
     year_start = "", 
     year_end = "",
-    population_modifier = 1, 
-    fertility_modifier = 1, 
-    death_modifier = 1,
-    migration_modifier = 1,
     n_age = 1, 
     number_of_vaccines = 0, 
     n_risk = 1
@@ -81,7 +73,7 @@ process_demography <- function(
   population_female <- filter_country(population_female)
   
   # Base population
-  pop_all_raw <- as.matrix(population_all[year %in% years, paste0("x", 0:100), with = FALSE]) * population_modifier
+  pop_all_raw <- as.matrix(population_all[year %in% years, paste0("x", 0:100), with = FALSE])
   pop_all <- collapse_age_bins(pop_all_raw, n_age)
   
   #Contact matricies - take those provided and reformat for the world from Prem et al., 2017
@@ -103,7 +95,7 @@ process_demography <- function(
   reformatted_contact_matrix <- project_to_symmetric_doubly_stochastic(reformatted_contact_matrix)
 
   # Mortality
-  mort_mat_raw <- as.matrix(mortality[year %in% years, paste0("x", 0:100), with = FALSE]) * death_modifier
+  mort_mat_raw <- as.matrix(mortality[year %in% years, paste0("x", 0:100), with = FALSE])
   mort_mat <- collapse_age_bins(mort_mat_raw, n_age)
   mortality_rate <- pmin(mort_mat / pop_all, 1)
   mortality_rate[!is.finite(mortality_rate)] <- 1
@@ -112,8 +104,8 @@ process_demography <- function(
     dplyr::mutate(dim2 = 1)
   
   # Fertility
-  fert_mat <- as.matrix(fertility[year %in% years, paste0("x", 15:49), with = FALSE]) * fertility_modifier
-  pop_fem <- as.matrix(population_female[year %in% years, paste0("x", 15:49), with = FALSE]) * population_modifier
+  fert_mat <- as.matrix(fertility[year %in% years, paste0("x", 15:49), with = FALSE])
+  pop_fem <- as.matrix(population_female[year %in% years, paste0("x", 15:49), with = FALSE])
   denom <- rowSums(pop_fem)
   denom[denom == 0] <- NA
   fertility_by_year <- data.frame(
@@ -123,7 +115,7 @@ process_demography <- function(
   )
   
   # Migration
-  mig_rates <- migration[year %in% years, migration_rate_1000] * migration_modifier
+  mig_rates <- migration[year %in% years, migration_rate_1000]
   
   migration_in_number <- data.table::rbindlist(lapply(seq_len(nrow(pop_all)), function(i) {
     mig_vals <- round(pop_all[i, ] * mig_rates[i])
@@ -179,10 +171,6 @@ process_demography <- function(
       iso = iso,
       year_start = min(years), 
       year_end = max(years),
-      population_modifier = population_modifier, 
-      fertility_modifier = fertility_modifier, 
-      death_modifier = death_modifier,
-      migration_modifier = migration_modifier,
       n_age = n_age, 
       n_vacc = n_vacc, 
       n_risk = n_risk

@@ -31,6 +31,12 @@ process_vaccination_routine <- function(
       coverage = median(coverage, na.rm = T),
       .groups = "drop"
     ) %>%
-    arrange(year)
+    arrange(year) %>%
+    mutate(dose_order = case_when(
+      grepl("4th", antigen_description) ~ 4,
+      grepl("5th", antigen_description) ~ 5,
+      grepl("6th", antigen_description) ~ 6,
+      TRUE ~ dose_order
+    ))
   
 }
