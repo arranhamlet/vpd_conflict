@@ -23,7 +23,7 @@ pacman::p_load(
 invisible(sapply(list.files("R/functions", full.names = T, pattern = ".R", recursive = T), function(x) source(x)))
 
 #Countries of interest
-# countries_interest <- c("SDN", "MMR", "PNG", "AFG", "VEN", "HTI", "GTM", "TCD", "DRC", "SOM", "BFA", "GBR")
+# countries_interest <- c("PSE, "SDN", "MMR", "PNG", "AFG", "VEN", "HTI", "GTM", "TCD", "DRC", "SOM", "BFA", "GBR")
 countries_interest <- c("PSE")
 
 #Load WHO disease data
@@ -56,7 +56,7 @@ double_run <- sapply(countries_interest, function(y){
           disease = diseases$disease[x],
           vaccine = diseases$disease[x],
           R0 = R0,
-          timestep = "week",
+          timestep = "day",
           WHO_seed_switch = T
         )
         
@@ -65,7 +65,7 @@ double_run <- sapply(countries_interest, function(y){
           odin_model = model,
           params = model_data_processed$params,
           time = floor(model_data_processed$time),
-          no_runs = 5
+          no_runs = 1
         )
         
         deet <- process_for_plotting(model_ran, input_data = model_data_processed$input_data)
